@@ -62,6 +62,9 @@ pub fn generate_witness(
     let input_json = serde_json::to_string(&private_input).unwrap();
     fs::write(&witness_generator_input, input_json).unwrap();
 
+    // Init empty wtns file
+    fs::write(&witness_generator_output, "").unwrap();
+
     let witness = generate_witness_from_wasm::<F1>(
         &witness_generator_file,
         &witness_generator_input,

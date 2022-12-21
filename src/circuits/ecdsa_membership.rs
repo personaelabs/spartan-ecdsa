@@ -52,13 +52,14 @@ pub fn ecdsa_membership() {
     private_input.insert("pathIndices".to_string(), json!([1, 1, 1]));
     private_input.insert("siblings".to_string(), json!([1, 1, 1]));
 
-    let circuit_file = root.join("circuits/membership.r1cs");
+    let circuit_file = root.join("circuits/build/ecdsa_membership/membership.r1cs");
     let r1cs = load_r1cs(&circuit_file);
 
     let public_input = Assignment::new(&[]).unwrap();
     let spartan_inst = convert_to_spartan_r1cs(&r1cs, num_vars, 0);
 
-    let witness_generator_file = root.join("circuits/membership_js/membership.wasm");
+    let witness_generator_file =
+        root.join("circuits/build/ecdsa_membership/membership_js/membership.wasm");
 
     let assignment = generate_witness(witness_generator_file, private_input);
 
