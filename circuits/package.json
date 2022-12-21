@@ -4,7 +4,6 @@
   "main": "index.js",
   "license": "MIT",
   "dependencies": {
-    "circom-ecdsa": "https://github.com/0xPARC/circom-ecdsa.git",
     "circomlib": "^2.0.5"
   }
 }
