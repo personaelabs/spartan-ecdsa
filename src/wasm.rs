@@ -12,13 +12,6 @@ use web_sys;
 pub type G1 = pasta_curves::pallas::Point;
 pub type F1 = <G1 as Group>::Scalar;
 
-// A macro to provide `println!(..)`-style syntax for `console.log` logging.
-macro_rules! log {
-  ( $( $t:tt )* ) => {
-      web_sys::console::log_1(&format!( $( $t )* ).into());
-  }
-}
-
 #[cfg(target_family = "wasm")]
 pub use wasm_bindgen_rayon::init_thread_pool;
 
