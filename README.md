@@ -23,7 +23,7 @@ sh ./scripts/build_wasm.sh
 ## Compile Circom R1CS to serialized Spartan circuit instance
 
 ```
-cargo run --bin gen_spartan_inst
+cargo run --release --bin gen_spartan_inst
 ```
 
 ## Run compiled wasm in browser
