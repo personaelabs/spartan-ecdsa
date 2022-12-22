@@ -10,20 +10,19 @@ pub fn load_as_spartan_inst(circuit_file: PathBuf, num_pub_inputs: usize) -> Ins
     let circuit_file = root.join(circuit_file);
     let r1cs = load_r1cs(&circuit_file);
 
-    let num_vars = r1cs.num_variables;
-
-    let spartan_inst = convert_to_spartan_r1cs(&r1cs, num_vars, num_pub_inputs);
+    let spartan_inst = convert_to_spartan_r1cs(&r1cs, num_pub_inputs);
 
     spartan_inst
 }
 
 fn convert_to_spartan_r1cs<F: PrimeField<Repr = [u8; 32]>>(
     r1cs: &R1CS<F>,
-    num_vars: usize,
     num_pub_inputs: usize,
 ) -> Instance {
     let num_cons = r1cs.constraints.len();
+    let num_vars = r1cs.num_variables;
     let num_inputs = num_pub_inputs;
+
     let mut A = vec![];
     let mut B = vec![];
     let mut C = vec![];

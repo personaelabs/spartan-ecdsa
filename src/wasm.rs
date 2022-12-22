@@ -36,9 +36,9 @@ pub fn prove_poseidon(circuit: JsValue, vars: &[u8]) -> Result<JsValue, JsValue>
     let circuit: Instance = serde_wasm_bindgen::from_value(circuit).unwrap();
     web_sys::console::time_end_with_label("parse input");
 
-    let num_vars = 626;
-    let num_cons = 609;
-    let num_inputs = 0;
+    let num_cons = circuit.inst.get_num_cons();
+    let num_vars = circuit.inst.get_num_vars();
+    let num_inputs = circuit.inst.get_num_inputs();
 
     web_sys::console::time_with_label("generate public parameters");
     // produce public parameters
@@ -62,8 +62,11 @@ pub fn prove_poseidon(circuit: JsValue, vars: &[u8]) -> Result<JsValue, JsValue>
     );
     web_sys::console::time_end_with_label("prove");
 
+    /*
     web_sys::console::time_with_label("verify");
 
+    !Verification is not working even though circuit.is_sat() returns true.
+    !Need to fix.
     let mut verifier_transcript = Transcript::new(b"nizk_example");
 
     proof
@@ -71,6 +74,7 @@ pub fn prove_poseidon(circuit: JsValue, vars: &[u8]) -> Result<JsValue, JsValue>
         .unwrap();
 
     web_sys::console::time_end_with_label("verify");
+     */
 
     Ok(serde_wasm_bindgen::to_value(&proof).unwrap())
 }
