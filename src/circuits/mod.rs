@@ -1,2 +1,2 @@
-mod ecdsa_membership;
-mod utils;
+//mod ecdsa_membership;
+pub mod utils;

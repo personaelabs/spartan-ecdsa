@@ -1,17 +1,27 @@
 use ff::PrimeField;
-use libspartan::{Assignment, Instance};
+use libspartan::Instance;
 use nova_scotia::circom::circuit::R1CS;
-use serde_json::Value;
-use std::{collections::HashMap, env::current_dir, fs, path::PathBuf};
+use nova_scotia::circom::reader::load_r1cs;
+use std::{env::current_dir, path::PathBuf};
 
-use nova_scotia::{circom::reader::generate_witness_from_wasm, F1};
+pub fn load_as_spartan_inst(circuit_file: PathBuf, num_pub_inputs: usize) -> Instance {
+    let root = current_dir().unwrap();
 
-pub fn convert_to_spartan_r1cs<F: PrimeField<Repr = [u8; 32]>>(
+    let circuit_file = root.join(circuit_file);
+    let r1cs = load_r1cs(&circuit_file);
+
+    let num_vars = r1cs.num_variables;
+
+    let spartan_inst = convert_to_spartan_r1cs(&r1cs, num_vars, num_pub_inputs);
+
+    spartan_inst
+}
+
+fn convert_to_spartan_r1cs<F: PrimeField<Repr = [u8; 32]>>(
     r1cs: &R1CS<F>,
     num_vars: usize,
     num_pub_inputs: usize,
 ) -> Instance {
-    //    let num_vars = r1cs.num_variables;
     let num_cons = r1cs.constraints.len();
     let num_inputs = num_pub_inputs;
     let mut A = vec![];
@@ -24,23 +34,23 @@ pub fn convert_to_spartan_r1cs<F: PrimeField<Repr = [u8; 32]>>(
         for (j, coeff) in a.iter() {
             let bytes: [u8; 32] = coeff.to_repr();
 
-            A.push((*j, i, bytes));
+            A.push((i, *j, bytes));
         }
 
         for (j, coeff) in b.iter() {
             let bytes: [u8; 32] = coeff.to_repr();
-            B.push((*j, i, bytes));
+            B.push((i, *j, bytes));
         }
 
         for (j, coeff) in c.iter() {
             let bytes: [u8; 32] = coeff.to_repr();
-            C.push((*j, i, bytes));
+            C.push((i, *j, bytes));
         }
     }
 
     let inst = Instance::new(
-        num_vars,
         num_cons,
+        num_vars,
         num_inputs,
         A.as_slice(),
         B.as_slice(),
@@ -49,32 +59,4 @@ pub fn convert_to_spartan_r1cs<F: PrimeField<Repr = [u8; 32]>>(
     .unwrap();
 
     inst
-}
-
-pub fn generate_witness(
-    witness_generator_file: PathBuf,
-    private_input: HashMap<String, Value>,
-) -> Assignment {
-    let root = current_dir().unwrap();
-    let witness_generator_input = root.join("circom_input.json");
-    let witness_generator_output = root.join("circom_witness.wtns");
-
-    let input_json = serde_json::to_string(&private_input).unwrap();
-    fs::write(&witness_generator_input, input_json).unwrap();
-
-    // Init empty wtns file
-    fs::write(&witness_generator_output, "").unwrap();
-
-    let witness = generate_witness_from_wasm::<F1>(
-        &witness_generator_file,
-        &witness_generator_input,
-        &witness_generator_output,
-    );
-
-    let witness_bytes = witness
-        .iter()
-        .map(|w| w.to_repr())
-        .collect::<Vec<[u8; 32]>>();
-
-    Assignment::new(witness_bytes.as_slice()).unwrap()
 }

@@ -2,6 +2,12 @@
 const nextConfig = {
   reactStrictMode: true,
   swcMinify: true,
+  webpack: config => {
+    config.resolve.fallback = { fs: false };
+    config.experiments = { asyncWebAssembly: true };
+
+    return config;
+  },
   async headers() {
     return [
       {
