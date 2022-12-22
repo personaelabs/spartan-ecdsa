@@ -19,6 +19,12 @@ web-sys = { version = "0.3.60", features = ["console"] }
 serde_json = "1.0.89"
 libsecp256k1 = "0.7.1"
 num-bigint = "0.4.3"
+serde = "1.0.151"
+byteorder = "1.4.3"
+ff = "0.12.0"
+pasta_curves = "0.4.0"
+serde-wasm-bindgen = "0.4.5"
+
 
 [target.'cfg(not(target_family = "wasm"))'.dependencies]
 nova-scotia = { git = "https://github.com/nalinbhardwaj/Nova-Scotia.git" }
@@ -31,3 +37,8 @@ wasm-bindgen-rayon = { version = "1.0"}
 
 [dependencies.getrandom]
 features = ["js"]
+
+
+[[bin]]
+name = "gen_spartan_inst"
+path = "src/bin/gen_spartan_inst.rs"
