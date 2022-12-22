@@ -5,7 +5,7 @@ template Poseidons(nInputs) {
     signal input inputs[nInputs];
     signal output hash;
 
-    var num_poseidons = 8;
+    var num_poseidons = 5;
     component poseidons[num_poseidons];
     for (var i = 0; i < num_poseidons; i++) {
         poseidons[i] = Poseidon(nInputs);
