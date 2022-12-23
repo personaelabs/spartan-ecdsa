@@ -20,12 +20,12 @@ const generateWitness = async () => {
   return witness;
 };
 
-const fetchCircuit = async (): Promise<string> => {
-  const response = await fetch("/poseidon_circuit.json");
+const fetchCircuit = async (): Promise<Uint8Array> => {
+  const response = await fetch("/poseidon_circuit.bin");
 
-  const circuit = await response.json();
+  const circuit = await response.arrayBuffer();
 
-  return circuit;
+  return new Uint8Array(circuit);
 };
 
 export const genProofSpartan = async () => {

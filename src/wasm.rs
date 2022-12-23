@@ -21,7 +21,7 @@ pub fn init_panic_hook() {
 }
 
 #[wasm_bindgen]
-pub fn prove_poseidon(circuit: JsValue, vars: &[u8]) -> Result<JsValue, JsValue> {
+pub fn prove_poseidon(circuit: &[u8], vars: &[u8]) -> Result<JsValue, JsValue> {
     web_sys::console::time_with_label("load witness");
     let witness = load_witness_from_bin_reader::<F1, _>(vars).unwrap();
     let witness_bytes = witness
@@ -33,7 +33,7 @@ pub fn prove_poseidon(circuit: JsValue, vars: &[u8]) -> Result<JsValue, JsValue>
     web_sys::console::time_end_with_label("load witness");
 
     web_sys::console::time_with_label("parse input");
-    let circuit: Instance = serde_wasm_bindgen::from_value(circuit).unwrap();
+    let circuit: Instance = bincode::deserialize(&circuit).unwrap();
     web_sys::console::time_end_with_label("parse input");
 
     let num_cons = circuit.inst.get_num_cons();
@@ -50,6 +50,9 @@ pub fn prove_poseidon(circuit: JsValue, vars: &[u8]) -> Result<JsValue, JsValue>
     let public_input = Assignment::new(&[]).unwrap();
 
     let mut prover_transcript = Transcript::new(b"nizk_example");
+
+    let result = circuit.is_sat(&assignment, &public_input).is_ok();
+    web_sys::console::log_1(&format!("is_sat: {}", result).into());
 
     web_sys::console::time_with_label("prove");
     // produce a proof of satisfiability
@@ -139,4 +142,59 @@ fn load_witness_from_bin_reader<Fr: PrimeField, R: Read>(mut reader: R) -> Resul
         result.push(read_field::<&mut R, Fr>(&mut reader)?);
     }
     Ok(result)
+}
+
+#[cfg(test)]
+mod tests {
+    use libspartan::Instance;
+
+    use super::*;
+    use crate::circuits::utils::load_as_spartan_inst;
+    use std::env::current_dir;
+
+    #[test]
+    fn test_deserialize_circuit() {
+        let root = current_dir().unwrap();
+        let circuit_file = root.join("circuits/build/spartan/poseidon/poseidon.r1cs");
+        let num_pub_inputs = 0;
+        let circuit = load_as_spartan_inst(circuit_file, num_pub_inputs);
+
+        let circuit_ser = bincode::serialize(&circuit).unwrap();
+
+        println!("circuit_ser: {:?}", circuit_ser.len());
+
+        let circuit: Instance = bincode::deserialize(&circuit_ser).unwrap();
+    }
+
+    #[test]
+    fn test_prove_poseidon() {
+        let circuit = load_as_spartan_inst(
+            current_dir()
+                .unwrap()
+                .join("circuits/build/spartan/poseidon/poseidon.r1cs"),
+            0,
+        );
+
+        let circuit_ser = bincode::serialize(&circuit).unwrap();
+
+        let witness_bytes = [[0u8; 32]];
+        let assignment = Assignment::new(&witness_bytes).unwrap();
+
+        let public_input = Assignment::new(&[]).unwrap();
+
+        let num_cons = circuit.inst.get_num_cons();
+        let num_vars = circuit.inst.get_num_vars();
+        let num_inputs = circuit.inst.get_num_inputs();
+
+        let gens = NIZKGens::new(num_cons, num_vars, num_inputs);
+        let mut prover_transcript = Transcript::new(b"nizk_example");
+
+        let proof = NIZK::prove(
+            &circuit,
+            assignment.clone(),
+            &public_input,
+            &gens,
+            &mut prover_transcript,
+        );
+    }
 }
