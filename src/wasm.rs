@@ -32,9 +32,9 @@ pub fn prove_poseidon(circuit: &[u8], vars: &[u8]) -> Result<JsValue, JsValue> {
     let assignment = Assignment::new(&witness_bytes).unwrap();
     web_sys::console::time_end_with_label("load witness");
 
-    web_sys::console::time_with_label("parse input");
+    web_sys::console::time_with_label("load circuit");
     let circuit: Instance = bincode::deserialize(&circuit).unwrap();
-    web_sys::console::time_end_with_label("parse input");
+    web_sys::console::time_end_with_label("load circuit");
 
     let num_cons = circuit.inst.get_num_cons();
     let num_vars = circuit.inst.get_num_vars();
@@ -50,9 +50,6 @@ pub fn prove_poseidon(circuit: &[u8], vars: &[u8]) -> Result<JsValue, JsValue> {
     let public_input = Assignment::new(&[]).unwrap();
 
     let mut prover_transcript = Transcript::new(b"nizk_example");
-
-    let result = circuit.is_sat(&assignment, &public_input).is_ok();
-    web_sys::console::log_1(&format!("is_sat: {}", result).into());
 
     web_sys::console::time_with_label("prove");
     // produce a proof of satisfiability
