@@ -12,7 +12,7 @@ export default function Home() {
     const worker = new Worker(
       new URL("../lib/spartanProver/spartanProver", import.meta.url),
       {
-        name: "halo-worker",
+        name: "spartan-worker",
         type: "module"
       }
     );
