@@ -6,7 +6,7 @@ use std::io::Write;
 
 fn main() {
     let root = current_dir().unwrap();
-    let circuit_file = root.join("circuits/build/poseidon/poseidon.r1cs");
+    let circuit_file = root.join("circuits/build/spartan/poseidon/poseidon.r1cs");
     let spartan_inst = load_as_spartan_inst(circuit_file, 0);
     let spartan_inst_json = json!(spartan_inst);
 

@@ -1,1 +1,1 @@
-wasm-pack build --target web --out-dir ./browser_benchmark/lib/spartanProver/wasm
+wasm-pack build --target web --out-dir ./browser_benchmark/lib/prover/wasm
