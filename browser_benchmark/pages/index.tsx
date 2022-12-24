@@ -61,7 +61,7 @@ export default function Home() {
       <button
         onClick={async () => {
           if (worker) {
-            await withProverApi(worker).genProofGroth16Poseidon5();
+            await withProverApi(worker).genProofGroth16Poseidon32();
           }
         }}
       >
