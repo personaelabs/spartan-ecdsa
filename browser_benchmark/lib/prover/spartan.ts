@@ -31,14 +31,12 @@ export const genProofSpartan = async (
   console.log("Proving with Spartan...");
   const {
     default: init,
-    initThreadPool,
     prove_poseidon,
     init_panic_hook
   } = await import("./wasm/spartan_wasm.js");
 
   await init();
   await init_panic_hook();
-  await initThreadPool(navigator.hardwareConcurrency);
   console.time("Spartan Full proving time");
 
   const witness = await generateWitness(witnessGenWasmUrl);

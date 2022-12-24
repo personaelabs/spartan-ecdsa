@@ -4,16 +4,12 @@ use ff::PrimeField;
 use libspartan::{Assignment, Instance, NIZKGens, NIZK};
 use merlin::Transcript;
 use pasta_curves::group::Group;
-use serde_wasm_bindgen;
 use std::io::{Error, Read};
 use wasm_bindgen::prelude::*;
 use web_sys;
 
 pub type G1 = pasta_curves::pallas::Point;
 pub type F1 = <G1 as Group>::Scalar;
-
-#[cfg(target_family = "wasm")]
-pub use wasm_bindgen_rayon::init_thread_pool;
 
 #[wasm_bindgen]
 pub fn init_panic_hook() {
