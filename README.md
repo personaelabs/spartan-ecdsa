@@ -14,6 +14,37 @@ An attempt to run [Spartan](https://github.com/microsoft/Spartan) prover in brow
 
 - [ ] Spartan implementation over secq256k1.
 
+## Browser proving benchmarks
+
+We use circuits with varying number of Poseidon hash instance (e.g. poseidon5.circom has 5 instances of Poseidon hashes).
+
+**Prover**
+
+- MacBook Pro (M1 Pro)
+- Internet download speed: 170Mbps
+- Browser: Brave
+
+Spartan NIZK
+
+| Circuit     | Constraints | Full proving time | Circuit (i.e. proving key ) size | Circuit download time |
+| ----------- | ----------- | ----------------- | -------------------------------- | --------------------- |
+| poseidon5   | 3045        | 1s                | 6.8 MB                           | 320ms                 |
+| poseidon32  | 19488       | 4.5s              | 43.2 MB                          | 2s                    |
+| poseidon256 | 155904      | 31s               | 345.9 MB                         | 16s                   |
+
+Groth16
+
+| Circuit     | Constraints | Full proving time | Zkey size |
+| ----------- | ----------- | ----------------- | --------- |
+| poseidon5   | 3045        | 950ms             | 4.6 MB    |
+| poseidon32  | 19488       | 3.7s              | 29.8 MB   |
+| poseidon256 | 155904      | 24s               | 238.1 MB  |
+
+- We don't present the zkey download time for Groth16 due benchmarking processes inside snarkjs being nontrivial.
+
+- The time required to download the circuit (i.e. proving key) is a major contributor to the full proving time. For mobile applications, we could download the circuit at app installation, relieving the burden of downloading the circuit at proving time.
+- Spartan NIZK circuit serialization is not optimized; which is the Spartan NIZK has larger “proving keys”.
+
 ## Compile prover to wasm
 
 ```
