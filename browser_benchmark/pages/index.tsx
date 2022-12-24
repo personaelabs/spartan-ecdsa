@@ -25,20 +25,56 @@ export default function Home() {
       <button
         onClick={async () => {
           if (worker) {
-            await withProverApi(worker).genProofSpartan();
+            await withProverApi(worker).genProofSpartanPoseidon5();
           }
         }}
       >
-        Prove(Spartan)
+        Prove(Spartan poseidon5)
       </button>
       <button
         onClick={async () => {
           if (worker) {
-            await withProverApi(worker).genProofGroth16();
+            await withProverApi(worker).genProofSpartanPoseidon32();
           }
         }}
       >
-        Prove(Groth16)
+        Prove(Spartan poseidon32)
+      </button>
+      <button
+        onClick={async () => {
+          if (worker) {
+            await withProverApi(worker).genProofSpartanPoseidon256();
+          }
+        }}
+      >
+        Prove(Spartan poseidon256)
+      </button>
+      <button
+        onClick={async () => {
+          if (worker) {
+            await withProverApi(worker).genProofGroth16Poseidon5();
+          }
+        }}
+      >
+        Prove(Groth16 poseidon5)
+      </button>
+      <button
+        onClick={async () => {
+          if (worker) {
+            await withProverApi(worker).genProofGroth16Poseidon5();
+          }
+        }}
+      >
+        Prove(Groth16 poseidon32)
+      </button>
+      <button
+        onClick={async () => {
+          if (worker) {
+            await withProverApi(worker).genProofGroth16Poseidon256();
+          }
+        }}
+      >
+        Prove(Groth16 poseidon256)
       </button>
     </div>
   );

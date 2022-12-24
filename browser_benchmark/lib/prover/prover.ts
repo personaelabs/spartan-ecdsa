@@ -1,76 +1,68 @@
 import { expose } from "comlink";
-const snarkJs = require("snarkjs");
-const { utils } = require("ffjavascript");
+import { genProofSpartan } from "./spartan";
+import { genProofGroth16 } from "./groth16";
 
-const generateWitness = async () => {
-  const wasmFile = "/spartan_poseidon.wasm";
+const genProofSpartanPoseidon5 = async () => {
+  const witnessGen =
+    "https://storage.googleapis.com/proving_keys/poseidon5/spartan_poseidon5.wasm";
+  const circuit =
+    "https://storage.googleapis.com/proving_keys/poseidon5/spartan_poseidon5.circuit";
 
-  const witness: {
-    type: string;
-    data?: any;
-  } = {
-    type: "mem"
-  };
-
-  const input = {
-    inputs: new Array(16).fill("1")
-  };
-
-  await snarkJs.wtns.calculate(input, wasmFile, witness);
-  return witness;
+  await genProofSpartan(witnessGen, circuit);
 };
 
-const fetchCircuit = async (): Promise<Uint8Array> => {
-  const response = await fetch("/poseidon_circuit.bin");
+const genProofSpartanPoseidon32 = async () => {
+  const witnessGen =
+    "https://storage.googleapis.com/proving_keys/poseidon32/spartan_poseidon32.wasm";
+  const circuit =
+    "https://storage.googleapis.com/proving_keys/poseidon32/spartan_poseidon32.circuit";
 
-  const circuit = await response.arrayBuffer();
-
-  return new Uint8Array(circuit);
+  await genProofSpartan(witnessGen, circuit);
 };
 
-export const genProofSpartan = async () => {
-  const {
-    default: init,
-    initThreadPool,
-    prove_poseidon,
-    init_panic_hook
-  } = await import("./wasm/spartan_wasm.js");
+const genProofSpartanPoseidon256 = async () => {
+  const witnessGen =
+    "https://storage.googleapis.com/proving_keys/poseidon256/spartan_poseidon256.wasm";
+  const circuit =
+    "https://storage.googleapis.com/proving_keys/poseidon256/spartan_poseidon256.circuit";
 
-  await init();
-  await init_panic_hook();
-  await initThreadPool(navigator.hardwareConcurrency);
-  console.time("Spartan Full proving time");
-
-  const witness = await generateWitness();
-
-  console.time("Fetch circuit");
-  const circuit = await fetchCircuit();
-  console.timeEnd("Fetch circuit");
-
-  const proof = await prove_poseidon(circuit, witness.data);
-
-  console.timeEnd("Spartan Full proving time");
-  console.log("proof", proof);
+  await genProofSpartan(witnessGen, circuit);
 };
 
-export const genProofGroth16 = async () => {
-  const input = {
-    inputs: new Array(16).fill("1")
-  };
+const genProofGroth16Poseidon5 = async () => {
+  const witnessGen =
+    "https://storage.googleapis.com/proving_keys/poseidon5/g16_poseidon5.wasm";
+  const circuit =
+    "https://storage.googleapis.com/proving_keys/poseidon5/g16_poseidon5.zkey";
 
-  console.log("Proving with Groth16...");
-  console.time("Groth16 Full proving time");
-  await snarkJs.groth16.fullProve(
-    input,
-    "/g16_poseidon.wasm",
-    "/g16_poseidon.zkey"
-  );
-  console.timeEnd("Groth16 Full proving time");
+  await genProofGroth16(witnessGen, circuit);
+};
+
+const genProofGroth16Poseidon32 = async () => {
+  const witnessGen =
+    "https://storage.googleapis.com/proving_keys/poseidon32/g16_poseidon32.wasm";
+  const circuit =
+    "https://storage.googleapis.com/proving_keys/poseidon32/g16_poseidon32.zkey";
+
+  await genProofGroth16(witnessGen, circuit);
+};
+
+const genProofGroth16Poseidon256 = async () => {
+  const witnessGen =
+    "https://storage.googleapis.com/proving_keys/poseidon256/g16_poseidon256.wasm";
+  const circuit =
+    "https://storage.googleapis.com/proving_keys/poseidon256/g16_poseidon256.zkey";
+
+  await genProofGroth16(witnessGen, circuit);
 };
 
 const exports = {
-  genProofSpartan,
-  genProofGroth16
+  genProofSpartanPoseidon5,
+  genProofSpartanPoseidon32,
+  genProofSpartanPoseidon256,
+  genProofGroth16Poseidon5,
+  genProofGroth16Poseidon32,
+  genProofGroth16Poseidon256
 };
 
 export type Prover = typeof exports;

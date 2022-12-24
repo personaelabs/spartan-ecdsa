@@ -23,3 +23,5 @@ circuits/build/
 pkg/
 circom_input.json
 circom_witness.wtns
+
+*.ptau

@@ -1,9 +1,7 @@
 BUILD_DIR=./circuits/build/spartan/poseidon
-EXPORT_DIR=./browser_benchmark/public
+CIRCUIT_NAME="poseidon"$1
 
 mkdir -p $BUILD_DIR
-circom ./circuits/poseidon/poseidon.circom --r1cs --wasm --prime curve25519 -o $BUILD_DIR
+circom ./circuits/poseidon/$CIRCUIT_NAME.circom --r1cs --wasm --prime curve25519 -o $BUILD_DIR
 
-cp $BUILD_DIR/poseidon_js/poseidon.wasm $EXPORT_DIR/spartan_poseidon.wasm
-
-cargo run --release --bin gen_spartan_inst
+cargo run --release --bin gen_spartan_inst -- $BUILD_DIR/$CIRCUIT_NAME.r1cs $BUILD_DIR/$CIRCUIT_NAME.circuit
