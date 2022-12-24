@@ -10,7 +10,7 @@ An attempt to run [Spartan](https://github.com/microsoft/Spartan) prover in brow
 - [x] Spartan prover in wasm.
 - [x] Right-field ECDSA verification + membership proving circuit written in Circom.
 
-- [ ] Circom compiler that can compile to the scalar field of secp256k1.
+- [ ] Circom compiler that can compile to the scalar field of secq256k1.
 
 - [ ] Spartan implementation over secq256k1.
 
