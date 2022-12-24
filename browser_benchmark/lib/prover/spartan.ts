@@ -51,4 +51,6 @@ export const genProofSpartan = async (
 
   console.timeEnd("Spartan Full proving time");
   console.log("proof", proof);
+
+  console.log("proof.byteLength", proof.byteLength);
 };

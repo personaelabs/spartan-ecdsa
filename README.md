@@ -26,11 +26,11 @@ We use circuits with varying number of Poseidon hash instance (e.g. poseidon5.ci
 
 Spartan NIZK
 
-| Circuit     | Constraints | Full proving time | Circuit (i.e. proving key ) size | Circuit download time |
-| ----------- | ----------- | ----------------- | -------------------------------- | --------------------- |
-| poseidon5   | 3045        | 1s                | 6.8 MB                           | 320ms                 |
-| poseidon32  | 19488       | 4.5s              | 43.2 MB                          | 2s                    |
-| poseidon256 | 155904      | 31s               | 345.9 MB                         | 16s                   |
+| Circuit     | Constraints | Full proving time | Circuit (i.e. proving key ) size | Circuit download time | Proof size |
+| ----------- | ----------- | ----------------- | -------------------------------- | --------------------- | ---------- |
+| poseidon5   | 3045        | 1s                | 6.8 MB                           | 320ms                 | 12.9KB     |
+| poseidon32  | 19488       | 4.5s              | 43.2 MB                          | 2s                    | 17.4KB     |
+| poseidon256 | 155904      | 31s               | 345.9 MB                         | 16s                   | 32.8KB     |
 
 Groth16
 
