@@ -8,8 +8,16 @@ template Secp256k1Add() {
     signal output outX;
     signal output outY;
 
-    var lambda = (p1X - p2X) / (p1Y - p2Y);
+    signal lambda;
+    signal dx;
+    signal dy;
 
-    outX <-- lambda * lambda - p1X - p2X;
-    outY <-- lambda * (p1X - outX) - p1Y;
+    dx <== p1X - p2X;
+    dy <== p1Y - p2Y;
+
+    lambda <-- dx / dy;
+    dy * lambda === dx;
+
+    outX <== lambda * lambda - p1X - p2X;
+    outY <== lambda * (p1X - outX) - p1Y;
 }
