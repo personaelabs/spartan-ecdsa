@@ -15,8 +15,8 @@ template Secp256k1Add() {
     dx <== p1X - p2X;
     dy <== p1Y - p2Y;
 
-    lambda <-- dx / dy;
-    dy * lambda === dx;
+    lambda <-- dy / dx;
+    dx * lambda === dy;
 
     outX <== lambda * lambda - p1X - p2X;
     outY <== lambda * (p1X - outX) - p1Y;
