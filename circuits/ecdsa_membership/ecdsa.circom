@@ -8,42 +8,46 @@ template ECDSA() {
     var bits = 256;
     signal input s;
     signal input msg;
-    signal input rInv;
     signal input rX;
-    signal input rXSquared;
     signal input rY;
-    signal input rYSquared;
+
+    signal rInv;
+    signal rXSquared;
+    signal rYSquared;
+    signal rXCubic;
+    signal t;
+    signal u;
 
     signal output pubKeyX;
     signal output pubKeyY;
-
     var gX = 55066263022277343669578718895168534326250603453777594175500187360389116729240;
     var gY = 32670510020758816978083085130507043184471273380659243275938904335757337482424;
     var a = 7;
 
     // Check that (rX, rY) is on the curve
 
+    rInv <-- rX !=0 ? 1/rX : 0;
     // enforce r^-1 * rX = 1;
     rInv * rX === 1;
 
     // enforce rYSquared = rY^2;
-    rYSquared === rY * rY;
+    rYSquared <== rY * rY;
 
     // enforce rXSquared = rX^2;
-    rXSquared === rX * rX; 
+    rXSquared <== rX * rX; 
 
-    var rXCubic = rXSquared * rX;
+    rXCubic <== rXSquared * rX;
     
     // enforce rYSquared = rX^3 + a * rX;
     rYSquared === rXCubic + a * rX;
 
-    // s * r^-1 
-    var t = s * rInv;
+    // s * r^-1
+    t <== s * rInv;
     component tBits = Num2Bits(bits);
     tBits.in <== t;
 
     // msg * r^-1
-    var u = msg * rInv;
+    u <== msg * rInv;
     component uBits = Num2Bits(bits);
     uBits.in <== u;
 
