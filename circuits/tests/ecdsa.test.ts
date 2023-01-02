@@ -6,7 +6,7 @@ const BN = require("bn.js");
 
 const ec = new EC("secp256k1");
 
-describe.skip("ecdsa", () => {
+describe("ecdsa", () => {
   const privKey = BigInt(
     "0xf5b552f608f5b552f608f5b552f6082ff5b552f608f5b552f608f5b552f6082f"
   );
@@ -33,19 +33,28 @@ describe.skip("ecdsa", () => {
       "hex"
     );
 
+    // Get the group element: -(m * r^−1 * G)
     const rInv = new BN(r).invm(SECP256K1_N);
+
+    // w = -(r^-1 * msg)
+    const w = rInv.mul(new BN(msgHash)).neg().umod(SECP256K1_N);
+    // U = -(w * G) = -(r^-1 * msg * G)
+    const U = ec.curve.g.mul(w);
+
+    // T = r^-1 * R
+    const T = rPoint.getPublic().mul(rInv);
 
     const input = {
       s: BigInt("0x" + s.toString("hex")),
-      msg: BigInt("0x" + msgHash.toString("hex")),
-      rX: rPoint.getPublic().x.toString(),
-      rY: rPoint.getPublic().y.toString(),
-      rInv
+      Tx: T.x.toString(),
+      Ty: T.y.toString(),
+      Ux: U.x.toString(),
+      Uy: U.y.toString()
     };
 
-    const w = await circuit.calculateWitness(input, true);
+    const witness = await circuit.calculateWitness(input, true);
 
-    await circuit.assertOut(w, {
+    await circuit.assertOut(witness, {
       pubKeyX: pubKey.x.toString(),
       pubKeyY: pubKey.y.toString()
     });

@@ -6,17 +6,19 @@ include "../node_modules/circomlib/circuits/poseidon.circom";
 
 template Membership(nLevels) {
     signal input s;
-    signal input msg;
-    signal input rX;
-    signal input rY;
+    signal input Tx; 
+    signal input Ty; 
+    signal input Ux;
+    signal input Uy;
     signal input pathIndices[nLevels];
     signal input siblings[nLevels];
     signal output root;
 
-    component ecdsa = ECDSA();
-    ecdsa.msg <== msg;
-    ecdsa.rX <== rX;
-    ecdsa.rY <== rY;
+    component ecdsa = EfficientECDSA();
+    ecdsa.Tx <== Tx;
+    ecdsa.Ty <== Ty;
+    ecdsa.Ux <== Ux;
+    ecdsa.Uy <== Uy;
     ecdsa.s <== s;
 
     component pubKeyHash = Poseidon(2);

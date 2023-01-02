@@ -4,75 +4,39 @@ include "./secp256k1/mul.circom";
 include "../node_modules/circomlib/circuits/bitify.circom";
 
 // ECDSA public key recovery without public key validation.
-template ECDSA() {
+template EfficientECDSA() {
     var bits = 256;
     signal input s;
-    signal input msg;
-    signal input rX;
-    signal input rY;
-
-    signal rInv;
-    signal rXSquared;
-    signal rYSquared;
-    signal rXCubic;
-    signal t;
-    signal u;
+    signal input Tx; // T = r^-1 * R
+    signal input Ty; 
+    signal input Ux; // U = -(m * r^-1 * G)
+    signal input Uy;
 
     signal output pubKeyX;
     signal output pubKeyY;
+
     var gX = 55066263022277343669578718895168534326250603453777594175500187360389116729240;
     var gY = 32670510020758816978083085130507043184471273380659243275938904335757337482424;
     var a = 7;
 
-    // Check that (rX, rY) is on the curve
-
-    rInv <-- rX !=0 ? 1/rX : 0;
-    // enforce r^-1 * rX = 1;
-    rInv * rX === 1;
-
-    // enforce rYSquared = rY^2;
-    rYSquared <== rY * rY;
-
-    // enforce rXSquared = rX^2;
-    rXSquared <== rX * rX; 
-
-    rXCubic <== rXSquared * rX;
-    
-    // enforce rYSquared = rX^3 + a * rX;
-    rYSquared === rXCubic + a * rX;
-
-    // s * r^-1
-    t <== s * rInv;
-    component tBits = Num2Bits(bits);
-    tBits.in <== t;
-
-    // msg * r^-1
-    u <== msg * rInv;
-    component uBits = Num2Bits(bits);
-    uBits.in <== u;
+    component sBits = Num2Bits(bits);
+    sBits.in <== s;
 
     // t * R = s * r^-1 * R
-    component tR = Secp256k1Mul();
+    component sMultT = Secp256k1Mul();
     for (var i = 0; i < bits; i++) {
-        tR.scalar[i] <== tBits.out[i];
+        sMultT.scalar[i] <== sBits.out[i];
     }
-    tR.pX <== rX;
-    tR.pY <== rY;
+    sMultT.pX <== Tx;
+    sMultT.pY <== Ty;
 
-    // u * G = msg * r^-1 * G
-    component uG = Secp256k1Mul();
-    for (var i = 0; i < bits; i++) {
-        uG.scalar[i] <== uBits.out[i];
-    }
-    uG.pX <== gX;
-    uG.pY <== gY;
-
-    // uG + tR = msg * r^-1 * G + s * r^-1 * G  = pubKey
+    // sMultT + U 
     component pubKey = Secp256k1Add();
-    pubKey.p1X <== uG.pX;
-    pubKey.p1Y <== uG.pY;
-    pubKey.p2X <== tR.pX;
-    pubKey.p2Y <== tR.pY;
+    pubKey.p1X <== sMultT.outX;
+    pubKey.p1Y <== sMultT.outY;
+    pubKey.p2X <== Ux;
+    pubKey.p2Y <== Uy;
+    pubKey.isP2Identity <== 0;
 
     pubKeyX <== pubKey.outX;
     pubKeyY <== pubKey.outY;
