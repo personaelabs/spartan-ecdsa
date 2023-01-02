@@ -6,7 +6,7 @@ An attempt to run [Spartan](https://github.com/microsoft/Spartan) prover in brow
 
 - [x] [Circom compiler that can compile to the scalar field of secq256k1.](https://github.com/iden3/circom/commit/0fd517296523d295301e05906509779bee9ad6ad)
 - [ ] [Spartan implementation over secq256k1](https://github.com/DanTehrani/Spartan).
-  - [] [Secq256k1 implementation based on](https://github.com/DanTehrani/secq256k1) [the elliptic-curve crate](https://crates.io/crates/elliptic-curve).
+  - [ ] [Secq256k1 implementation based on](https://github.com/DanTehrani/secq256k1) [the elliptic-curve crate](https://crates.io/crates/elliptic-curve).
 - [x] A compiler to generate a Spartan circuit from Circom R1CS. The compiler uses [Nova Scotia](https://github.com/nalinbhardwaj/Nova-Scotia) at its core.
 - [x] Spartan prover in wasm.
 - [x] Right-field ECDSA verification + membership proving circuit written in Circom.
