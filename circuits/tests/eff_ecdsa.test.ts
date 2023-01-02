@@ -18,7 +18,7 @@ describe("ecdsa", () => {
 
   it("should verify valid message", async () => {
     const circuit = await wasm_tester(
-      path.join(__dirname, "./circuits/ecdsa_test.circom"),
+      path.join(__dirname, "./circuits/eff_ecdsa_test.circom"),
       {
         prime: "secq256k1"
       }

@@ -1,6 +1,6 @@
 pragma circom 2.1.2;
 
-include "./ecdsa.circom";
+include "./eff_ecdsa.circom";
 include "./tree.circom";
 include "../node_modules/circomlib/circuits/poseidon.circom";
 
