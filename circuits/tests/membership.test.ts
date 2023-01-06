@@ -6,20 +6,19 @@ import { buildPoseidon } from "circomlibjs";
 const ec = new EC("secp256k1");
 import { IncrementalMerkleTree } from "@zk-kit/incremental-merkle-tree";
 
-import { genEffEcdsaInput } from "./test_utils";
-
-const bytesToBigInt = (bytes: Uint8Array): bigint =>
-  BigInt("0x" + Buffer.from(bytes).toString("hex"));
+import { genEffEcdsaInput, bytesToBigInt } from "./test_utils";
 
 describe.skip("membership", () => {
   it("should verify valid membership", async () => {
+    // Compile the circuit
     const circuit = await wasm_tester(
       path.join(__dirname, "./circuits/membership_test.circom"),
       {
-        prime: "secq256k1"
+        prime: "secq256k1" // Specify to use the option --prime secq256k1 when compiling with circom
       }
     );
 
+    // Construct the tree
     const poseidon = await buildPoseidon();
     const nLevels = 20;
     const tree = new IncrementalMerkleTree(poseidon, nLevels, BigInt(0));
@@ -35,12 +34,14 @@ describe.skip("membership", () => {
       tree.insert(pubKeyHash);
     }
 
-    const privKey = privKeys[0];
+    const index = 0; // Use privKeys[0] for this proving
+    const privKey = privKeys[index];
     const msg = Buffer.from("hello world");
 
     const effEcdsaInput = genEffEcdsaInput(privKey, msg);
-    const merkleProof = tree.createProof(0);
+    const merkleProof = tree.createProof(index);
 
+    // Formatting
     const siblings = merkleProof.siblings.map(s =>
       typeof s[0] === "bigint" ? s : bytesToBigInt(s[0])
     );
@@ -51,14 +52,17 @@ describe.skip("membership", () => {
       pathIndices: merkleProof.pathIndices
     };
 
+    // Gen witness
     const witness = await circuit.calculateWitness(input, true);
+    const expectedRoot = bytesToBigInt(tree.root);
 
+    // Assert
     await circuit.assertOut(witness, {
-      root: BigInt("0x" + Buffer.from(tree.root).toString("hex")).toString(10)
+      root: expectedRoot
     });
   });
 
   it("should assert invalid membership", async () => {
-    // TODO: implement this
+    // TODO
   });
 });

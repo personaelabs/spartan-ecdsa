@@ -38,3 +38,6 @@ export const genEffEcdsaInput = (privKey: bigint, msg: Buffer) => {
     Uy: U.y.toString()
   };
 };
+
+export const bytesToBigInt = (bytes: Uint8Array): bigint =>
+  BigInt("0x" + Buffer.from(bytes).toString("hex"));
