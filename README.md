@@ -38,7 +38,7 @@ Groth16
 | poseidon256 | 155904      | 24s               | 238.1 MB  |
 
 - The prover keys are hosted on Google Cloud Storage.
-- We don't present the zkey download time for Groth16 due benchmarking processes inside snarkjs being nontrivial.
+- We don't present the zkey download time for Groth16 due to the difficulty of benchmarking the processes inside snarkjs.
 
 - The time required to download the circuit (i.e. proving key) is a major contributor to the full proving time. For mobile applications, we could download the circuit at app installation, relieving the burden of downloading the circuit at proving time.
 - Spartan NIZK circuit serialization is not optimized; which is why Spartan NIZK has larger “proving keys”.
