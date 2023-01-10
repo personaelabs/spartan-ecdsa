@@ -17,7 +17,7 @@ pub fn init_panic_hook() {
 }
 
 #[wasm_bindgen]
-pub fn prove_poseidon(circuit: &[u8], vars: &[u8]) -> Result<Vec<u8>, JsValue> {
+pub fn prove(circuit: &[u8], vars: &[u8]) -> Result<Vec<u8>, JsValue> {
     web_sys::console::time_with_label("load witness");
     let witness = load_witness_from_bin_reader::<F1, _>(vars).unwrap();
     let witness_bytes = witness

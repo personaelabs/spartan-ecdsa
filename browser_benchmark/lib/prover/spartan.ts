@@ -29,7 +29,7 @@ export const genProofSpartan = async (
   console.log("Proving with Spartan...");
   const {
     default: init,
-    prove_poseidon,
+    prove,
     init_panic_hook
   } = await import("./wasm/spartan_wasm.js");
 
@@ -44,7 +44,7 @@ export const genProofSpartan = async (
   console.timeEnd("Fetch circuit");
   console.log(circuit);
 
-  const proof = await prove_poseidon(circuit, witness.data);
+  const proof = await prove(circuit, witness.data);
 
   console.timeEnd("Spartan Full proving time");
   console.log("proof", proof);
