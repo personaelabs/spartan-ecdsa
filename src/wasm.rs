@@ -3,12 +3,12 @@ use console_error_panic_hook;
 use ff::PrimeField;
 use libspartan::{Assignment, Instance, NIZKGens, NIZK};
 use merlin::Transcript;
-use pasta_curves::group::Group;
+use secpq_curves::group::Group;
 use std::io::{Error, Read};
 use wasm_bindgen::prelude::*;
 use web_sys;
 
-pub type G1 = pasta_curves::pallas::Point;
+pub type G1 = secpq_curves::secq256k1::Point;
 pub type F1 = <G1 as Group>::Scalar;
 
 #[wasm_bindgen]
