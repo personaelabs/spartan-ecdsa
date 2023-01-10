@@ -1,15 +1,12 @@
 const snarkJs = require("snarkjs");
+import { genEffEcdsaInput } from "./eff_ecdsa";
 
-const generateWitness = async (wasmFile: string) => {
+const generateWitness = async (input: any, wasmFile: string) => {
   const witness: {
     type: string;
     data?: any;
   } = {
     type: "mem"
-  };
-
-  const input = {
-    inputs: new Array(16).fill("1")
   };
 
   await snarkJs.wtns.calculate(input, wasmFile, witness);
@@ -25,6 +22,7 @@ const fetchCircuit = async (url: string): Promise<Uint8Array> => {
 };
 
 export const genProofSpartan = async (
+  input: any,
   witnessGenWasmUrl: string,
   circuitUrl: string
 ) => {
@@ -39,11 +37,12 @@ export const genProofSpartan = async (
   await init_panic_hook();
   console.time("Spartan Full proving time");
 
-  const witness = await generateWitness(witnessGenWasmUrl);
+  const witness = await generateWitness(input, witnessGenWasmUrl);
 
   console.time("Fetch circuit");
   const circuit = await fetchCircuit(circuitUrl);
   console.timeEnd("Fetch circuit");
+  console.log(circuit);
 
   const proof = await prove_poseidon(circuit, witness.data);
 

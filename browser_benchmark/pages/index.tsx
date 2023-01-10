@@ -25,6 +25,15 @@ export default function Home() {
       <button
         onClick={async () => {
           if (worker) {
+            await withProverApi(worker).genProofSpartanEffEcdsa();
+          }
+        }}
+      >
+        Prove(Spartan eff ecdsa)
+      </button>
+      <button
+        onClick={async () => {
+          if (worker) {
             await withProverApi(worker).genProofSpartanPoseidon5();
           }
         }}

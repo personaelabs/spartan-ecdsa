@@ -9,7 +9,9 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@ethereumjs/util": "^8.0.3",
     "comlink": "^4.3.1",
+    "elliptic": "^6.5.4",
     "ffjavascript": "^0.2.57",
     "next": "13.0.0",
     "react": "18.2.0",
