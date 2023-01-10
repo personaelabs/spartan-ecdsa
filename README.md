@@ -91,7 +91,7 @@ cargo build
 
 ## Run tests
 
-Before running the tests, install [this](https://github.com/DanTehrani/circom) fork of Circom that is capable of compiling to the secp256k1 base field.
+Before running the tests, install [this](https://github.com/DanTehrani/circom) fork of Circom that supports compiling to the secp256k1 base field.
 
 ```
 git clone https://github.com/DanTehrani/circom
