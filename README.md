@@ -120,7 +120,7 @@ git clone https://github.com/DanTehrani/circom-secq
 cd circom && cargo build --release && cargo install --path circom
 ```
 
-Install dependencies and run tests
+(In this repo) Install dependencies and run tests
 
 ```
 cd packages/circuits
