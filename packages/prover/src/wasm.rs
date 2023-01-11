@@ -76,7 +76,7 @@ pub fn prove(circuit: &[u8], vars: &[u8]) -> Result<Vec<u8>, JsValue> {
 }
 
 // Copied from Nova Scotia
-fn read_field<R: Read, Fr: PrimeField>(mut reader: R) -> Result<Fr, Error> {
+pub fn read_field<R: Read, Fr: PrimeField>(mut reader: R) -> Result<Fr, Error> {
     let mut repr = Fr::zero().to_repr();
     for digit in repr.as_mut().iter_mut() {
         // TODO: may need to reverse order?
@@ -86,7 +86,9 @@ fn read_field<R: Read, Fr: PrimeField>(mut reader: R) -> Result<Fr, Error> {
     Ok(fr)
 }
 
-fn load_witness_from_bin_reader<Fr: PrimeField, R: Read>(mut reader: R) -> Result<Vec<Fr>, Error> {
+pub fn load_witness_from_bin_reader<Fr: PrimeField, R: Read>(
+    mut reader: R,
+) -> Result<Vec<Fr>, Error> {
     let mut wtns_header = [0u8; 4];
     reader.read_exact(&mut wtns_header)?;
     if wtns_header != [119, 116, 110, 115] {
