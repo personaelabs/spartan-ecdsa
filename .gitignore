@@ -19,9 +19,10 @@ next-env.d.ts
 yarn-error.log
 .DS_Store
 
-circuits/build/
 pkg/
 circom_input.json
 circom_witness.wtns
 
 *.ptau
+
+build/

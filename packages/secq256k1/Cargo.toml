@@ -1,0 +1,15 @@
+[package]
+name = "secq256k1"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+hex-literal = { version = "0.3" }
+primeorder = { git = "https://github.com/DanTehrani/elliptic-curves.git", features = ["serde"]}
+num-bigint-dig = "^0.7"
+serde = { version = "1.0.106", features = ["derive"] }
+rand_core = { version = "0.6", default-features = false }
+zeroize = { version = "1", default-features = false }
+k256 = "0.11.6"

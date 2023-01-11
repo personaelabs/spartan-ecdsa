@@ -1,14 +1,11 @@
 {
-  "name": "spartan-wasm",
+  "name": "spartan-ecdsa",
   "version": "1.0.0",
   "main": "index.js",
   "repository": "https://github.com/DanTehrani/spartan-wasm.git",
   "author": "Daniel Tehrani <contact@dantehrani.com>",
-  "license": "MIT",
-  "dependencies": {
-    "snarkjs": "^0.5.0"
-  },
   "devDependencies": {
+    "snarkjs": "^0.5.0",
     "@types/jest": "^29.2.4"
   }
 }

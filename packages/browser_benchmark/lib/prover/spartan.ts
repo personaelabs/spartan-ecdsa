@@ -31,7 +31,7 @@ export const genProofSpartan = async (
     default: init,
     prove,
     init_panic_hook
-  } = await import("./wasm/spartan_wasm.js");
+  } = await import("./wasm/prover.js");
 
   await init();
   await init_panic_hook();
