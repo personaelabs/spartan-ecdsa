@@ -1,0 +1,12 @@
+{
+  "name": "prover",
+  "version": "0.1.0",
+  "files": [
+    "prover_bg.wasm",
+    "prover.js",
+    "prover.d.ts"
+  ],
+  "module": "prover.js",
+  "types": "prover.d.ts",
+  "sideEffects": false
+}
