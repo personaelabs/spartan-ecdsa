@@ -33,14 +33,14 @@ template Secp256k1Mul() {
     component accumulator[bits];
     for (var i = 0; i < bits; i++) {
         if (i == 0) {
-            accumulator[i] = Secp256k1Add();
+            accumulator[i] = Secp256k1AddIncomplete();
             accumulator[i].p1X <== dummyX;
             accumulator[i].p1Y <== dummyY;
             accumulator[i].p2X <== pX;
             accumulator[i].p2Y <== pY;
             accumulator[i].isP2Identity <== 1 - scalar[i];
         } else {
-            accumulator[i] = Secp256k1Add();
+            accumulator[i] = Secp256k1AddIncomplete();
             accumulator[i].p1X <== accumulator[i-1].outX;
             accumulator[i].p1Y <== accumulator[i-1].outY;
             accumulator[i].p2X <== powers[i-1].outX;
@@ -49,7 +49,7 @@ template Secp256k1Mul() {
         }
     }
 
-    component adjust = Secp256k1Add();
+    component adjust = Secp256k1AddIncomplete();
     adjust.p1X <== accumulator[bits-1].outX;
     adjust.p1Y <== accumulator[bits-1].outY;
     adjust.p2X <== dummyX;
