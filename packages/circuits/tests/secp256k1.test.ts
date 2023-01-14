@@ -5,9 +5,9 @@ import * as path from "path";
 const ec = new EC("secp256k1");
 
 describe("secp256k1", () => {
-  it("Secp256k1Add", async () => {
+  it("Secp256k1AddIncomplete", async () => {
     const circuit = await wasm_tester(
-      path.join(__dirname, "./circuits/add_test.circom"),
+      path.join(__dirname, "./circuits/add_incomplete_test.circom"),
       {
         prime: "secq256k1"
       }
