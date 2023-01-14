@@ -18,10 +18,10 @@ describe("secp256k1", () => {
     const p3 = p1.add(p2);
 
     const input = {
-      p1X: p1.x.toString(),
-      p1Y: p1.y.toString(),
-      p2X: p2.x.toString(),
-      p2Y: p2.y.toString(),
+      xP: p1.x.toString(),
+      yP: p1.y.toString(),
+      xQ: p2.x.toString(),
+      yQ: p2.y.toString(),
       isP2Identity: 0
     };
 
@@ -179,8 +179,8 @@ describe("secp256k1", () => {
     const expected = p.mul(BigInt("2"));
 
     const input = {
-      pX: p.x.toString(),
-      pY: p.y.toString()
+      xP: p.x.toString(),
+      yP: p.y.toString()
     };
 
     const w = await circuit.calculateWitness(input, true);
@@ -217,8 +217,8 @@ describe("secp256k1", () => {
     const p2 = p1.mul(Number(scalar));
 
     const input = {
-      pX: p1.x.toString(),
-      pY: p1.y.toString(),
+      xP: p1.x.toString(),
+      yP: p1.y.toString(),
       scalar: scalarArray
     };
 

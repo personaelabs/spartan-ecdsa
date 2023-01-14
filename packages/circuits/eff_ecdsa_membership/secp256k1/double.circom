@@ -1,20 +1,20 @@
 pragma circom 2.1.2;
 
 template Secp256k1Double() {
-    signal input pX; 
-    signal input pY;
+    signal input xP; 
+    signal input yP;
 
     signal output outX;
     signal output outY;
 
     signal lambda;
-    signal pXSquared;
+    signal xPSquared;
 
-    pXSquared <== pX * pX;
+    xPSquared <== xP * xP;
 
-    lambda <-- (3 * pXSquared) / (2 * pY);
-    lambda * 2 * pY === 3 * pXSquared;
+    lambda <-- (3 * xPSquared) / (2 * yP);
+    lambda * 2 * yP === 3 * xPSquared;
 
-    outX <== lambda * lambda - (2 * pX);
-    outY <== lambda * (pX - outX) - pY;
+    outX <== lambda * lambda - (2 * xP);
+    outY <== lambda * (xP - outX) - yP;
 }

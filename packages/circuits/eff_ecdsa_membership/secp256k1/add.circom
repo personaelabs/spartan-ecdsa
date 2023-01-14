@@ -3,10 +3,10 @@ pragma circom 2.1.2;
 include "../../../../node_modules/circomlib/circuits/comparators.circom";
 
 template Secp256k1AddIncomplete() {
-    signal input p1X;
-    signal input p1Y;
-    signal input p2X;
-    signal input p2Y;
+    signal input xP;
+    signal input yP;
+    signal input xQ;
+    signal input yQ;
     signal input isP2Identity;
     signal output outX;
     signal output outY;
@@ -19,20 +19,20 @@ template Secp256k1AddIncomplete() {
     signal outXAdjusted;
     signal outYAdjusted;
 
-    dx <== p1X - p2X;
-    dy <== p1Y - p2Y;
+    dx <== xP - xQ;
+    dy <== yP - yQ;
 
     lambda <-- dy / dx;
     dx * lambda === dy;
 
-    outXIntermid <== lambda * lambda - p1X - p2X;
-    outYIntermid <== lambda * (p1X - outXIntermid) - p1Y;
+    outXIntermid <== lambda * lambda - xP - xQ;
+    outYIntermid <== lambda * (xP - outXIntermid) - yP;
 
-    outXAdjusted <== outXIntermid - p1X;
-    outYAdjusted <== outYIntermid - p1Y;
+    outXAdjusted <== outXIntermid - xP;
+    outYAdjusted <== outYIntermid - yP;
 
-    outX <== (1 - isP2Identity) * outXAdjusted + p1X;
-    outY <== (1 - isP2Identity) * outYAdjusted + p1Y;
+    outX <== (1 - isP2Identity) * outXAdjusted + xP;
+    outY <== (1 - isP2Identity) * outYAdjusted + yP;
 }
 
 template Secp256k1AddComplete() {
