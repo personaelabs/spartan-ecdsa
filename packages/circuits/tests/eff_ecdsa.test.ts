@@ -1,7 +1,7 @@
 const wasm_tester = require("circom_tester").wasm;
 var EC = require("elliptic").ec;
 import * as path from "path";
-import { genEffEcdsaInput } from "./test_utils";
+import { getEffEcdsaCircuitInput } from "./test_utils";
 
 const ec = new EC("secp256k1");
 
@@ -14,15 +14,15 @@ describe("ecdsa", () => {
       }
     );
 
-    const privKey = BigInt(
-      "0xf5b552f608f5b552f608f5b552f6082ff5b552f608f5b552f608f5b552f6082f"
+    const privKey = Buffer.from(
+      "f5b552f608f5b552f608f5b552f6082ff5b552f608f5b552f608f5b552f6082f",
+      "hex"
     );
+    const pubKey = ec.keyFromPrivate(privKey.toString("hex")).getPublic();
     const msg = Buffer.from("hello world");
+    const circuitInput = getEffEcdsaCircuitInput(privKey, msg);
 
-    const input = genEffEcdsaInput(privKey, msg);
-    const pubKey = ec.keyFromPrivate(privKey.toString(16)).getPublic();
-
-    const witness = await circuit.calculateWitness(input, true);
+    const witness = await circuit.calculateWitness(circuitInput, true);
 
     await circuit.assertOut(witness, {
       pubKeyX: pubKey.x.toString(),

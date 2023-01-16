@@ -16,7 +16,9 @@ import * as fs from "fs";
 import * as path from "path";
 import { ProveOptions, Proof } from "./types";
 import { fromRpcSig } from "@ethereumjs/util";
+
 export * from "./types";
+export * from "./efficient_ecdsa";
 
 const generateWitness = async (input: any, wasmFile: string) => {
   const witness: {

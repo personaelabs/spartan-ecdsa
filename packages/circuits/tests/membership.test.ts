@@ -6,7 +6,7 @@ import { buildPoseidon } from "circomlibjs";
 const ec = new EC("secp256k1");
 import { IncrementalMerkleTree } from "@zk-kit/incremental-merkle-tree";
 
-import { genEffEcdsaInput, bytesToBigInt } from "./test_utils";
+import { getEffEcdsaCircuitInput, bytesToBigInt } from "./test_utils";
 
 describe.skip("membership", () => {
   it("should verify valid membership", async () => {
@@ -38,7 +38,10 @@ describe.skip("membership", () => {
     const privKey = privKeys[index];
     const msg = Buffer.from("hello world");
 
-    const effEcdsaInput = genEffEcdsaInput(privKey, msg);
+    const effEcdsaInput = getEffEcdsaCircuitInput(
+      Buffer.from(privKey.toString()),
+      msg
+    );
     const merkleProof = tree.createProof(index);
 
     // Formatting

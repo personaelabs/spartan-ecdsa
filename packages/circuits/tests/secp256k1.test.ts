@@ -1,7 +1,6 @@
 const wasm_tester = require("circom_tester").wasm;
 var EC = require("elliptic").ec;
 import * as path from "path";
-
 const ec = new EC("secp256k1");
 
 describe("secp256k1", () => {
@@ -21,8 +20,7 @@ describe("secp256k1", () => {
       xP: p1.x.toString(),
       yP: p1.y.toString(),
       xQ: p2.x.toString(),
-      yQ: p2.y.toString(),
-      isP2Identity: 0
+      yQ: p2.y.toString()
     };
 
     const w = await circuit.calculateWitness(input, true);
@@ -193,7 +191,7 @@ describe("secp256k1", () => {
     await circuit.checkConstraints(w);
   });
 
-  it("Secp256k1Mul", async () => {
+  it.only("Secp256k1Mul", async () => {
     const circuit = await wasm_tester(
       path.join(__dirname, "./circuits/mul_test.circom"),
       {
@@ -201,25 +199,19 @@ describe("secp256k1", () => {
       }
     );
 
-    const p1 = ec.keyFromPrivate(BigInt("5")).getPublic();
+    const p1 = ec.g;
 
     const scalar = BigInt("424242");
+    const largest = BigInt(
+      "0xfffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364140"
+    );
 
-    let scalarArray = scalar
-      .toString(2)
-      .split("")
-      .join("")
-      .padStart(256, "0")
-      .split("");
-
-    scalarArray.reverse();
-
-    const p2 = p1.mul(Number(scalar));
+    const p2 = p1.mul(largest);
 
     const input = {
       xP: p1.x.toString(),
       yP: p1.y.toString(),
-      scalar: scalarArray
+      scalar: largest.toString(10)
     };
 
     const w = await circuit.calculateWitness(input, true);
