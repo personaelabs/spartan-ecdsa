@@ -1,4 +1,4 @@
-import { proveSig, verifyProof } from "../src/index";
+import { proveSig, verifyProof } from "../src/lib";
 const { hashPersonalMessage, ecsign } = require("@ethereumjs/util");
 import * as path from "path";
 

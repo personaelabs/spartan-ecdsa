@@ -1,7 +1,7 @@
 {
   "name": "spartan-ecdsa",
   "version": "1.0.0",
-  "main": "./build/index.js",
+  "main": "./build/lib.js",
   "license": "MIT",
   "scripts": {
     "build": "tsc"
