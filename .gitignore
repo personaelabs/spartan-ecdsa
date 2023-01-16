@@ -26,3 +26,10 @@ circom_witness.wtns
 *.ptau
 
 build/
+
+*.r1cs
+!test_circuit.r1cs
+
+packages/prover/test_circuit/test_circuit_js/
+#input files
+packages/prover/test_circuit/*.json 
