@@ -1,6 +1,6 @@
 [workspace]
 members = [
-    "packages/prover",
+    "packages/spartan_wasm",
     "packages/secpq_curves",
     "packages/secq256k1",
 ]

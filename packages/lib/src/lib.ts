@@ -68,7 +68,7 @@ export const proveSig = async (
   if (typeof window === "undefined") {
     // In Node.js, we can load the wasm binary from the file system
     bytes = fs.readFileSync(
-      path.join(__dirname, "./wasm/build/prover_bg.wasm")
+      path.join(__dirname, "./wasm/build/spartan_wasm.wasm")
     );
     await initSync(bytes);
   } else {

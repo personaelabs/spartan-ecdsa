@@ -1,10 +1,10 @@
 [package]
-name = "prover"
+name = "spartan_wasm"
 version = "0.1.0"
 edition = "2021"
 
 [lib]
-name = "prover"
+name = "spartan_wasm"
 path = "src/lib.rs"
 crate-type = ["cdylib", "rlib"]
 

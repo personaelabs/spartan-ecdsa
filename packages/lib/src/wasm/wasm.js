@@ -395,7 +395,7 @@ async function init(input, maybe_memory) {
     // We comment this out because `import.meta.url` is not supported in Node.js.
     /*
     if (typeof input === 'undefined') {
-        input = new URL('prover_bg.wasm', import.meta.url);
+        input = new URL('spartan_wasm.wasm', import.meta.url);
     }
     */
     const imports = getImports();
