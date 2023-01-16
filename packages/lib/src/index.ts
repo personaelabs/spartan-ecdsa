@@ -9,6 +9,7 @@ import { fetchCircuit, bigIntToBytes, genEffEcdsaInput } from "./utils";
 import init, { initSync, init_panic_hook, prove, verify } from "./wasm/wasm.js";
 import * as fs from "fs";
 import * as path from "path";
+import { ProveOptions } from "./types";
 
 const generateWitness = async (input: any, wasmFile: string) => {
   const witness: {
@@ -27,7 +28,7 @@ const generateWitness = async (input: any, wasmFile: string) => {
 export const proveSig = async (
   sig: string,
   msg: Buffer,
-  options: any = {}
+  options: ProveOptions = {}
 ): Promise<any> => {
   const input = genEffEcdsaInput(sig, msg);
 

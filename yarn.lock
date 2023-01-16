@@ -2174,6 +2174,14 @@
     expect "^29.0.0"
     pretty-format "^29.0.0"
 
+"@types/jest@^29.2.5":
+  version "29.2.5"
+  resolved "https://registry.yarnpkg.com/@types/jest/-/jest-29.2.5.tgz#c27f41a9d6253f288d1910d3c5f09484a56b73c0"
+  integrity sha512-H2cSxkKgVmqNHXP7TC2L/WUorrZu8ZigyRywfVzv6EyBlxj39n4C00hjXYQWsbwqgElaj/CiAeSRmk5GoaKTgw==
+  dependencies:
+    expect "^29.0.0"
+    pretty-format "^29.0.0"
+
 "@types/json5@^0.0.29":
   version "0.0.29"
   resolved "https://registry.yarnpkg.com/@types/json5/-/json5-0.0.29.tgz#ee28707ae94e11d2b827bcbe5270bcea7f3e71ee"

@@ -1,9 +1,15 @@
-// The same structure as MerkleProof in @zk-kit/incremental-merkle-tree. 
-// Not directly using MerkleProof defined in @zk-kit/incremental-merkle-tree so 
+// The same structure as MerkleProof in @zk-kit/incremental-merkle-tree.
+// Not directly using MerkleProof defined in @zk-kit/incremental-merkle-tree so
 // library users can choose whatever merkle tree management method they want.
 export interface MerkleProof {
-    root: any;
-    leaf: any;
-    siblings: any[];
-    pathIndices: number[];
+  root: any;
+  leaf: any;
+  siblings: any[];
+  pathIndices: number[];
+}
+
+export interface ProveOptions {
+  witnessGenWasm?: string;
+  circuit?: string;
+  proverWasm?: string;
 }
