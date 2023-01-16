@@ -8,6 +8,11 @@ export interface MerkleProof {
   pathIndices: number[];
 }
 
+export interface Proof {
+  proof: Uint8Array;
+  publicInput: Uint8Array;
+}
+
 export interface ProveOptions {
   witnessGenWasm?: string;
   circuit?: string;

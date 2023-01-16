@@ -5,11 +5,18 @@ import {
   DEFAULT_WITNESS_GEN_WASM,
   DEFAULT_PROVER_WASM
 } from "./config";
-import { fetchCircuit, bigIntToBytes, genEffEcdsaInput } from "./utils";
+import { fetchCircuit } from "./utils";
+import {
+  EffEcdsaPubInput,
+  verifyEffEcdsaPubInput,
+  CircuitPubInput
+} from "./efficient_ecdsa";
 import init, { initSync, init_panic_hook, prove, verify } from "./wasm/wasm.js";
 import * as fs from "fs";
 import * as path from "path";
-import { ProveOptions } from "./types";
+import { ProveOptions, Proof } from "./types";
+import { fromRpcSig } from "@ethereumjs/util";
+export * from "./types";
 
 const generateWitness = async (input: any, wasmFile: string) => {
   const witness: {
@@ -30,27 +37,30 @@ export const proveSig = async (
   msg: Buffer,
   options: ProveOptions = {},
   profile: boolean = false
-): Promise<any> => {
-  const input = genEffEcdsaInput(sig, msg);
+): Promise<Proof> => {
+  const { r: _r, s: _s, v } = fromRpcSig(sig);
+  const r = BigInt("0x" + _r.toString("hex"));
+  const s = BigInt("0x" + _s.toString("hex"));
+
+  const circuitPubInput = CircuitPubInput.computeFromSig(r, v, msg);
+  const effEcdsaPubInput = new EffEcdsaPubInput(r, v, msg, circuitPubInput);
+
+  const witnessGenInput = {
+    s,
+    ...effEcdsaPubInput.circuitPubInput
+  };
 
   const witnessGenWasm = options.witnessGenWasm || DEFAULT_WITNESS_GEN_WASM;
   const circuit = options.circuit || DEFAULT_CIRCUIT;
   const proverWasm = options.proverWasm || DEFAULT_PROVER_WASM;
 
   profile && console.time("Generate witness");
-  const witness = await generateWitness(input, witnessGenWasm);
+  const witness = await generateWitness(witnessGenInput, witnessGenWasm);
   profile && console.timeEnd("Generate witness");
 
   profile && console.time("Fetch circuit");
   const circuitBin = await fetchCircuit(circuit);
   profile && console.timeEnd("Fetch circuit");
-
-  let publicInput = new Uint8Array(32 * 4);
-
-  publicInput.set(bigIntToBytes(BigInt(input.Tx), 32), 0);
-  publicInput.set(bigIntToBytes(BigInt(input.Ty), 32), 32);
-  publicInput.set(bigIntToBytes(BigInt(input.Ux), 32), 64);
-  publicInput.set(bigIntToBytes(BigInt(input.Uy), 32), 96);
 
   let bytes;
   if (typeof window === "undefined") {
@@ -66,12 +76,17 @@ export const proveSig = async (
 
   await init_panic_hook();
   console.time("Prove");
-  let proof = await prove(circuitBin, witness.data, publicInput);
-  console.timeEnd("Prove");
-  return { proof, publicInput };
+  let proof = await prove(
+    circuitBin,
+    witness.data,
+    effEcdsaPubInput.circuitPubInput.serialize()
+  );
+
+  profile && console.timeEnd("Prove");
+  return { proof, publicInput: effEcdsaPubInput.serialize() };
 };
 
-// Verify Spartan proof
+// Verify efficient ECDSA proof
 export const verifyProof = async (
   proof: Uint8Array,
   publicInput: Uint8Array,
@@ -80,6 +95,11 @@ export const verifyProof = async (
   const circuit = options.circuit || DEFAULT_CIRCUIT;
   const circuitBin = await fetchCircuit(circuit);
 
-  const result = verify(circuitBin, proof, publicInput);
-  return result;
+  const isPubInputValid = verifyEffEcdsaPubInput(
+    EffEcdsaPubInput.deserialize(publicInput)
+  );
+
+  const result = await verify(circuitBin, proof, publicInput);
+
+  return result && isPubInputValid;
 };

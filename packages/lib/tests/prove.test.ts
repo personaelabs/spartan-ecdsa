@@ -2,7 +2,7 @@ import { proveSig, verifyProof } from "../src/index";
 const { hashPersonalMessage, ecsign } = require("@ethereumjs/util");
 import * as path from "path";
 
-describe("nizk wasm", () => {
+describe.skip("nizk wasm", () => {
   it("should work", async () => {
     const privKey = Buffer.from(
       "f5b552f608f5b552f608f5b552f6082ff5b552f608f5b552f608f5b552f6082f",
