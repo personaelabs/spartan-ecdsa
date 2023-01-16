@@ -33,9 +33,9 @@ pub fn prove(circuit: &[u8], vars: &[u8], public_inputs: &[u8]) -> Result<Vec<u8
     // produce public parameters
     let gens = NIZKGens::new(num_cons, num_vars, num_inputs);
 
-    let mut input = [[0u8; 32]];
+    let mut input = Vec::new();
     for i in 0..num_inputs {
-        input[i] = public_inputs[(i * 32)..((i + 1) * 32)].try_into().unwrap();
+        input.push(public_inputs[(i * 32)..((i + 1) * 32)].try_into().unwrap());
     }
     let input = Assignment::new(&input).unwrap();
 
@@ -65,9 +65,9 @@ pub fn verify(circuit: &[u8], proof: &[u8], public_input: &[u8]) -> Result<bool,
     // produce public parameters
     let gens = NIZKGens::new(num_cons, num_vars, num_inputs);
 
-    let mut inputs = [[0u8; 32]];
+    let mut inputs = Vec::new();
     for i in 0..num_inputs {
-        inputs[i] = public_input[(i * 32)..((i + 1) * 32)].try_into().unwrap();
+        inputs.push(public_input[(i * 32)..((i + 1) * 32)].try_into().unwrap());
     }
 
     let inputs = Assignment::new(&inputs).unwrap();
@@ -156,7 +156,7 @@ mod test {
         let circuit = fs::read(root.join("test_circuit/test_circuit.circuit")).unwrap();
         let vars = fs::read(root.join("test_circuit/witness.wtns")).unwrap();
 
-        let public_inputs = [F1::from(1u64)]
+        let public_inputs = [F1::from(1u64), F1::from(1u64), F1::from(1u64)]
             .iter()
             .map(|w| w.to_repr())
             .flatten()

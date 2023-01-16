@@ -11,4 +11,4 @@ template TestCircuit() {
     c <== a * b_prod;
 }
 
-component main { public [ a ] } = TestCircuit();
+component main { public [ a, b ] } = TestCircuit();
