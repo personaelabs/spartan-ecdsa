@@ -28,7 +28,8 @@ const generateWitness = async (input: any, wasmFile: string) => {
 export const proveSig = async (
   sig: string,
   msg: Buffer,
-  options: ProveOptions = {}
+  options: ProveOptions = {},
+  profile: boolean = false
 ): Promise<any> => {
   const input = genEffEcdsaInput(sig, msg);
 
@@ -36,8 +37,13 @@ export const proveSig = async (
   const circuit = options.circuit || DEFAULT_CIRCUIT;
   const proverWasm = options.proverWasm || DEFAULT_PROVER_WASM;
 
+  profile && console.time("Generate witness");
   const witness = await generateWitness(input, witnessGenWasm);
+  profile && console.timeEnd("Generate witness");
+
+  profile && console.time("Fetch circuit");
   const circuitBin = await fetchCircuit(circuit);
+  profile && console.timeEnd("Fetch circuit");
 
   let publicInput = new Uint8Array(32 * 4);
 
@@ -59,7 +65,9 @@ export const proveSig = async (
   }
 
   await init_panic_hook();
+  console.time("Prove");
   let proof = await prove(circuitBin, witness.data, publicInput);
+  console.timeEnd("Prove");
   return { proof, publicInput };
 };
 
