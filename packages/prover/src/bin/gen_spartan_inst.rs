@@ -82,25 +82,3 @@ fn convert_to_spartan_r1cs<F: PrimeField<Repr = [u8; 32]>>(
 
     inst
 }
-
-#[cfg(test)]
-mod tests {
-    use libspartan::Instance;
-
-    use super::*;
-    use std::env::current_dir;
-
-    #[test]
-    fn test_deserialize_circuit() {
-        let root = current_dir().unwrap();
-        let circuit_file = root.join("circuits/build/spartan/poseidon/poseidon.r1cs");
-        let num_pub_inputs = 0;
-        let circuit = load_as_spartan_inst(circuit_file, num_pub_inputs);
-
-        let circuit_ser = bincode::serialize(&circuit).unwrap();
-
-        println!("circuit_ser: {:?}", circuit_ser.len());
-
-        let circuit: Instance = bincode::deserialize(&circuit_ser).unwrap();
-    }
-}
