@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "spartan-ecdsa": "*",
     "@ethereumjs/util": "^8.0.3",
     "comlink": "^4.3.1",
     "elliptic": "^6.5.4",
