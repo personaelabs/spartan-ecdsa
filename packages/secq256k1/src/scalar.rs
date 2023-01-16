@@ -2,6 +2,8 @@ use crate::field::field_secp::FieldElement;
 
 use super::{FieldBytes, Secq256K1};
 
+use ff::{Field, PrimeField, PrimeFieldBits};
+use k256::elliptic_curve::bigint::Encoding;
 use primeorder::elliptic_curve::{
     bigint::{Limb, U256},
     generic_array::arr,
@@ -9,7 +11,7 @@ use primeorder::elliptic_curve::{
     rand_core::RngCore,
     subtle::{Choice, ConditionallySelectable, ConstantTimeEq, CtOption},
     zeroize::DefaultIsZeroes,
-    Curve, Error, Field, IsHigh, PrimeField, Result,
+    Curve, Error, IsHigh, Result,
 };
 
 use std::{
@@ -23,12 +25,12 @@ type ScalarCore = primeorder::elliptic_curve::ScalarCore<Secq256K1>;
 pub struct Scalar(pub ScalarCore);
 
 impl Field for Scalar {
-    fn zero() -> Self {
-        Self(ScalarCore::ZERO)
-    }
-
     fn one() -> Self {
         Self(ScalarCore::ONE)
+    }
+
+    fn zero() -> Self {
+        Self(ScalarCore::ZERO)
     }
 
     fn random(mut rng: impl RngCore) -> Self {
@@ -97,6 +99,7 @@ impl PrimeField for Scalar {
         .unwrap()
     }
 }
+
 impl DefaultIsZeroes for Scalar {}
 
 impl ConstantTimeEq for Scalar {
@@ -295,6 +298,18 @@ impl Scalar {
 impl From<u32> for Scalar {
     fn from(n: u32) -> Scalar {
         Self((n as u64).into())
+    }
+}
+
+impl PrimeFieldBits for Scalar {
+    type ReprBits = [u8; 32];
+
+    fn to_le_bits(&self) -> ff::FieldBits<Self::ReprBits> {
+        self.to_bytes().into()
+    }
+
+    fn char_le_bits() -> ff::FieldBits<Self::ReprBits> {
+        ScalarCore::MODULUS.to_be_bytes().into()
     }
 }
 

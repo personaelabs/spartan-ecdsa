@@ -13,3 +13,5 @@ serde = { version = "1.0.106", features = ["derive"] }
 rand_core = { version = "0.6", default-features = false }
 zeroize = { version = "1", default-features = false }
 k256 = "0.11.6"
+ff = "0.12.0"
+
