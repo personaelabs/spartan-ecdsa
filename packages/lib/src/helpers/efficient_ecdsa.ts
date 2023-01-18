@@ -53,7 +53,7 @@ export class CircuitPubInput {
   }
 
   serialize(): Uint8Array {
-    let serialized = new Uint8Array(32 * 4 + 1);
+    let serialized = new Uint8Array(32 * 4);
 
     serialized.set(bigIntToBytes(this.Tx, 32), 0);
     serialized.set(bigIntToBytes(this.Ty, 32), 32);
@@ -67,18 +67,18 @@ export class CircuitPubInput {
 export class EffEcdsaPubInput {
   r: bigint;
   rV: bigint;
-  msg: Buffer;
+  msgHash: Buffer;
   circuitPubInput: CircuitPubInput;
 
   constructor(
     r: bigint,
     v: bigint,
-    msg: Buffer,
+    msgHash: Buffer,
     circuitPubInput: CircuitPubInput
   ) {
     this.r = r;
     this.rV = v;
-    this.msg = msg;
+    this.msgHash = msgHash;
     this.circuitPubInput = circuitPubInput;
   }
 
@@ -87,7 +87,7 @@ export class EffEcdsaPubInput {
 
     serialized.set(bigIntToBytes(this.r, 32), 0);
     serialized.set(bigIntToBytes(this.rV, 1), 32);
-    serialized.set(this.msg, 33);
+    serialized.set(this.msgHash, 33);
     serialized.set(bigIntToBytes(this.circuitPubInput.Tx, 32), 65);
     serialized.set(bigIntToBytes(this.circuitPubInput.Ty, 32), 97);
     serialized.set(bigIntToBytes(this.circuitPubInput.Ux, 32), 129);
@@ -118,7 +118,7 @@ export const verifyEffEcdsaPubInput = (pubInput: EffEcdsaPubInput): boolean => {
   const expectedCircuitInput = CircuitPubInput.computeFromSig(
     pubInput.r,
     pubInput.rV,
-    pubInput.msg
+    pubInput.msgHash
   );
 
   const circuitPubInput = pubInput.circuitPubInput;

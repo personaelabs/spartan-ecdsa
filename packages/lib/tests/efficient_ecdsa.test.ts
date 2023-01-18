@@ -2,7 +2,7 @@ import {
   CircuitPubInput,
   EffEcdsaPubInput,
   verifyEffEcdsaPubInput
-} from "../src/efficient_ecdsa";
+} from "../src/helpers/efficient_ecdsa";
 
 describe("efficient_ecdsa", () => {
   /**

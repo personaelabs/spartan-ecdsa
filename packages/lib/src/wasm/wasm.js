@@ -223,6 +223,12 @@ async function load(module, imports) {
 function getImports() {
     const imports = {};
     imports.wbg = {};
+    imports.wbg.__wbindgen_object_drop_ref = function(arg0) {
+        takeObject(arg0);
+    };
+    imports.wbg.__wbg_log_4b5638ad60bdc54a = function(arg0) {
+        console.log(getObject(arg0));
+    };
     imports.wbg.__wbg_crypto_e1d53a1d73fb10b8 = function(arg0) {
         const ret = getObject(arg0).crypto;
         return addHeapObject(ret);
@@ -247,9 +253,6 @@ function getImports() {
     imports.wbg.__wbindgen_is_string = function(arg0) {
         const ret = typeof(getObject(arg0)) === 'string';
         return ret;
-    };
-    imports.wbg.__wbindgen_object_drop_ref = function(arg0) {
-        takeObject(arg0);
     };
     imports.wbg.__wbg_msCrypto_6e7d3e1f92610cbb = function(arg0) {
         const ret = getObject(arg0).msCrypto;
@@ -375,8 +378,6 @@ function finalizeInit(instance, module) {
     return wasm;
 }
 
-// 'initSync' is used in browser, and 'init' is used in Node.js
-
 function initSync(module, maybe_memory) {
     const imports = getImports();
 
@@ -392,10 +393,9 @@ function initSync(module, maybe_memory) {
 }
 
 async function init(input, maybe_memory) {
-    // We comment this out because `import.meta.url` is not supported in Node.js.
     /*
     if (typeof input === 'undefined') {
-        input = new URL('spartan_wasm.wasm', import.meta.url);
+        input = new URL('spartan_wasm_bg.wasm', import.meta.url);
     }
     */
     const imports = getImports();

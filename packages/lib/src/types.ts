@@ -16,5 +16,10 @@ export interface Proof {
 export interface ProveOptions {
   witnessGenWasm?: string;
   circuit?: string;
-  proverWasm?: string;
+  spartanWasm?: string;
+}
+
+export interface VerifyOptions {
+  circuit?: string;
+  spartanWasm?: string;
 }
