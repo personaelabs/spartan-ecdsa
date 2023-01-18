@@ -25,7 +25,7 @@ describe("efficient_ecdsa", () => {
       U = ((-rInv * msgHash) % q) * G
   */
 
-  it.only("should verify valid public input", () => {
+  it("should verify valid public input", () => {
     let msg = Buffer.from("harry potter");
 
     const rX = BigInt(

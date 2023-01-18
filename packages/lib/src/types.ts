@@ -14,9 +14,11 @@ export interface Proof {
 }
 
 export interface ProveOptions {
+  proverWasm?: string;
   witnessGenWasm?: string;
   circuit?: string;
   spartanWasm?: string;
+  enableProfiler?: boolean;
 }
 
 export interface VerifyOptions {

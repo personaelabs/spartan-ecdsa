@@ -1,4 +1,4 @@
 export * from "./types";
 export * from "./helpers/efficient_ecdsa";
-export * from "./core/prove_sig";
-export * from "./core/verify_proof";
+export * from "./core/eff_ecdsa_prover";
+export * from "./core/eff_ecdsa_verifier";

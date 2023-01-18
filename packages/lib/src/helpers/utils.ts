@@ -1,3 +1,18 @@
+// @ts-ignore
+const snarkJs = require("snarkjs");
+
+export const generateWitness = async (input: any, wasmFile: string) => {
+  const witness: {
+    type: string;
+    data?: any;
+  } = {
+    type: "mem"
+  };
+
+  await snarkJs.wtns.calculate(input, wasmFile, witness);
+  return witness;
+};
+
 export const fetchCircuit = async (url: string): Promise<Uint8Array> => {
   const response = await fetch(url);
 
