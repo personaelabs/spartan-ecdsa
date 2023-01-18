@@ -35,5 +35,3 @@ template Membership(nLevels) {
 
     root <== merkleProof.root;
 }
-
-component main = Membership(20);
