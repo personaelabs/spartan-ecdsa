@@ -1,7 +1,7 @@
 pragma circom 2.1.2;
 
 include "./secp256k1/mul.circom";
-include "../node_modules/circomlib/circuits/bitify.circom";
+include "../../../node_modules/circomlib/circuits/bitify.circom";
 
 // ECDSA public key recovery without public key validation.
 template EfficientECDSA() {
@@ -19,24 +19,18 @@ template EfficientECDSA() {
     var gY = 32670510020758816978083085130507043184471273380659243275938904335757337482424;
     var a = 7;
 
-    component sBits = Num2Bits(bits);
-    sBits.in <== s;
-
     // t * R = s * r^-1 * R
     component sMultT = Secp256k1Mul();
-    for (var i = 0; i < bits; i++) {
-        sMultT.scalar[i] <== sBits.out[i];
-    }
-    sMultT.pX <== Tx;
-    sMultT.pY <== Ty;
+    sMultT.scalar <== s;
+    sMultT.xP <== Tx;
+    sMultT.yP <== Ty;
 
     // sMultT + U 
-    component pubKey = Secp256k1Add();
-    pubKey.p1X <== sMultT.outX;
-    pubKey.p1Y <== sMultT.outY;
-    pubKey.p2X <== Ux;
-    pubKey.p2Y <== Uy;
-    pubKey.isP2Identity <== 0;
+    component pubKey = Secp256k1AddComplete();
+    pubKey.xP <== sMultT.outX;
+    pubKey.yP <== sMultT.outY;
+    pubKey.xQ <== Ux;
+    pubKey.yQ <== Uy;
 
     pubKeyX <== pubKey.outX;
     pubKeyY <== pubKey.outY;

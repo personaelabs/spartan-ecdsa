@@ -191,35 +191,138 @@ describe("secp256k1", () => {
     await circuit.checkConstraints(w);
   });
 
-  it.only("Secp256k1Mul", async () => {
-    const circuit = await wasm_tester(
-      path.join(__dirname, "./circuits/mul_test.circom"),
-      {
-        prime: "secq256k1"
-      }
-    );
+  describe("mul", () => {
+    describe("K", () => {
+      let circuit;
+      const q = BigInt(
+        "0xfffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141"
+      );
+      const tQ = BigInt(
+        "115792089237316195423570985008687907852405143892509244725752742275123193348738"
+      );
+      beforeAll(async () => {
+        circuit = await wasm_tester(
+          path.join(__dirname, "./circuits/k_test.circom"),
+          {
+            prime: "secq256k1"
+          }
+        );
+      });
 
-    const p1 = ec.g;
+      it("should work when (s + tQ) > q (i.e. quotient = 1 for s + tQ / q)", async () => {
+        const s = q - tQ + BigInt(1);
 
-    const scalar = BigInt("424242");
-    const largest = BigInt(
-      "0xfffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364140"
-    );
+        // Sanity check
+        expect(s + tQ).toBeGreaterThan(q);
 
-    const p2 = p1.mul(largest);
+        const k = (s + tQ) % q;
 
-    const input = {
-      xP: p1.x.toString(),
-      yP: p1.y.toString(),
-      scalar: largest.toString(10)
-    };
+        const kBitsArr = k.toString(2).split("").reverse();
+        const kBits = kBitsArr.join("").padEnd(256, "0").split("");
 
-    const w = await circuit.calculateWitness(input, true);
-    await circuit.assertOut(w, {
-      outX: p2.x.toString(),
-      outY: p2.y.toString()
+        const input = {
+          s
+        };
+
+        const w = await circuit.calculateWitness(input, true);
+
+        await circuit.assertOut(w, {
+          out: kBits
+        });
+
+        await circuit.checkConstraints(w);
+      });
+
+      it("should work when (s + tQ) < q (i.e. quotient = 0 for s + tQ / q)", async () => {
+        const s = q - tQ - BigInt(1);
+
+        // Sanity check
+        expect(s + tQ).toBeLessThanOrEqual(q);
+
+        const k = (s + tQ) % q;
+
+        const kBitsArr = k.toString(2).split("").reverse();
+        const kBits = kBitsArr.join("").padEnd(256, "0").split("");
+
+        const input = {
+          s
+        };
+
+        const w = await circuit.calculateWitness(input, true);
+
+        await circuit.assertOut(w, {
+          out: kBits
+        });
+
+        await circuit.checkConstraints(w);
+      });
     });
 
-    await circuit.checkConstraints(w);
+    describe("Secp256k1Mul", () => {
+      let circuit;
+      beforeAll(async () => {
+        circuit = await wasm_tester(
+          path.join(__dirname, "./circuits/mul_test.circom"),
+          {
+            prime: "secq256k1"
+          }
+        );
+      });
+
+      it("should work when scalar = q - 1", async () => {
+        const p1 = ec.g;
+
+        const largest =
+          "fffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364140";
+
+        const p2 = p1.mul(largest);
+
+        const input = {
+          xP: p1.x.toString(),
+          yP: p1.y.toString(),
+          scalar: BigInt("0x" + largest)
+        };
+
+        const w = await circuit.calculateWitness(input, true);
+        await circuit.assertOut(w, {
+          outX: p2.x.toString(),
+          outY: p2.y.toString()
+        });
+
+        await circuit.checkConstraints(w);
+      });
+
+      it("should work when scalar < q - 1", async () => {
+        const p1 = ec.g;
+
+        const scalars = [
+          "1",
+          "2",
+          "3",
+          "ff",
+          "100",
+          "101",
+          "fffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364139"
+        ];
+
+        for (const scalar of scalars) {
+          const p2 = p1.mul(scalar);
+
+          const input = {
+            xP: p1.x.toString(),
+            yP: p1.y.toString(),
+            scalar: BigInt("0x" + scalar)
+          };
+
+          const w = await circuit.calculateWitness(input, true);
+          await circuit.assertOut(w, {
+            outX: p2.x.toString(),
+            outY: p2.y.toString()
+          });
+
+          await circuit.checkConstraints(w);
+        }
+      });
+    });
   });
 });

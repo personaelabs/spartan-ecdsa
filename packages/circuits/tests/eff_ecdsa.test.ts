@@ -22,11 +22,15 @@ describe("ecdsa", () => {
     const msg = Buffer.from("hello world");
     const circuitInput = getEffEcdsaCircuitInput(privKey, msg);
 
-    const witness = await circuit.calculateWitness(circuitInput, true);
+    const w = await circuit.calculateWitness(circuitInput, true);
 
-    await circuit.assertOut(witness, {
+    await circuit.assertOut(w, {
       pubKeyX: pubKey.x.toString(),
       pubKeyY: pubKey.y.toString()
     });
+
+    await circuit.checkConstraints(w);
   });
+
+  // TODO - add more tests
 });

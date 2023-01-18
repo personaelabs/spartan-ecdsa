@@ -7,17 +7,12 @@ template Secp256k1AddIncomplete() {
     signal input yP;
     signal input xQ;
     signal input yQ;
-    signal input isP2Identity;
     signal output outX;
     signal output outY;
 
     signal lambda;
     signal dx;
     signal dy;
-    signal outXIntermid;
-    signal outYIntermid;
-    signal outXAdjusted;
-    signal outYAdjusted;
 
     dx <== xP - xQ;
     dy <== yP - yQ;
@@ -25,14 +20,8 @@ template Secp256k1AddIncomplete() {
     lambda <-- dy / dx;
     dx * lambda === dy;
 
-    outXIntermid <== lambda * lambda - xP - xQ;
-    outYIntermid <== lambda * (xP - outXIntermid) - yP;
-
-    outXAdjusted <== outXIntermid - xP;
-    outYAdjusted <== outYIntermid - yP;
-
-    outX <== (1 - isP2Identity) * outXAdjusted + xP;
-    outY <== (1 - isP2Identity) * outYAdjusted + yP;
+    outX <== lambda * lambda - xP - xQ;
+    outY <== lambda * (xP - outX) - yP;
 }
 
 template Secp256k1AddComplete() {

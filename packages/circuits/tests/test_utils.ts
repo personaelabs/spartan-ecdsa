@@ -8,8 +8,11 @@ export const getEffEcdsaCircuitInput = (privKey: Buffer, msg: Buffer) => {
 
   const circuitPubInput = CircuitPubInput.computeFromSig(r, v, msg);
   const input = {
-    s,
-    ...circuitPubInput
+    s: BigInt("0x" + s.toString("hex")),
+    Tx: circuitPubInput.Tx,
+    Ty: circuitPubInput.Ty,
+    Ux: circuitPubInput.Ux,
+    Uy: circuitPubInput.Uy
   };
 
   return input;
