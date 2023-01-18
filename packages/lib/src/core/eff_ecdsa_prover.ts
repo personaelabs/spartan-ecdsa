@@ -3,20 +3,23 @@ import {
   DEFAULT_EFF_ECDSA_WITNESS_GEN_WASM,
   DEFAULT_SPARTAN_WASM
 } from "../config";
-import { fetchCircuit, generateWitness } from "../helpers/utils";
+import { fetchCircuit, snarkJsWitnessGen } from "../helpers/utils";
 import { EffEcdsaPubInput, CircuitPubInput } from "../helpers/efficient_ecdsa";
 import { initWasm, prove } from "../wasm";
 
-import { ProveOptions, Proof } from "../types";
+import { ProveOptions } from "../types";
 import { fromRpcSig } from "@ethereumjs/util";
+import { Profiler } from "../helpers/profiler";
 
-export class EffECDSAProver {
+export class EffECDSAProver extends Profiler {
   spartanWasm: string;
   enableProfiler: boolean;
   circuit: string;
   witnessGenWasm: string;
 
   constructor(options?: ProveOptions) {
+    super({ enabled: options?.enableProfiler });
+
     this.spartanWasm = options?.spartanWasm || DEFAULT_SPARTAN_WASM;
     this.circuit = options?.circuit || DEFAULT_EFF_ECDSA_CIRCUIT;
     this.witnessGenWasm =
@@ -44,26 +47,27 @@ export class EffECDSAProver {
       ...effEcdsaPubInput.circuitPubInput
     };
 
-    const { enableProfiler } = this;
+    this.time("Generate witness");
+    const witness = await snarkJsWitnessGen(
+      witnessGenInput,
+      this.witnessGenWasm
+    );
+    this.timeEnd("Generate witness");
 
-    enableProfiler && console.time("Generate witness");
-    const witness = await generateWitness(witnessGenInput, this.witnessGenWasm);
-    enableProfiler && console.timeEnd("Generate witness");
-
-    enableProfiler && console.time("Fetch circuit");
+    this.time("Fetch circuit");
     const circuitBin = await fetchCircuit(this.circuit);
-    enableProfiler && console.timeEnd("Fetch circuit");
+    this.timeEnd("Fetch circuit");
 
     await initWasm(this.spartanWasm);
 
-    console.time("Prove");
+    this.time("Prove");
     let proof = await prove(
       circuitBin,
       witness.data,
       effEcdsaPubInput.circuitPubInput.serialize()
     );
+    this.timeEnd("Prove");
 
-    enableProfiler && console.timeEnd("Prove");
     return { proof, publicInput: effEcdsaPubInput.serialize() };
   }
 }

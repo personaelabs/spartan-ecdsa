@@ -1,7 +1,7 @@
 // @ts-ignore
 const snarkJs = require("snarkjs");
 
-export const generateWitness = async (input: any, wasmFile: string) => {
+export const snarkJsWitnessGen = async (input: any, wasmFile: string) => {
   const witness: {
     type: string;
     data?: any;

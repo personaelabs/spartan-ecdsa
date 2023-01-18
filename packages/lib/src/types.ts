@@ -24,4 +24,5 @@ export interface ProveOptions {
 export interface VerifyOptions {
   circuit?: string;
   spartanWasm?: string;
+  enableProfiler?: boolean;
 }

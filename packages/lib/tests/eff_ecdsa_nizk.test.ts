@@ -16,12 +16,15 @@ describe("eff_ecdsa prove and verify", () => {
 
   // Init prover and verifier
   let prover = new EffECDSAProver({
+    enableProfiler: true,
     witnessGenWasm: path.join(
       __dirname,
       "/../../circuits/build/eff_ecdsa/eff_ecdsa_js/eff_ecdsa.wasm"
     )
   });
-  let verifier = new EffECDSAVerifier();
+  let verifier = new EffECDSAVerifier({
+    enableProfiler: true
+  });
 
   it("should prove and verify valid signature", async () => {
     const { proof, publicInput } = await prover.prove(sig, msgHash);
