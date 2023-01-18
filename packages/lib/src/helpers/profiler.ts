@@ -1,3 +1,4 @@
+// A helper class to optionally run console.time/console.timeEnd
 export class Profiler {
   private enabled: boolean;
 

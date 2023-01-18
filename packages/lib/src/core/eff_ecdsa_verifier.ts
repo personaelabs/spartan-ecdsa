@@ -1,22 +1,22 @@
-import { DEFAULT_EFF_ECDSA_CIRCUIT, DEFAULT_SPARTAN_WASM } from "../config";
+import { DEFAULT_EFF_ECDSA_CIRCUIT } from "../config";
 import { fetchCircuit } from "../helpers/utils";
-import { initWasm, verify } from "../wasm";
+import { SpartanWasm } from "../wasm";
 import {
   EffEcdsaPubInput,
   verifyEffEcdsaPubInput
 } from "../helpers/efficient_ecdsa";
 import { Profiler } from "../helpers/profiler";
-import { VerifyOptions } from "../types";
+import { VerifyOptions, IVerifier } from "../types";
 
-export class EffECDSAVerifier extends Profiler {
+export class EffECDSAVerifier extends Profiler implements IVerifier {
+  spartanWasm: SpartanWasm;
   circuit: string;
-  spartanWasm: string;
 
   constructor(options?: VerifyOptions) {
     super({ enabled: options?.enableProfiler });
 
     this.circuit = options?.circuit || DEFAULT_EFF_ECDSA_CIRCUIT;
-    this.spartanWasm = options?.spartanWasm || DEFAULT_SPARTAN_WASM;
+    this.spartanWasm = new SpartanWasm({ spartanWasm: options?.spartanWasm });
   }
 
   async verify(
@@ -32,12 +32,11 @@ export class EffECDSAVerifier extends Profiler {
     const isPubInputValid = verifyEffEcdsaPubInput(publicInput);
     this.timeEnd("Verify public input");
 
-    await initWasm(this.spartanWasm);
-
     this.time("Verify NIZK");
+    await this.spartanWasm.init();
     let nizkValid;
     try {
-      nizkValid = await verify(
+      nizkValid = await this.spartanWasm.verify(
         circuitBin,
         proof,
         publicInput.circuitPubInput.serialize()
