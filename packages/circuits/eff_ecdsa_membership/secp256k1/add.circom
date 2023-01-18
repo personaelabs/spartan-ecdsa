@@ -1,6 +1,7 @@
 pragma circom 2.1.2;
 
 include "../../../../node_modules/circomlib/circuits/comparators.circom";
+include "../../../../node_modules/circomlib/circuits/gates.circom";
 
 template Secp256k1AddIncomplete() {
     signal input xP;
@@ -33,22 +34,7 @@ template Secp256k1AddComplete() {
     signal output outX;
     signal output outY;
 
-    signal lambdaXEqual; // λ when xP = xQ
-    signal lambdaXUnequal; // λ when xP != xQ and yP != 0
-    signal dx; // xQ - xP
-    signal dy; // yQ - yP
-    signal xPSquared; // xP^2
-    signal lambda; // the actual λ to constrain xR and yR (either lambdaXEqual or lambdaXUnequal)
-
-    signal xRXpZero; // xR when xP = 0
-    signal xRXqZero; // xR when xQ = 0
-    signal xRNonZero; // xR when xP != 0 and xQ != 0
-
-    signal yRXpZero; // yR when xP = 0
-    signal yRXqZero; // yR when xQ = 0
-    signal yRNonZero; // yR when xP != 0 and xQ != 0
-
-    xPSquared <== xP * xP;
+    signal xPSquared <== xP * xP;
 
     component isXEqual = IsEqual();
     isXEqual.in[0] <== xP;
@@ -60,45 +46,62 @@ template Secp256k1AddComplete() {
     component isXqZero = IsZero();
     isXqZero.in <== xQ;
 
-    component isEitherZero = IsZero();
-    isEitherZero.in <== (1 - isXpZero.out) * (1 - isXqZero.out);
+    component isXEitherZero = IsZero();
+    isXEitherZero.in <== (1 - isXpZero.out) * (1 - isXqZero.out);
 
-    // lambda constraints when xP != xQ
-    dx <== xQ - xP;
-    dy <== (yQ - yP) * (1 - isXEqual.out);
-    lambdaXUnequal <-- ((yQ - yP) / dx) * (1 - isXEqual.out);
-    // lambdaXUnequal and dy are zerorized when xP = xQ
-    dx * lambdaXUnequal === dy;
+    
+    // dx = xQ - xP
+    // dy = xP != xQ ? yQ - yP : 0
+    // lambdaA = xP != xQ ? (yQ - yP) / (xQ - xP) : 0
+    signal dx <== xQ - xP;
+    signal dy <== (yQ - yP) * (1 - isXEqual.out);
+    signal lambdaA <-- ((yQ - yP) / dx) * (1 - isXEqual.out);
+    dx * lambdaA === dy;
 
-    // lambda constraints when xP = xQ
-    lambdaXEqual <-- ((3 * xPSquared) / (2 * yP));
-    lambdaXEqual * 2 * yP === 3 * xPSquared;
+    // lambdaB = (3 * xP^2) / (2 * yP)
+    signal lambdaB <-- ((3 * xPSquared) / (2 * yP));
+    lambdaB * 2 * yP === 3 * xPSquared;
 
-    // lambdaXUnequal is zerorized above when xP = xQ
-    lambda <== (lambdaXEqual * isXEqual.out) + lambdaXUnequal;
+    // lambda = xP != xQ ? lambdaA : lambdaB
+    signal lambda <== (lambdaB * isXEqual.out) + lambdaA;
 
-    // xR and yR when xP != 0 and xQ != 0
-    xRNonZero <== lambda * lambda - xP - xQ;
-    yRNonZero <== lambda * (xP - xRNonZero) - yP;
+    // outAx = lambda^2 - xP - xQ
+    // outAy = lambda * (xP - outAx) - yP
+    signal outAx <== lambda * lambda - xP - xQ;
+    signal outAy <== lambda * (xP - outAx) - yP;
 
-    signal xRNonZeroFinal <== xRNonZero * (1 - isEitherZero.out);
-    signal yRNonZeroFinal <== yRNonZero * (1 - isEitherZero.out);
+    // (outBx, outBy) = xP != 0 and xQ != 0 ? (outAx, outAy) : (0, 0)
+    signal outBx <== outAx * (1 - isXEitherZero.out);
+    signal outBy <== outAy * (1 - isXEitherZero.out);
 
-    // xR when xP = 0
-    xRXpZero <== isXpZero.out * xQ;
-    yRXpZero <== isXpZero.out * yQ;
+    //(outCx, outCy) = xP = 0 ? (xQ, yQ) : (0, 0)
+    signal outCx <== isXpZero.out * xQ;
+    signal outCy <== isXpZero.out * yQ;
 
-    // xR when xQ = 0
-    xRXqZero <== isXqZero.out * xP;
-    yRXqZero <== isXqZero.out * yP;
+    // (outDx, outDy) = xQ = 0 ? (xP, yP) : (0, 0)
+    signal outDx <== isXqZero.out * xP;
+    signal outDy <== isXqZero.out * yP;
 
-    // zeroize = 1 when xP = xQ and yP = -yQ
-    component zeroize = IsEqual();
-    zeroize.in[0] <== isXEqual.out;
-    zeroize.in[1] <== 1 - (yP + yQ);
+    // zeroizeA = (xP = xQ and yP = -yQ) ? 1 : 0
+    component zeroizeA = IsEqual();
+    zeroizeA.in[0] <== isXEqual.out;
+    zeroizeA.in[1] <== 1 - (yP + yQ);
 
-    // Final assignment
-    // Only one of xRXpZero, xRXqZero, or xRNonZeroFinal will be non-zero, so we can safely add them. 
-    outX <== (xRXpZero + xRXqZero + xRNonZeroFinal) * (1 - zeroize.out);
-    outY <== (yRXpZero + yRXqZero + yRNonZeroFinal) * (1 - zeroize.out);
+    // zeroizeB = (xP = 0 and xQ = 0) ? 1 : 0
+    component zeroizeB = AND();
+    zeroizeB.a <== isXpZero.out;
+    zeroizeB.b <== isXqZero.out;
+
+    // zeroize = (xP = xQ and yP = -yQ) or (xP = 0 and xQ = 0) ? 1 : 0
+    component zeroize = OR();
+    zeroize.a <== zeroizeA.out;
+    zeroize.b <== zeroizeB.out;
+
+    // The below three conditionals are mutually exclusive when zeroize = 0, 
+    // so we can safely sum the outputs.
+    // outBx != 0 iff xP != 0 and xQ != 0
+    // outCx != 0 iff xP = 0
+    // outDx != 0 iff xQ = 0
+    outX <== (outBx + outCx + outDx) * (1 - zeroize.out);
+    outY <== (outBy + outCy + outDy) * (1 - zeroize.out);
 }
