@@ -6,7 +6,7 @@ include "../../../../node_modules/circomlib/circuits/bitify.circom";
 include "../../../../node_modules/circomlib/circuits/comparators.circom";
 include "../../../../node_modules/circomlib/circuits/gates.circom";
 
-// Scalar multiplication using only complete additions.
+// Implements https://zcash.github.io/halo2/design/gadgets/ecc/var-base-scalar-mul.html
 template Secp256k1Mul() {
     var bits = 256;
     signal input scalar;
@@ -15,7 +15,7 @@ template Secp256k1Mul() {
     signal output outX;
     signal output outY;
 
-    component kBits = K(bits);
+    component kBits = K();
     kBits.s <== scalar;
 
     component acc0 = Secp256k1Double();
@@ -29,7 +29,7 @@ template Secp256k1Mul() {
         if (i == 0) {
             PIncomplete[i] = Secp256k1AddIncomplete(); // (Acc + P)
             PIncomplete[i].xP <== xP; // kBits[i] ? xP : -xP;
-            PIncomplete[i].yP <== (2 * 0 - 1) * yP;// kBits[i] ? xP : -xP;
+            PIncomplete[i].yP <== -yP;// kBits[i] ? xP : -xP;
             PIncomplete[i].xQ <== acc0.outX;
             PIncomplete[i].yQ <== acc0.outY;
             
@@ -99,6 +99,7 @@ template Secp256k1Mul() {
 // (s + tQ) < q ? = (0, s - tQ) : (1, (s - tQ) - q)
 // We use 128-bit registers to calculate the above since (s + tQ) can be larger than p.
 template K() {
+    var bits = 256;
     signal input s;
     signal output out[bits];
 
@@ -164,8 +165,8 @@ template K() {
     borrow.a <== theta.out;
     borrow.b <== isQuotientOne.out;
 
-    klo <== (slo + tQlo + borrow.out * (2 ** 128)) - isQuotientOne.out * qlo;
-    khi <== (shi + tQhi - borrow.out * 1)  - isQuotientOne.out * qhi;
+    signal klo <== (slo + tQlo + borrow.out * (2 ** 128)) - isQuotientOne.out * qlo;
+    signal khi <== (shi + tQhi - borrow.out * 1)  - isQuotientOne.out * qhi;
 
     component kloBits = Num2Bits(256);
     kloBits.in <== klo;
