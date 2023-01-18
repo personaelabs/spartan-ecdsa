@@ -25,6 +25,7 @@ template Secp256k1AddIncomplete() {
     outY <== lambda * (xP - outX) - yP;
 }
 
+// Assuming that (0, 0) is not a valid point.
 template Secp256k1AddComplete() {
     signal input xP;
     signal input yP;

@@ -28,8 +28,8 @@ template Secp256k1Mul() {
     for (var i = 0; i < bits-3; i++) {
         if (i == 0) {
             PIncomplete[i] = Secp256k1AddIncomplete(); // (Acc + P)
-            PIncomplete[i].xP <== xP; // scalar[i] ? xP : -xP;
-            PIncomplete[i].yP <== (2 * 0 - 1) * yP;// scalar[i] ? xP : -xP;
+            PIncomplete[i].xP <== xP; // kBits[i] ? xP : -xP;
+            PIncomplete[i].yP <== (2 * 0 - 1) * yP;// kBits[i] ? xP : -xP;
             PIncomplete[i].xQ <== acc0.outX;
             PIncomplete[i].yQ <== acc0.outY;
             
@@ -93,59 +93,46 @@ template Secp256k1Mul() {
     outY <== out.outY;
 }
 
-template K(bits) {
+// Calculate k = (s + tQ) % q as follwos:
+// Define notation: (s + tQ) / q = (quotient, remainder)
+// We can calculate the quotient and remainder as:
+// (s + tQ) < q ? = (0, s - tQ) : (1, (s - tQ) - q)
+// We use 128-bit registers to calculate the above since (s + tQ) can be larger than p.
+template K() {
     signal input s;
     signal output out[bits];
 
-    signal khi;
-    signal klo;
-    signal shi;
-    signal slo;
-    signal carry;
+    // Split elemnts into 128 bit registers
 
     var q = 0xfffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141; // The order of the scalar field
-    var qlo = q & (2 ** (bits / 2) - 1);
-    var qhi = q >> (bits / 2);
+    var qlo = q & ((2 ** 128) - 1);
+    var qhi = q >> 128;
     var tQ = 115792089237316195423570985008687907852405143892509244725752742275123193348738; // (q - 2^256) % q;
-    var tQlo = tQ & (2 ** (bits / 2) - 1);
-    var tQhi = tQ >> (bits / 2);
-
-    slo <-- s & (2 ** (bits / 2) - 1);
-    shi <-- s >> (bits / 2);
+    var tQlo = tQ & (2 ** (128) - 1);
+    var tQhi = tQ >> 128;
+    signal slo <-- s & (2 ** (128) - 1);
+    signal shi <-- s >> 128;
 
     // Get carry bit of (slo + tQlo)
-    component inBits = Num2Bits((bits / 2) + 1);
+
+    component inBits = Num2Bits(128 + 1);
     inBits.in <== slo + tQlo;
-    carry <== inBits.out[bits / 2];
+    signal carry <== inBits.out[128];
+
+    // check a >= b
+    // where
+    // a = (s + tQ)
+    // b = q
+
+    // - alpha: ahi > bhi
+    // - beta: ahi = bhi
+    // - gamma: alo ≥ blo
+    // if alpha or (beta and gamma) then a >= b
     
-    /**
-    quotient: if a >= b then 1; else 0
-    quotient: ((s + tQ) >= q then 1 : 0)
-    k = if quotient: (s + tQ) - q; else (s + tQ)
-    */
-
-
-    /**
-    check that a >= b
-    - alpha: if ahi > bhi ?  true： false
-    - beta: if ahi = bhi
-        - gamma if alo ≥ blo: true
-        - theta alo < blo: false
-    
-    where
-    a = (s + tQ)
-    b = q
-    */
-
-    signal ahi;
-    signal bhi;
-    signal alo;
-    signal blo;
-
-    ahi <== shi + tQhi + carry;
-    bhi <== qhi;
-    alo <== slo + tQlo - (carry * 2 ** 128);
-    blo <== qlo;
+    signal ahi <== shi + tQhi + carry;
+    signal bhi <== qhi;
+    signal alo <== slo + tQlo - (carry * 2 ** 128);
+    signal blo <== qlo;
 
     component alpha = GreaterThan(129);
     alpha.in[0] <== ahi;
@@ -167,26 +154,16 @@ template K(bits) {
     isQuotientOne.a <== betaANDgamma.out;
     isQuotientOne.b <== alpha.out;
 
-    // if the quotient is 1, then q * 1 + k = s + tQ
-    // if the quotient is 0, then k = s + tQ
-    // s + tQ / div = quotient, k
-    // s + tQ = quotient * div + k
-    // k = (s + tQ) / q  * quotient
-
-    // Check that if the mod was done correctly
-    // (slo + shi * 2^128) * quotient + r = divisor
-    // divisor * quotient + r = slo * quotient + shi * 2^128 
-
-    // theta: if slo + tQlo < qlo ? 1 : 0
+    // theta: (slo + tQlo) < qlo
     component theta = GreaterThan(129);
     theta.in[0] <== qlo;
     theta.in[1] <== slo + tQlo;
 
+    // borrow: (slo + tQlo) < qlo and isQuotientOne ? 1 : 0
     component borrow = AND();
     borrow.a <== theta.out;
     borrow.b <== isQuotientOne.out;
 
-    // if slo + tQlo - borrowlo < 0 then borrow = 1 else borrow = 0
     klo <== (slo + tQlo + borrow.out * (2 ** 128)) - isQuotientOne.out * qlo;
     khi <== (shi + tQhi - borrow.out * 1)  - isQuotientOne.out * qhi;
 
