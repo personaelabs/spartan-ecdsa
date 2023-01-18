@@ -1,6 +1,6 @@
 pragma circom 2.1.2;
-include "../node_modules/circomlib/circuits/poseidon.circom";
-include "../node_modules/circomlib/circuits/mux1.circom";
+include "../../../node_modules/circomlib/circuits/poseidon.circom";
+include "../../../node_modules/circomlib/circuits/mux1.circom";
 
 // Copied from https://github.com/semaphore-protocol/semaphore/blob/main/packages/circuits/tree.circom
 template MerkleTreeInclusionProof(nLevels) {

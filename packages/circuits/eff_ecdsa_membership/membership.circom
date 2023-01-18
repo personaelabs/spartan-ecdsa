@@ -2,7 +2,7 @@ pragma circom 2.1.2;
 
 include "./eff_ecdsa.circom";
 include "./tree.circom";
-include "../node_modules/circomlib/circuits/poseidon.circom";
+include "../../../node_modules/circomlib/circuits/poseidon.circom";
 
 template Membership(nLevels) {
     signal input s;
