@@ -12,7 +12,8 @@
   },
   "workspaces": [
     "packages/lib",
-    "packages/browser_benchmark",
+    "packages/benchmark/web",
+    "packages/benchmark/node",
     "packages/circuits"
   ]
 }

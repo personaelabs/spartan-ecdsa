@@ -11,7 +11,7 @@ export class SpartanWasm {
   constructor(options?: SpartanWasmOptions) {
     const defaultWasmPath =
       typeof window === "undefined"
-        ? "./build/spartan_wasm_bg.wasm"
+        ? path.join(__dirname, "./build/spartan_wasm_bg.wasm")
         : DEFAULT_SPARTAN_WASM;
 
     this.spartanWasmPathOrUrl = options?.spartanWasm || defaultWasmPath;
@@ -34,9 +34,7 @@ export class SpartanWasm {
   }
 
   private async initNode() {
-    const bytes = fs.readFileSync(
-      path.join(__dirname, this.spartanWasmPathOrUrl)
-    );
+    const bytes = fs.readFileSync(this.spartanWasmPathOrUrl);
 
     await wasm.initSync(bytes);
     await wasm.init_panic_hook();
