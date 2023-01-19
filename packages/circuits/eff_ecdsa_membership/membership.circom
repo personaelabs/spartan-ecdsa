@@ -12,7 +12,7 @@ template Membership(nLevels) {
     signal input Uy;
     signal input pathIndices[nLevels];
     signal input siblings[nLevels];
-    signal output root;
+    signal input root;
 
     component ecdsa = EfficientECDSA();
     ecdsa.Tx <== Tx;
