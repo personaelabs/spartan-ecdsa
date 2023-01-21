@@ -6,6 +6,7 @@
 import { EffECDSAProver, EffECDSAVerifier } from "spartan-ecdsa";
 import { ecsign, hashPersonalMessage } from "@ethereumjs/util";
 
+// Sign
 const privKey = Buffer.from("".padStart(16, "🧙"), "utf16le");
 const msg = Buffer.from("harry potter");
 const msgHash = hashPersonalMessage(msg);
@@ -13,10 +14,12 @@ const msgHash = hashPersonalMessage(msg);
 const { v, r, s } = ecsign(msg, privKey);
 const sig = `0x${r.toString("hex")}${s.toString("hex")}${v.toString(16)}`;
 
+// Prove
 const prover = new EffECDSAProver();
 
 const { proof, publicInput } = await prover.prove(sig, msgHash);
 
+// Verify
 const verifier = new EffECDSAVerifier();
 
 const verified = await verifier.verify(proof.proof, proof.publicInput);
