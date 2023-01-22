@@ -13,12 +13,9 @@ describe("eff_ecdsa_to_addr", () => {
       "hex"
     );
     const pubKey = ec.keyFromPrivate(privKey.toString("hex")).getPublic();
-    console.log("pubKey", pubKey.x.toString(10), pubKey.y.toString(10));
     const addr = BigInt(
       "0x" + privateToAddress(privKey).toString("hex")
     ).toString(10);
-
-    console.log("addr", addr);
 
     const circuit = await wasm_tester(
       path.join(__dirname, "./circuits/eff_ecdsa_to_addr_test.circom"),
