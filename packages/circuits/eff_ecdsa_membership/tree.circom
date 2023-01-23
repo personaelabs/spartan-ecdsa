@@ -1,8 +1,9 @@
 pragma circom 2.1.2;
-include "../../../node_modules/circomlib/circuits/poseidon.circom";
+include "../poseidon/poseidon.circom";
 include "../../../node_modules/circomlib/circuits/mux1.circom";
 
-// Copied from https://github.com/semaphore-protocol/semaphore/blob/main/packages/circuits/tree.circom
+// Copy of this implementation: https://github.com/semaphore-protocol/semaphore/blob/main/packages/circuits/tree.circom
+// We use our own Poseidon hash function instead of the one from circomlib.
 template MerkleTreeInclusionProof(nLevels) {
     signal input leaf;
     signal input pathIndices[nLevels];
@@ -19,7 +20,7 @@ template MerkleTreeInclusionProof(nLevels) {
     for (var i = 0; i < nLevels; i++) {
         pathIndices[i] * (1 - pathIndices[i]) === 0;
 
-        poseidons[i] = Poseidon(2);
+        poseidons[i] = Poseidon();
         mux[i] = MultiMux1(2);
 
         mux[i].c[0][0] <== hashes[i];

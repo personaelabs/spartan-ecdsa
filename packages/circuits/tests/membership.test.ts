@@ -1,15 +1,12 @@
-//! Does not work without a poseidon hash implementation on the secq256k1 base field.
 const wasm_tester = require("circom_tester").wasm;
 var EC = require("elliptic").ec;
 import * as path from "path";
-import { buildPoseidon } from "circomlibjs";
 const ec = new EC("secp256k1");
-import { IncrementalMerkleTree } from "@zk-kit/incremental-merkle-tree";
+import { Poseidon, Tree } from "spartan-ecdsa";
+import { getEffEcdsaCircuitInput } from "./test_utils";
 
-import { getEffEcdsaCircuitInput, bytesToBigInt } from "./test_utils";
-
-describe.skip("membership", () => {
-  it("should verify valid membership", async () => {
+describe("membership", () => {
+  it("should verify correct signature and merkle proof", async () => {
     // Compile the circuit
     const circuit = await wasm_tester(
       path.join(__dirname, "./circuits/membership_test.circom"),
@@ -19,53 +16,57 @@ describe.skip("membership", () => {
     );
 
     // Construct the tree
-    const poseidon = await buildPoseidon();
-    const nLevels = 20;
-    const tree = new IncrementalMerkleTree(poseidon, nLevels, BigInt(0));
+    const poseidon = new Poseidon();
+    await poseidon.init();
+    const nLevels = 10;
+    const tree = new Tree(nLevels, poseidon);
 
-    const privKeys = [BigInt(1), BigInt(2), BigInt(3)];
-    const pubKeyHashes: bigint[] = privKeys.map(privKey => {
+    const privKeys = [
+      Buffer.from("".padStart(16, "🧙"), "utf16le"),
+      Buffer.from("".padStart(16, "🪄"), "utf16le"),
+      Buffer.from("".padStart(16, "🔮"), "utf16le")
+    ];
+
+    // Store public key hashes
+    const pubKeyHashes: bigint[] = [];
+
+    // Compute public key hashes
+    for (const privKey of privKeys) {
       const pubKey = ec.keyFromPrivate(privKey).getPublic();
-      const pubKeyHash = poseidon([pubKey]);
-      return bytesToBigInt(pubKeyHash);
-    });
+      const pubKeyX = BigInt(pubKey.x.toString());
+      const pubKeyY = BigInt(pubKey.y.toString());
+      const pubKeyHash = poseidon.hash([pubKeyX, pubKeyY]);
+      pubKeyHashes.push(pubKeyHash);
+    }
 
+    // Insert the pubkey hashes into the tree
     for (const pubKeyHash of pubKeyHashes) {
       tree.insert(pubKeyHash);
     }
 
-    const index = 0; // Use privKeys[0] for this proving
+    // Sanity check (check that there are not duplicate members)
+    expect(new Set(pubKeyHashes).size === pubKeyHashes.length).toBeTruthy();
+
+    // Sign
+    const index = 0; // Use privKeys[0] for proving
     const privKey = privKeys[index];
     const msg = Buffer.from("hello world");
 
-    const effEcdsaInput = getEffEcdsaCircuitInput(
-      Buffer.from(privKey.toString()),
-      msg
-    );
-    const merkleProof = tree.createProof(index);
+    // Prepare signature proof input
+    const effEcdsaInput = getEffEcdsaCircuitInput(privKey, msg);
 
-    // Formatting
-    const siblings = merkleProof.siblings.map(s =>
-      typeof s[0] === "bigint" ? s : bytesToBigInt(s[0])
-    );
+    const merkleProof = tree.createProof(index);
 
     const input = {
       ...effEcdsaInput,
-      siblings,
-      pathIndices: merkleProof.pathIndices
+      siblings: merkleProof.siblings,
+      pathIndices: merkleProof.pathIndices,
+      root: tree.root()
     };
 
-    // Gen witness
-    const witness = await circuit.calculateWitness(input, true);
-    const expectedRoot = bytesToBigInt(tree.root);
+    // Generate witness
+    const w = await circuit.calculateWitness(input, true);
 
-    // Assert
-    await circuit.assertOut(witness, {
-      root: expectedRoot
-    });
-  });
-
-  it("should assert invalid membership", async () => {
-    // TODO
+    await circuit.checkConstraints(w);
   });
 });
