@@ -3,6 +3,7 @@ use console_error_panic_hook;
 use ff::PrimeField;
 use libspartan::{Assignment, Instance, NIZKGens, NIZK};
 use merlin::Transcript;
+use poseidon::poseidon_k256::{hash, FieldElement};
 use secpq_curves::group::Group;
 use std::io::{Error, Read};
 use wasm_bindgen::prelude::*;
@@ -79,6 +80,20 @@ pub fn verify(circuit: &[u8], proof: &[u8], public_input: &[u8]) -> Result<bool,
         .is_ok();
 
     Ok(verified)
+}
+
+#[wasm_bindgen]
+pub fn poseidon(input_bytes: &[u8]) -> Result<Vec<u8>, JsValue> {
+    let mut input = Vec::new();
+    for i in 0..(input_bytes.len() / 32) {
+        let f: [u8; 32] = input_bytes[(i * 32)..(i + 1) * 32].try_into().unwrap();
+        let val = FieldElement::from_bytes(&f).unwrap();
+        input.push(FieldElement::from(val));
+    }
+
+    let result = hash(input);
+
+    Ok(result.to_bytes().to_vec())
 }
 
 // Copied from Nova Scotia
@@ -176,5 +191,33 @@ mod test {
         );
 
         assert!(result.unwrap());
+    }
+
+    #[test]
+    fn test_poseidon() {
+        // Using the same inputs as poseidon.test.ts
+        let a = FieldElement::from_str_vartime(
+            "115792089237316195423570985008687907853269984665640564039457584007908834671663",
+        )
+        .unwrap()
+        .to_bytes();
+        let b = FieldElement::from_str_vartime(
+            "115792089237316195423570985008687907853269984665640564039457584007908834671662",
+        )
+        .unwrap()
+        .to_bytes();
+
+        let mut inputs = [0u8; 64];
+        inputs[..32].copy_from_slice(&a);
+        inputs[32..].copy_from_slice(&b);
+        let result = poseidon(&inputs).unwrap();
+
+        assert_eq!(
+            result.as_slice(),
+            &[
+                254, 169, 62, 101, 167, 215, 208, 82, 46, 81, 56, 87, 19, 47, 139, 218, 83, 225,
+                108, 197, 66, 13, 197, 52, 48, 235, 107, 54, 178, 251, 129, 123
+            ]
+        )
     }
 }

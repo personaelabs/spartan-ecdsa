@@ -28,6 +28,7 @@ bincode = "1.3.3"
 # but some dependencies require getrandom 
 # and the "js" features needs to be enabled for wasm compatibility
 getrandom = { version = "0.2.8", features = ["js"] }
+poseidon = { path = "../poseidon" }
 
 
 # Do not compile these dependencies when targeting wasm
