@@ -4,9 +4,8 @@
 import { SpartanWasm } from "./wasm";
 
 export interface MerkleProof {
-  root: any;
-  leaf: any;
-  siblings: any[];
+  root: bigint;
+  siblings: bigint[];
   pathIndices: number[];
 }
 

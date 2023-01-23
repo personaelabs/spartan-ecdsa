@@ -33,6 +33,10 @@ export class SpartanWasm {
     return wasm.verify(circuit, vars, public_inputs);
   }
 
+  poseidon(inputs: Uint8Array) {
+    return wasm.poseidon(inputs);
+  }
+
   private async initNode() {
     const bytes = fs.readFileSync(this.spartanWasmPathOrUrl);
 

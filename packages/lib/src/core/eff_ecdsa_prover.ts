@@ -2,12 +2,11 @@ import {
   DEFAULT_EFF_ECDSA_CIRCUIT,
   DEFAULT_EFF_ECDSA_WITNESS_GEN_WASM
 } from "../config";
-import { fetchCircuit, snarkJsWitnessGen } from "../helpers/utils";
+import { fetchCircuit, snarkJsWitnessGen, fromSig } from "../helpers/utils";
 import { EffEcdsaPubInput, CircuitPubInput } from "../helpers/efficient_ecdsa";
 import { SpartanWasm } from "../wasm";
 
 import { ProverOptions, IProver, NIZK } from "../types";
-import { fromRpcSig } from "@ethereumjs/util";
 import { Profiler } from "../helpers/profiler";
 
 export class EffECDSAProver extends Profiler implements IProver {
@@ -27,9 +26,7 @@ export class EffECDSAProver extends Profiler implements IProver {
   // sig: format of the `eth_sign` RPC method
   // https://ethereum.github.io/execution-apis/api-documentation
   async prove(sig: string, msgHash: Buffer): Promise<NIZK> {
-    const { r: _r, s: _s, v } = fromRpcSig(sig);
-    const r = BigInt("0x" + _r.toString("hex"));
-    const s = BigInt("0x" + _s.toString("hex"));
+    const { r, s, v } = fromSig(sig);
 
     const circuitPubInput = CircuitPubInput.computeFromSig(r, v, msgHash);
     const effEcdsaPubInput = new EffEcdsaPubInput(
