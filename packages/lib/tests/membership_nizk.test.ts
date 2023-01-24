@@ -5,18 +5,13 @@ var EC = require("elliptic").ec;
 const ec = new EC("secp256k1");
 
 //! Still doesn't pass. Need to fix.
-describe.skip("membership prove and verify", () => {
+describe("membership prove and verify", () => {
   // Init prover
   const treeDepth = 10;
 
-  const privKeys = [
-    "f5b552f608f5b552f608f5b552f6082ff5b552f608f5b552f608f5b552f6082f",
-    "a",
-    "bb",
-    "ccc",
-    "dddd",
-    "ffff"
-  ].map(val => Buffer.from(val.padStart(64, "0"), "hex"));
+  const privKeys = ["1", "a", "bb", "ccc", "dddd", "ffff"].map(val =>
+    Buffer.from(val.padStart(64, "0"), "hex")
+  );
 
   // Sign (Use privKeys[0] for proving)
   const proverIndex = 0;
@@ -63,8 +58,6 @@ describe.skip("membership prove and verify", () => {
     for (const member of members) {
       tree.insert(member);
     }
-
-    console.log("member", members[0]);
   });
 
   it("should prove and verify valid signature and merkle proof", async () => {

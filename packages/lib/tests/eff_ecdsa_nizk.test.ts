@@ -16,25 +16,29 @@ describe("eff_ecdsa prove and verify", () => {
 
   // Init prover and verifier
   let prover = new EffECDSAProver({
-    enableProfiler: true,
+    enableProfiler: false,
+    circuit: path.join(
+      __dirname,
+      "/../../circuits/build/eff_ecdsa/eff_ecdsa.circuit"
+    ),
     witnessGenWasm: path.join(
       __dirname,
       "/../../circuits/build/eff_ecdsa/eff_ecdsa_js/eff_ecdsa.wasm"
     )
   });
   let verifier = new EffECDSAVerifier({
-    enableProfiler: true
+    enableProfiler: false
   });
 
   it("should prove and verify valid signature", async () => {
-    const { proof, publicInput } = await prover.prove(sig, msgHash);
+    const { proof, publicInput } = await prover.prove(sig, msg);
 
     const result = await verifier.verify(proof, publicInput);
     expect(result).toBe(true);
   });
 
   it("verifier should return false when the proof is invalid", async () => {
-    const { proof, publicInput } = await prover.prove(sig, msgHash);
+    const { proof, publicInput } = await prover.prove(sig, msg);
     proof[0] = proof[0] + 1;
 
     const result = await verifier.verify(proof, publicInput);
@@ -42,7 +46,7 @@ describe("eff_ecdsa prove and verify", () => {
   });
 
   it("verifier should return false when the public input is invalid", async () => {
-    const { proof, publicInput } = await prover.prove(sig, msgHash);
+    const { proof, publicInput } = await prover.prove(sig, msg);
     publicInput[0] = publicInput[0] + 1;
 
     const result = await verifier.verify(proof, publicInput);

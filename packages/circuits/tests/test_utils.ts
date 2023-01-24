@@ -6,7 +6,7 @@ export const getEffEcdsaCircuitInput = (privKey: Buffer, msg: Buffer) => {
   const { v, r: _r, s } = ecsign(msgHash, privKey);
   const r = BigInt("0x" + _r.toString("hex"));
 
-  const circuitPubInput = CircuitPubInput.computeFromSig(r, v, msg);
+  const circuitPubInput = CircuitPubInput.computeFromSig(r, v, msgHash);
   const input = {
     s: BigInt("0x" + s.toString("hex")),
     Tx: circuitPubInput.Tx,

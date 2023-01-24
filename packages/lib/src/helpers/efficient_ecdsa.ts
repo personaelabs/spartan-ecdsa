@@ -24,9 +24,11 @@ export class CircuitPubInput {
     this.Uy = Uy;
   }
 
-  static computeFromSig(r: bigint, v: bigint, msg: Buffer): CircuitPubInput {
-    const msgHash = hashPersonalMessage(msg);
-
+  static computeFromSig(
+    r: bigint,
+    v: bigint,
+    msgHash: Buffer
+  ): CircuitPubInput {
     const isYOdd = (v - BigInt(27)) % BigInt(2);
     const rPoint = ec.keyFromPublic(
       ec.curve.pointFromX(new BN(r), isYOdd).encode("hex"),

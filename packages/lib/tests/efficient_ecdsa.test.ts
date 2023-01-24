@@ -3,6 +3,7 @@ import {
   EffEcdsaPubInput,
   verifyEffEcdsaPubInput
 } from "../src/helpers/efficient_ecdsa";
+import { hashPersonalMessage } from "@ethereumjs/util";
 
 describe("efficient_ecdsa", () => {
   /**
@@ -26,7 +27,8 @@ describe("efficient_ecdsa", () => {
   */
 
   it("should verify valid public input", () => {
-    let msg = Buffer.from("harry potter");
+    const msg = Buffer.from("harry potter");
+    const msgHash = hashPersonalMessage(msg);
 
     const rX = BigInt(
       "0x5d5d43bec648296f5ef4b72c269bfde291fc0ed13bfc7e59c56b6c74aa9c932e"
@@ -46,7 +48,12 @@ describe("efficient_ecdsa", () => {
     const v = BigInt(28);
 
     const circuitPubInput = new CircuitPubInput(Tx, Ty, Ux, Uy);
-    const effEcdsaPubInput = new EffEcdsaPubInput(rX, v, msg, circuitPubInput);
+    const effEcdsaPubInput = new EffEcdsaPubInput(
+      rX,
+      v,
+      msgHash,
+      circuitPubInput
+    );
     const isValid = verifyEffEcdsaPubInput(effEcdsaPubInput);
 
     expect(isValid).toBe(true);
