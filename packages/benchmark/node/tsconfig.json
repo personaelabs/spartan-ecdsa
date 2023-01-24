@@ -1,0 +1,21 @@
+{
+  "include": [
+    "./src/**/*",
+  ],
+  "exclude": [
+    "./node_modules",
+      "./build"
+  ],
+  "compilerOptions": {
+    "target": "ES6",                           
+    "module": "CommonJS",                               
+    "rootDir": "./src",                                
+    "moduleResolution": "node",                     
+    "allowJs": true,                                 
+    "outDir": "./build",                
+    "esModuleInterop": true,                            
+    "forceConsistentCasingInFileNames": true,      
+    "strict": true,                                  
+    "skipLibCheck": true         
+  }
+}
