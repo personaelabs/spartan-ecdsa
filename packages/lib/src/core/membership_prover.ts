@@ -12,7 +12,7 @@ import {
   EffEcdsaCircuitPubInput
 } from "../helpers/efficient_ecdsa";
 import {
-  DEFAULT_EFF_MEMBERSHIP_CIRCUIT,
+  DEFAULT_MEMBERSHIP_CIRCUIT,
   DEFAULT_MEMBERSHIP_WITNESS_GEN_WASM
 } from "../config";
 
@@ -29,7 +29,7 @@ export class MembershipProver extends Profiler implements IProver {
 
     const spartanWasm = new SpartanWasm({ spartanWasm: options?.spartanWasm });
     this.spartanWasm = spartanWasm;
-    this.circuit = options?.circuit || DEFAULT_EFF_MEMBERSHIP_CIRCUIT;
+    this.circuit = options?.circuit || DEFAULT_MEMBERSHIP_CIRCUIT;
     this.witnessGenWasm =
       options?.witnessGenWasm || DEFAULT_MEMBERSHIP_WITNESS_GEN_WASM;
   }
