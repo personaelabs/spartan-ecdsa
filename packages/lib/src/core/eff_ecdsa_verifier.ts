@@ -1,5 +1,5 @@
 import { DEFAULT_EFF_ECDSA_CIRCUIT } from "../config";
-import { fetchCircuit } from "../helpers/utils";
+import { loadCircuit } from "../helpers/utils";
 import { SpartanWasm } from "../wasm";
 import {
   EffEcdsaPubInput,
@@ -23,9 +23,9 @@ export class EffECDSAVerifier extends Profiler implements IVerifier {
     proof: Uint8Array,
     publicInputSer: Uint8Array
   ): Promise<boolean> {
-    this.time("Fetch circuit");
-    const circuitBin = await fetchCircuit(this.circuit);
-    this.timeEnd("Fetch circuit");
+    this.time("Load circuit");
+    const circuitBin = await loadCircuit(this.circuit);
+    this.timeEnd("Load circuit");
 
     this.time("Verify public input");
     const publicInput = EffEcdsaPubInput.deserialize(publicInputSer);

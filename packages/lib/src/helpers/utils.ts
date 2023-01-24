@@ -31,7 +31,7 @@ const readCircuitFromFs = async (path: string): Promise<Uint8Array> => {
   return new Uint8Array(bytes);
 };
 
-export const fetchCircuit = async (url: string): Promise<Uint8Array> => {
+const fetchCircuit = async (url: string): Promise<Uint8Array> => {
   const response = await fetch(url);
 
   const circuit = await response.arrayBuffer();

@@ -33,15 +33,19 @@ describe("membership prove and verify", () => {
 
     tree = new Tree(treeDepth, poseidon);
 
+    const CIRCUIT = path.join(
+      __dirname,
+      "/../../circuits/build/membership/membership.circuit"
+    );
+
+    const WITNESS_GEN_WASM = path.join(
+      __dirname,
+      "/../../circuits/build/membership/membership_js/membership.wasm"
+    );
+
     prover = new MembershipProver(treeDepth, {
-      circuit: path.join(
-        __dirname,
-        "/../../circuits/build/membership/membership.circuit"
-      ),
-      witnessGenWasm: path.join(
-        __dirname,
-        "/../../circuits/build/membership/membership_js/membership.wasm"
-      )
+      circuit: CIRCUIT,
+      witnessGenWasm: WITNESS_GEN_WASM
     });
 
     // Compute public key hashes using Poseidon

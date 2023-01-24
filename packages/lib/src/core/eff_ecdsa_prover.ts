@@ -58,9 +58,9 @@ export class EffECDSAProver extends Profiler implements IProver {
     );
     this.timeEnd("Generate witness");
 
-    this.time("Fetch circuit");
+    this.time("Load circuit");
     const circuitBin = await loadCircuit(this.circuit);
-    this.timeEnd("Fetch circuit");
+    this.timeEnd("Load circuit");
 
     await this.spartanWasm.init();
     this.time("Prove");

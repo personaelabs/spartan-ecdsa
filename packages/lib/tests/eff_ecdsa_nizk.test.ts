@@ -14,19 +14,24 @@ describe("eff_ecdsa prove and verify", () => {
   const { v, r, s } = ecsign(msgHash, privKey);
   const sig = `0x${r.toString("hex")}${s.toString("hex")}${v.toString(16)}`;
 
+  const CIRCUIT = path.join(
+    __dirname,
+    "/../../circuits/build/eff_ecdsa/eff_ecdsa.circuit"
+  );
+
+  const WITNESS_GEN_WASM = path.join(
+    __dirname,
+    "/../../circuits/build/eff_ecdsa/eff_ecdsa_js/eff_ecdsa.wasm"
+  );
+
   // Init prover and verifier
   let prover = new EffECDSAProver({
     enableProfiler: false,
-    circuit: path.join(
-      __dirname,
-      "/../../circuits/build/eff_ecdsa/eff_ecdsa.circuit"
-    ),
-    witnessGenWasm: path.join(
-      __dirname,
-      "/../../circuits/build/eff_ecdsa/eff_ecdsa_js/eff_ecdsa.wasm"
-    )
+    circuit: CIRCUIT,
+    witnessGenWasm: WITNESS_GEN_WASM
   });
   let verifier = new EffECDSAVerifier({
+    circuit: CIRCUIT,
     enableProfiler: false
   });
 
