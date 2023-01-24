@@ -1,6 +1,6 @@
 import * as path from "path";
 import { MembershipProver, Tree, Poseidon } from "../src/lib";
-import { hashPersonalMessage, ecsign } from "@ethereumjs/util";
+import { hashPersonalMessage, ecsign, privateToPublic } from "@ethereumjs/util";
 var EC = require("elliptic").ec;
 const ec = new EC("secp256k1");
 
@@ -48,23 +48,15 @@ describe("membership prove and verify", () => {
       witnessGenWasm: WITNESS_GEN_WASM
     });
 
-    // Compute public key hashes using Poseidon
-    const members: bigint[] = [];
+    // Insert the members into the tree
     for (const privKey of privKeys) {
-      const pubKey = ec.keyFromPrivate(privKey).getPublic();
-      const pubKeyX = BigInt(pubKey.x.toString());
-      const pubKeyY = BigInt(pubKey.y.toString());
-      const pubKeyHash = poseidon.hash([pubKeyX, pubKeyY]);
-      members.push(pubKeyHash);
-    }
-
-    // Insert the pubkey hashes into the tree
-    for (const member of members) {
-      tree.insert(member);
+      const pubKey = privateToPublic(privKey);
+      tree.hashAndInsert(pubKey);
     }
   });
 
   it("should prove and verify valid signature and merkle proof", async () => {
+    const index = tree.indexOf(privateToPublic(proverPrivKey));
     const merkleProof = tree.createProof(proverIndex);
 
     const { proof, publicInput } = await prover.prove(
@@ -72,5 +64,7 @@ describe("membership prove and verify", () => {
       msgHash,
       merkleProof
     );
+
+    // TODO: Verify the proof
   });
 });
