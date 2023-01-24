@@ -5,6 +5,7 @@ import path from "path";
 import { SpartanWasmOptions } from "../types";
 import { DEFAULT_SPARTAN_WASM } from "../config";
 
+// TODO: Rename this to just Wasm since it includes not only Spartan but also Poseidon
 export class SpartanWasm {
   private spartanWasmPathOrUrl: any;
 

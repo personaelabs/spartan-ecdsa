@@ -15,6 +15,9 @@ export const snarkJsWitnessGen = async (input: any, wasmFile: string) => {
   return witness;
 };
 
+/**
+ * Load a circuit from a file or URL
+ */
 export const loadCircuit = async (pathOrUrl: string): Promise<Uint8Array> => {
   if (pathOrUrl.startsWith("http")) {
     return await fetchCircuit(pathOrUrl);

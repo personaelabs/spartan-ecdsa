@@ -35,4 +35,6 @@ export class Tree {
       root: proof.root
     };
   }
+
+  // TODO: Add more functions that expose the IncrementalMerkleTree API
 }

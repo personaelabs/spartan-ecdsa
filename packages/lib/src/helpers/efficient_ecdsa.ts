@@ -1,4 +1,3 @@
-import { hashPersonalMessage } from "@ethereumjs/util";
 var EC = require("elliptic").ec;
 const BN = require("bn.js");
 
@@ -11,6 +10,10 @@ const SECP256K1_N = new BN(
   16
 );
 
+/**
+ * Public inputs that are passed into the efficient ECDSA circuit
+ * This doesn't include the other public values, which are the group element R and the msgHash.
+ */
 export class EffEcdsaCircuitPubInput {
   Tx: bigint;
   Ty: bigint;
@@ -66,6 +69,9 @@ export class EffEcdsaCircuitPubInput {
   }
 }
 
+/**
+ * Public values of efficient ECDSA
+ */
 export class EffEcdsaPubInput {
   r: bigint;
   rV: bigint;
@@ -84,6 +90,10 @@ export class EffEcdsaPubInput {
     this.circuitPubInput = circuitPubInput;
   }
 
+  /**
+   * Serialize the public input into a Uint8Array
+   * @returns the serialized public input
+   */
   serialize(): Uint8Array {
     let serialized = new Uint8Array(32 * 6 + 1);
 
@@ -98,6 +108,11 @@ export class EffEcdsaPubInput {
     return serialized;
   }
 
+  /**
+   * Instantiate EffEcdsaPubInput from a serialized Uint8Array
+   * @param serialized Uint8Array serialized by the serialize() function
+   * @returns EffEcdsaPubInput
+   */
   static deserialize(serialized: Uint8Array): EffEcdsaPubInput {
     const r = bytesToBigInt(serialized.slice(0, 32));
     const rV = bytesToBigInt(serialized.slice(32, 33));
@@ -116,6 +131,9 @@ export class EffEcdsaPubInput {
   }
 }
 
+/**
+ * Verify the public values of the efficient ECDSA circuit
+ */
 export const verifyEffEcdsaPubInput = (pubInput: EffEcdsaPubInput): boolean => {
   const expectedCircuitInput = EffEcdsaCircuitPubInput.computeFromSig(
     pubInput.r,
