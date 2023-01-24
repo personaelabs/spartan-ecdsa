@@ -11,7 +11,7 @@ const SECP256K1_N = new BN(
   16
 );
 
-export class CircuitPubInput {
+export class EffEcdsaCircuitPubInput {
   Tx: bigint;
   Ty: bigint;
   Ux: bigint;
@@ -28,7 +28,7 @@ export class CircuitPubInput {
     r: bigint,
     v: bigint,
     msgHash: Buffer
-  ): CircuitPubInput {
+  ): EffEcdsaCircuitPubInput {
     const isYOdd = (v - BigInt(27)) % BigInt(2);
     const rPoint = ec.keyFromPublic(
       ec.curve.pointFromX(new BN(r), isYOdd).encode("hex"),
@@ -46,7 +46,7 @@ export class CircuitPubInput {
     // T = r^-1 * R
     const T = rPoint.getPublic().mul(rInv);
 
-    return new CircuitPubInput(
+    return new EffEcdsaCircuitPubInput(
       BigInt(T.getX().toString()),
       BigInt(T.getY().toString()),
       BigInt(U.getX().toString()),
@@ -70,13 +70,13 @@ export class EffEcdsaPubInput {
   r: bigint;
   rV: bigint;
   msgHash: Buffer;
-  circuitPubInput: CircuitPubInput;
+  circuitPubInput: EffEcdsaCircuitPubInput;
 
   constructor(
     r: bigint,
     v: bigint,
     msgHash: Buffer,
-    circuitPubInput: CircuitPubInput
+    circuitPubInput: EffEcdsaCircuitPubInput
   ) {
     this.r = r;
     this.rV = v;
@@ -111,13 +111,13 @@ export class EffEcdsaPubInput {
       r,
       rV,
       Buffer.from(msg),
-      new CircuitPubInput(Tx, Ty, Ux, Uy)
+      new EffEcdsaCircuitPubInput(Tx, Ty, Ux, Uy)
     );
   }
 }
 
 export const verifyEffEcdsaPubInput = (pubInput: EffEcdsaPubInput): boolean => {
-  const expectedCircuitInput = CircuitPubInput.computeFromSig(
+  const expectedCircuitInput = EffEcdsaCircuitPubInput.computeFromSig(
     pubInput.r,
     pubInput.rV,
     pubInput.msgHash

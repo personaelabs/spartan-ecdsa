@@ -7,7 +7,10 @@ import {
   fromSig,
   snarkJsWitnessGen
 } from "../helpers/utils";
-import { EffEcdsaPubInput, CircuitPubInput } from "../helpers/efficient_ecdsa";
+import {
+  EffEcdsaPubInput,
+  EffEcdsaCircuitPubInput
+} from "../helpers/efficient_ecdsa";
 import {
   DEFAULT_EFF_MEMBERSHIP_CIRCUIT,
   DEFAULT_MEMBERSHIP_WITNESS_GEN_WASM
@@ -39,7 +42,11 @@ export class MembershipProver extends Profiler implements IProver {
   ): Promise<NIZK> {
     const { r, s, v } = fromSig(sig);
 
-    const circuitPubInput = CircuitPubInput.computeFromSig(r, v, msgHash);
+    const circuitPubInput = EffEcdsaCircuitPubInput.computeFromSig(
+      r,
+      v,
+      msgHash
+    );
     const effEcdsaPubInput = new EffEcdsaPubInput(
       r,
       v,

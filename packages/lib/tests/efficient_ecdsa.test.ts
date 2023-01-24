@@ -1,5 +1,5 @@
 import {
-  CircuitPubInput,
+  EffEcdsaCircuitPubInput,
   EffEcdsaPubInput,
   verifyEffEcdsaPubInput
 } from "../src/helpers/efficient_ecdsa";
@@ -47,7 +47,7 @@ describe("efficient_ecdsa", () => {
     );
     const v = BigInt(28);
 
-    const circuitPubInput = new CircuitPubInput(Tx, Ty, Ux, Uy);
+    const circuitPubInput = new EffEcdsaCircuitPubInput(Tx, Ty, Ux, Uy);
     const effEcdsaPubInput = new EffEcdsaPubInput(
       rX,
       v,

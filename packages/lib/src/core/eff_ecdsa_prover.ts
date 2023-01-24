@@ -3,7 +3,10 @@ import {
   DEFAULT_EFF_ECDSA_WITNESS_GEN_WASM
 } from "../config";
 import { loadCircuit, snarkJsWitnessGen, fromSig } from "../helpers/utils";
-import { EffEcdsaPubInput, CircuitPubInput } from "../helpers/efficient_ecdsa";
+import {
+  EffEcdsaPubInput,
+  EffEcdsaCircuitPubInput
+} from "../helpers/efficient_ecdsa";
 import { SpartanWasm } from "../wasm";
 import { hashPersonalMessage } from "@ethereumjs/util";
 
@@ -30,7 +33,11 @@ export class EffECDSAProver extends Profiler implements IProver {
     const { r, s, v } = fromSig(sig);
 
     const msgHash = hashPersonalMessage(msg);
-    const circuitPubInput = CircuitPubInput.computeFromSig(r, v, msgHash);
+    const circuitPubInput = EffEcdsaCircuitPubInput.computeFromSig(
+      r,
+      v,
+      msgHash
+    );
 
     const effEcdsaPubInput = new EffEcdsaPubInput(
       r,
