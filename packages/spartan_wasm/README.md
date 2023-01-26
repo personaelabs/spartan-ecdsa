@@ -9,5 +9,5 @@ curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
 Run compile script
 
 ```
-sh ./scripts/build_wasm.sh
+cd ../.. && sh ./scripts/build_wasm.sh
 ```
