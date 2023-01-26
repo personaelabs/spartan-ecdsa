@@ -1,5 +1,6 @@
 pub mod affine;
 pub mod field;
+mod hashtocurve;
 pub mod scalar;
 
 pub use affine::AffinePoint;

@@ -207,6 +207,129 @@ pub struct FieldElement(pub(crate) [u64; 5]);
 use serde::ser::SerializeSeq;
 use serde::{Deserializer, Serializer};
 
+use super::{BaseField, SqrtRatio};
+impl SqrtRatio for FieldElement {
+    // https://www.ietf.org/archive/id/draft-irtf-cfrg-hash-to-curve-16.html#appendix-F.2.1.1
+    fn sqrt_ratio(u: &Self, v: &Self, z: &Self) -> (Choice, Self) {
+        let c1 = 6;
+
+        let c3 = Self::from_str_vartime(
+            "904625697166532776746648320380374280100293470930272690489102837043110636674",
+        )
+        .unwrap();
+
+        let c4 = Self::from(63);
+        let c5 = Self::from(32);
+        let c6 = Self::from_str_vartime(
+            "33364414063669515853944302936966381571771006971255324946806336697193002226533",
+        )
+        .unwrap();
+        let c7 = Self::from_str_vartime(
+            "46419026296531707379610161270460468439034809981107678338532165418480623923370",
+        )
+        .unwrap();
+
+        let mut tv1 = c6;
+        let mut tv2 = v.pow_by_self(&c4);
+        let mut tv3 = tv2.pow_by_self(&Self::from(2));
+        tv3 = tv3 * v;
+        let mut tv5 = u * tv3;
+        tv5 = tv5.pow_by_self(&c3);
+        tv5 = tv5 * tv2;
+        tv2 = tv5 * v;
+        tv3 = tv5 * u;
+        let mut tv4 = tv3 * tv2;
+        tv5 = tv4.pow_by_self(&c5);
+        let is_qr = tv5.ct_eq(&Self::one());
+        tv2 = tv3 * c7;
+        tv5 = tv4 * tv1;
+        tv3 = Self::conditional_select(&tv2, &tv3, is_qr);
+        tv4 = Self::conditional_select(&tv5, &tv4, is_qr);
+
+        let two = Self::from(2);
+        for i in c1..2 {
+            let i = Self::from(i);
+            let mut tv5 = i - two;
+            tv5 = two.pow_by_self(&tv5);
+            tv5 = tv4.pow_by_self(&tv5);
+            let e1 = tv5.ct_eq(&Self::one());
+            tv2 = tv3 * tv1;
+            tv1 = tv1 * tv1;
+            tv5 = tv4 * tv1;
+            tv3 = Self::conditional_select(&tv2, &tv3, e1);
+            tv4 = Self::conditional_select(&tv5, &tv4, e1);
+        }
+
+        (is_qr, tv3)
+    }
+}
+
+impl BaseField for FieldElement {
+    /// Attempts to convert a little-endian byte representation of
+    /// a scalar into a `FieldElement`, failing if the input is not canonical.
+    fn from_bytes(bytes: &[u8; 32]) -> CtOption<FieldElement> {
+        let mut tmp = FieldElement([0, 0, 0, 0, 0]);
+
+        tmp.0[0] = u64::from_le_bytes(<[u8; 8]>::try_from(&bytes[..8]).unwrap());
+        tmp.0[1] = u64::from_le_bytes(<[u8; 8]>::try_from(&bytes[8..16]).unwrap());
+        tmp.0[2] = u64::from_le_bytes(<[u8; 8]>::try_from(&bytes[16..24]).unwrap());
+        tmp.0[3] = u64::from_le_bytes(<[u8; 8]>::try_from(&bytes[24..32]).unwrap());
+
+        // Try to subtract the modulus
+        let (_, borrow) = sbb(tmp.0[0], MODULUS.0[0], 0);
+        let (_, borrow) = sbb(tmp.0[1], MODULUS.0[1], borrow);
+        let (_, borrow) = sbb(tmp.0[2], MODULUS.0[2], borrow);
+        let (_, borrow) = sbb(tmp.0[3], MODULUS.0[3], borrow);
+
+        // If the element is smaller than MODULUS then the
+        // subtraction will underflow, producing a borrow value
+        // of 0xffff...ffff. Otherwise, it'll be zero.
+        let is_some = (borrow as u8) & 1;
+
+        // Convert to Montgomery form by computing
+        // (a.R^0 * R^2) / R = a.R
+        tmp *= &R2;
+
+        CtOption::new(tmp, Choice::from(is_some))
+    }
+
+    /// Converts an element of `FieldElement` into a byte representation in
+    /// little-endian byte order.
+    fn to_bytes(&self) -> [u8; 32] {
+        // Turn into canonical form by computing
+        // (a.R) / R = a
+        let tmp = FieldElement::montgomery_reduce(
+            self.0[0], self.0[1], self.0[2], self.0[3], self.0[4], 0, 0, 0, 0,
+        );
+
+        let mut res = [0; 32];
+        res[..8].copy_from_slice(&tmp.0[0].to_le_bytes());
+        res[8..16].copy_from_slice(&tmp.0[1].to_le_bytes());
+        res[16..24].copy_from_slice(&tmp.0[2].to_le_bytes());
+        res[24..32].copy_from_slice(&tmp.0[3].to_le_bytes());
+
+        res
+    }
+
+    /// Converts an element of `FieldElement` into a byte representation in
+    /// big-endian byte order.
+    fn to_be_bytes(&self) -> [u8; 32] {
+        // Turn into canonical form by computing
+        // (a.R) / R = a
+        let tmp = FieldElement::montgomery_reduce(
+            self.0[0], self.0[1], self.0[2], self.0[3], self.0[4], 0, 0, 0, 0,
+        );
+
+        let mut res = [0; 32];
+        res[..8].copy_from_slice(&tmp.0[3].to_be_bytes());
+        res[8..16].copy_from_slice(&tmp.0[2].to_be_bytes());
+        res[16..24].copy_from_slice(&tmp.0[1].to_be_bytes());
+        res[24..32].copy_from_slice(&tmp.0[0].to_be_bytes());
+
+        res
+    }
+}
+
 impl Serialize for FieldElement {
     fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
         let values: Vec<u8> = self.0.iter().map(|v| v.to_le_bytes()).flatten().collect();
@@ -352,12 +475,12 @@ impl PrimeField for FieldElement {
     }
 
     fn root_of_unity() -> Self {
-        Self::from_repr(arr![u8;
-            0x0c, 0x1d, 0xc0, 0x60, 0xe7, 0xa9, 0x19, 0x86, 0xdf, 0x98, 0x79, 0xa3, 0xfb, 0xc4,
-            0x83, 0xa8, 0x98, 0xbd, 0xea, 0xb6, 0x80, 0x75, 0x60, 0x45, 0x99, 0x2f, 0x4b, 0x54,
-            0x02, 0xb0, 0x52, 0xf2
+        Self::from_raw([
+            0x992f4b5402b052f2,
+            0x98bdeab680756045,
+            0xdf9879a3fbc483a8,
+            0xc1dc060e7a91986,
         ])
-        .unwrap()
     }
 }
 
@@ -556,52 +679,6 @@ impl FieldElement {
         self.add(self)
     }
 
-    /// Attempts to convert a little-endian byte representation of
-    /// a scalar into a `FieldElement`, failing if the input is not canonical.
-    pub fn from_bytes(bytes: &[u8; 32]) -> CtOption<FieldElement> {
-        let mut tmp = FieldElement([0, 0, 0, 0, 0]);
-
-        tmp.0[0] = u64::from_le_bytes(<[u8; 8]>::try_from(&bytes[..8]).unwrap());
-        tmp.0[1] = u64::from_le_bytes(<[u8; 8]>::try_from(&bytes[8..16]).unwrap());
-        tmp.0[2] = u64::from_le_bytes(<[u8; 8]>::try_from(&bytes[16..24]).unwrap());
-        tmp.0[3] = u64::from_le_bytes(<[u8; 8]>::try_from(&bytes[24..32]).unwrap());
-
-        // Try to subtract the modulus
-        let (_, borrow) = sbb(tmp.0[0], MODULUS.0[0], 0);
-        let (_, borrow) = sbb(tmp.0[1], MODULUS.0[1], borrow);
-        let (_, borrow) = sbb(tmp.0[2], MODULUS.0[2], borrow);
-        let (_, borrow) = sbb(tmp.0[3], MODULUS.0[3], borrow);
-
-        // If the element is smaller than MODULUS then the
-        // subtraction will underflow, producing a borrow value
-        // of 0xffff...ffff. Otherwise, it'll be zero.
-        let is_some = (borrow as u8) & 1;
-
-        // Convert to Montgomery form by computing
-        // (a.R^0 * R^2) / R = a.R
-        tmp *= &R2;
-
-        CtOption::new(tmp, Choice::from(is_some))
-    }
-
-    /// Converts an element of `FieldElement` into a byte representation in
-    /// little-endian byte order.
-    pub fn to_bytes(&self) -> [u8; 32] {
-        // Turn into canonical form by computing
-        // (a.R) / R = a
-        let tmp = FieldElement::montgomery_reduce(
-            self.0[0], self.0[1], self.0[2], self.0[3], self.0[4], 0, 0, 0, 0,
-        );
-
-        let mut res = [0; 32];
-        res[..8].copy_from_slice(&tmp.0[0].to_le_bytes());
-        res[8..16].copy_from_slice(&tmp.0[1].to_le_bytes());
-        res[16..24].copy_from_slice(&tmp.0[2].to_le_bytes());
-        res[24..32].copy_from_slice(&tmp.0[3].to_le_bytes());
-
-        res
-    }
-
     /// Converts a 512-bit little endian integer into
     /// a `FieldElement` by reducing by the modulus.
     pub fn from_bytes_wide(bytes: &[u8; 64]) -> FieldElement {
@@ -673,6 +750,18 @@ impl FieldElement {
         let (r7, _) = adc(0, r7, carry);
 
         FieldElement::montgomery_reduce(r0, r1, r2, r3, r4, r5, r6, r7, 0)
+    }
+
+    pub fn pow_by_self(&self, exp: &Self) -> Self {
+        let mut registers = [0u64; 4];
+
+        let exp_bytes = exp.to_bytes();
+        registers[0] = u64::from_ne_bytes(exp_bytes[0..8].try_into().unwrap());
+        registers[1] = u64::from_ne_bytes(exp_bytes[8..16].try_into().unwrap());
+        registers[2] = u64::from_ne_bytes(exp_bytes[16..24].try_into().unwrap());
+        registers[3] = u64::from_ne_bytes(exp_bytes[24..32].try_into().unwrap());
+
+        self.pow(&registers)
     }
 
     /// Exponentiates `self` by `by`, where `by` is a

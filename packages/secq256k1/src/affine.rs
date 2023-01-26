@@ -3,6 +3,8 @@ use std::ops::{Add, Mul, MulAssign, Neg, Sub};
 use std::ops::{AddAssign, SubAssign};
 
 use super::{ProjectivePoint, Secq256K1};
+use crate::field::BaseField;
+use crate::hashtocurve::iso_curve::hash_to_curve;
 use crate::{EncodedPoint, Scalar};
 use k256::elliptic_curve::subtle::Choice;
 use primeorder::elliptic_curve::group::Group;
@@ -79,6 +81,10 @@ impl SubAssign<AffinePoint> for AffinePoint {
     }
 }
 
+use crate::hashtocurve::constants::SECQ_CONSTANTS;
+use crate::FieldElement;
+use primeorder::PrimeField;
+
 impl AffinePoint {
     pub fn identity() -> Self {
         AffinePoint(AffinePointCore::IDENTITY)
@@ -94,6 +100,33 @@ impl AffinePoint {
 
     pub fn decompress(bytes: EncodedPoint) -> CtOption<Self> {
         AffinePointCore::from_encoded_point(&bytes).map(AffinePoint)
+    }
+
+    pub fn from_uniform_bytes(bytes: &[u8; 64]) -> Self {
+        let z = FieldElement::from(14).neg();
+        let iso_a = FieldElement::from_str_vartime(
+            "3642995984045157452672683439396299070953881827175886364060394186787010798372",
+        )
+        .unwrap();
+        let iso_b = FieldElement::from_str_vartime("1771").unwrap();
+
+        let (p1_coords, p2_coords) = hash_to_curve(bytes, iso_a, iso_b, z, SECQ_CONSTANTS);
+        let p1 = EncodedPoint::from_affine_coordinates(
+            &p1_coords.0.to_bytes().into(),
+            &p1_coords.1.to_bytes().into(),
+            false,
+        );
+
+        let p2 = EncodedPoint::from_affine_coordinates(
+            &p2_coords.0.to_bytes().into(),
+            &p2_coords.1.to_bytes().into(),
+            false,
+        );
+
+        let p1 = AffinePoint::decompress(p1).unwrap();
+        let p2 = AffinePoint::decompress(p2).unwrap();
+
+        p1 + p2
     }
 }
 
@@ -172,5 +205,17 @@ impl Group for AffinePoint {
 
     fn double(&self) -> Self {
         self.add(self)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_from_uniform_bytes() {
+        //!Still not working!
+        let pseudo_bytes = [1u8; 64];
+        let p = AffinePoint::from_uniform_bytes(&pseudo_bytes);
     }
 }
