@@ -34,7 +34,7 @@ const main = async () => {
   const index = tree.indexOf(pubKey);
   const merkleProof = tree.createProof(index);
 
-  const prover = new MembershipProver(treeDepth);
+  const prover = new MembershipProver();
   await prover.prove(sig, msgHash, merkleProof);
 
   // TODO: Verify the proof

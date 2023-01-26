@@ -33,20 +33,7 @@ describe("membership prove and verify", () => {
 
     tree = new Tree(treeDepth, poseidon);
 
-    const CIRCUIT = path.join(
-      __dirname,
-      "/../../circuits/build/membership/membership.circuit"
-    );
-
-    const WITNESS_GEN_WASM = path.join(
-      __dirname,
-      "/../../circuits/build/membership/membership_js/membership.wasm"
-    );
-
-    prover = new MembershipProver({
-      circuit: CIRCUIT,
-      witnessGenWasm: WITNESS_GEN_WASM
-    });
+    prover = new MembershipProver();
 
     // Insert the members into the tree
     for (const privKey of privKeys) {
