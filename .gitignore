@@ -33,3 +33,6 @@ build/
 packages/prover/test_circuit/test_circuit_js/
 #input files
 packages/prover/test_circuit/*.json 
+
+
+**/sage/*.sage.py
