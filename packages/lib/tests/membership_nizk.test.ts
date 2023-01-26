@@ -43,7 +43,7 @@ describe("membership prove and verify", () => {
       "/../../circuits/build/membership/membership_js/membership.wasm"
     );
 
-    prover = new MembershipProver(treeDepth, {
+    prover = new MembershipProver({
       circuit: CIRCUIT,
       witnessGenWasm: WITNESS_GEN_WASM
     });

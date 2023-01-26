@@ -24,7 +24,7 @@ export class MembershipProver extends Profiler implements IProver {
   circuit: string;
   witnessGenWasm: string;
 
-  constructor(treeDepth: number = 10, options?: ProverOptions) {
+  constructor(options?: ProverOptions) {
     super({ enabled: options?.enableProfiler });
 
     const spartanWasm = new SpartanWasm({ spartanWasm: options?.spartanWasm });
