@@ -41,7 +41,7 @@ export default function Home() {
     console.log("Proving...");
     console.time("Full proving time");
 
-    const prover = new MembershipProver(treeDepth, {
+    const prover = new MembershipProver({
       enableProfiler: true
     });
 
