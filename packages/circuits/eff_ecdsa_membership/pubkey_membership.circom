@@ -4,7 +4,7 @@ include "./eff_ecdsa.circom";
 include "./tree.circom";
 include "../poseidon/poseidon.circom";
 
-template Membership(nLevels) {
+template PubKeyMembership(nLevels) {
     signal input s;
     signal input root;
     signal input Tx; 
