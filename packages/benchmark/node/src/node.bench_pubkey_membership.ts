@@ -13,7 +13,7 @@ import {
   privateToPublic
 } from "@ethereumjs/util";
 
-const main = async () => {
+const benchPubKeyMembership = async () => {
   const privKey = Buffer.from("".padStart(16, "🧙"), "utf16le");
   const msg = Buffer.from("harry potter");
   const msgHash = hashPersonalMessage(msg);
@@ -24,12 +24,14 @@ const main = async () => {
 
   let wasm = new SpartanWasm(defaultWasmConfig);
 
+  // Init the Poseidon hash
   const poseidon = new Poseidon();
   await poseidon.initWasm(wasm);
 
   const treeDepth = 20;
   const tree = new Tree(treeDepth, poseidon);
 
+  // Get the prover public key hash
   const proverPubkeyHash = poseidon.hashPubKey(pubKey);
 
   // Insert prover public key hash into the tree
@@ -43,15 +45,21 @@ const main = async () => {
     tree.insert(poseidon.hashPubKey(pubKey));
   }
 
+  // Compute the merkle proof
   const index = tree.indexOf(proverPubkeyHash);
   const merkleProof = tree.createProof(index);
 
-  const prover = new MembershipProver(defaultPubkeyMembershipConfig);
+  // Init the prover
+  const prover = new MembershipProver({
+    ...defaultPubkeyMembershipConfig,
+    enableProfiler: true
+  });
   await prover.initWasm(wasm);
 
+  // Prove membership
   await prover.prove(sig, msgHash, merkleProof);
 
   // TODO: Verify the proof
 };
 
-main();
+export default benchPubKeyMembership;
