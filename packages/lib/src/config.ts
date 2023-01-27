@@ -4,7 +4,7 @@ import { LeafType, ProverConfig, WasmConfig } from "./types";
 
 export const defaultWasmConfig: WasmConfig = {
   pathOrUrl: isWeb
-    ? "https://storage.googleapis.com/personae-proving_keys/spartan_wasm_bg.wasm"
+    ? "https://storage.googleapis.com/personae-proving-keys/spartan_wasm_bg.wasm"
     : path.join(__dirname, "wasm/build/spartan_wasm_bg.wasm")
 };
 
@@ -13,7 +13,7 @@ export const defaultWasmConfig: WasmConfig = {
 // Default configs for pubkey membership proving
 export const defaultPubkeyMembershipConfig: ProverConfig = {
   spartanWasm: isWeb
-    ? "https://storage.googleapis.com/personae-proving_keys/spartan_wasm_bg.wasm"
+    ? "https://storage.googleapis.com/personae-proving-keys/spartan_wasm_bg.wasm"
     : path.join(__dirname, "wasm/build/spartan_wasm_bg.wasm"),
 
   witnessGenWasm: isWeb
@@ -21,7 +21,7 @@ export const defaultPubkeyMembershipConfig: ProverConfig = {
     : path.join(__dirname, "circuits/pubkey_membership.wasm"),
 
   circuit: isWeb
-    ? "https://storage.googleapis.com/personae-proving_keys/membership/pubkey_membership.circuit"
+    ? "https://storage.googleapis.com/personae-proving-keys/membership/pubkey_membership.circuit"
     : path.join(__dirname, "circuits/pubkey_membership.circuit"),
 
   leafType: LeafType.PubKeyHash
@@ -30,7 +30,7 @@ export const defaultPubkeyMembershipConfig: ProverConfig = {
 // Default configs for address membership proving
 export const defaultAddressMembershipConfig: ProverConfig = {
   spartanWasm: isWeb
-    ? "https://storage.googleapis.com/personae-proving_keys/spartan_wasm_bg.wasm"
+    ? "https://storage.googleapis.com/personae-proving-keys/spartan_wasm_bg.wasm"
     : path.join(__dirname, "wasm/build/spartan_wasm_bg.wasm"),
 
   witnessGenWasm: isWeb
@@ -38,7 +38,7 @@ export const defaultAddressMembershipConfig: ProverConfig = {
     : path.join(__dirname, "circuits/addr_membership.wasm"),
 
   circuit: isWeb
-    ? "https://storage.googleapis.com/personae-proving_keys/membership/addr_membership.circuit"
+    ? "https://storage.googleapis.com/personae-proving-keys/membership/addr_membership.circuit"
     : path.join(__dirname, "circuits/addr_membership.circuit"),
 
   leafType: LeafType.Address
