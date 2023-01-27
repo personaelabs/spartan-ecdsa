@@ -1,4 +1,11 @@
-import { MembershipProver, Poseidon, Tree } from "spartan-ecdsa";
+import {
+  MembershipProver,
+  Poseidon,
+  Tree,
+  SpartanWasm,
+  defaultWasmConfig,
+  defaultPubkeyMembershipConfig
+} from "spartan-ecdsa";
 import {
   hashPersonalMessage,
   ecsign,
@@ -15,26 +22,33 @@ const main = async () => {
   const pubKey = ecrecover(msgHash, v, r, s);
   const sig = `0x${r.toString("hex")}${s.toString("hex")}${v.toString(16)}`;
 
+  let wasm = new SpartanWasm(defaultWasmConfig);
+
   const poseidon = new Poseidon();
-  await poseidon.init();
-  const treeDepth = 10;
+  await poseidon.initWasm(wasm);
+
+  const treeDepth = 20;
   const tree = new Tree(treeDepth, poseidon);
 
-  // Insert prover public key into the tree
-  tree.hashAndInsert(pubKey);
+  const proverPubkeyHash = poseidon.hashPubKey(pubKey);
+
+  // Insert prover public key hash into the tree
+  tree.insert(proverPubkeyHash);
 
   // Insert other members into the tree
   for (const member of ["🕵️", "🥷", "👩‍🔬"]) {
     const pubKey = privateToPublic(
       Buffer.from("".padStart(16, member), "utf16le")
     );
-    tree.hashAndInsert(pubKey);
+    tree.insert(poseidon.hashPubKey(pubKey));
   }
 
-  const index = tree.indexOf(pubKey);
+  const index = tree.indexOf(proverPubkeyHash);
   const merkleProof = tree.createProof(index);
 
-  const prover = new MembershipProver();
+  const prover = new MembershipProver(defaultPubkeyMembershipConfig);
+  await prover.initWasm(wasm);
+
   await prover.prove(sig, msgHash, merkleProof);
 
   // TODO: Verify the proof
