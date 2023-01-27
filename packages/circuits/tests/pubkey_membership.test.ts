@@ -1,23 +1,26 @@
 const wasm_tester = require("circom_tester").wasm;
 var EC = require("elliptic").ec;
 import * as path from "path";
-const ec = new EC("secp256k1");
-import { Poseidon, Tree } from "spartan-ecdsa";
+import { Poseidon, Tree, SpartanWasm, defaultWasmConfig } from "spartan-ecdsa";
+import { privateToPublic } from "@ethereumjs/util";
 import { getEffEcdsaCircuitInput } from "./test_utils";
 
-describe("membership", () => {
+describe("pubkey_membership", () => {
   it("should verify correct signature and merkle proof", async () => {
     // Compile the circuit
     const circuit = await wasm_tester(
-      path.join(__dirname, "./circuits/membership_test.circom"),
+      path.join(__dirname, "./circuits/pubkey_membership_test.circom"),
       {
         prime: "secq256k1" // Specify to use the option --prime secq256k1 when compiling with circom
       }
     );
 
+    const wasm = new SpartanWasm(defaultWasmConfig);
+
     // Construct the tree
     const poseidon = new Poseidon();
-    await poseidon.init();
+    await poseidon.initWasm(wasm);
+
     const nLevels = 10;
     const tree = new Tree(nLevels, poseidon);
 
@@ -32,10 +35,8 @@ describe("membership", () => {
 
     // Compute public key hashes
     for (const privKey of privKeys) {
-      const pubKey = ec.keyFromPrivate(privKey).getPublic();
-      const pubKeyX = BigInt(pubKey.x.toString());
-      const pubKeyY = BigInt(pubKey.y.toString());
-      const pubKeyHash = poseidon.hash([pubKeyX, pubKeyY]);
+      const pubKey = privateToPublic(privKey);
+      const pubKeyHash = poseidon.hashPubKey(pubKey);
       pubKeyHashes.push(pubKeyHash);
     }
 

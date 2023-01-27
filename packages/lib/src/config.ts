@@ -1,22 +1,45 @@
 import * as path from "path";
 const isWeb = typeof window !== "undefined";
+import { LeafType, ProverConfig, WasmConfig } from "./types";
 
-export const DEFAULT_SPARTAN_WASM = isWeb
-  ? "https://storage.googleapis.com/personae-proving_keys/spartan_wasm_bg.wasm"
-  : path.join(__dirname, "wasm/build/spartan_wasm_bg.wasm");
+export const defaultWasmConfig: WasmConfig = {
+  pathOrUrl: isWeb
+    ? "https://storage.googleapis.com/personae-proving_keys/spartan_wasm_bg.wasm"
+    : path.join(__dirname, "wasm/build/spartan_wasm_bg.wasm")
+};
 
-export const DEFAULT_EFF_ECDSA_WITNESS_GEN_WASM = isWeb
-  ? "https://storage.googleapis.com/personae-proving_keys/eff_ecdsa/eff_ecdsa.wasm"
-  : path.join(__dirname, "circuits/eff_ecdsa.wasm");
+// Default configs for MembershipProver
 
-export const DEFAULT_EFF_ECDSA_CIRCUIT = isWeb
-  ? "https://storage.googleapis.com/personae-proving_keys/eff_ecdsa/eff_ecdsa.circuit"
-  : path.join(__dirname, "circuits/eff_ecdsa.circuit");
+// Default configs for pubkey membership proving
+export const defaultPubkeyMembershipConfig: ProverConfig = {
+  spartanWasm: isWeb
+    ? "https://storage.googleapis.com/personae-proving_keys/spartan_wasm_bg.wasm"
+    : path.join(__dirname, "wasm/build/spartan_wasm_bg.wasm"),
 
-export const DEFAULT_MEMBERSHIP_WITNESS_GEN_WASM = isWeb
-  ? "https://storage.googleapis.com/personae-proving-keys/membership/membeship.wasm"
-  : path.join(__dirname, "circuits/membership.wasm");
+  witnessGenWasm: isWeb
+    ? "https://storage.googleapis.com/personae-proving-keys/membership/pubkey_membership.wasm"
+    : path.join(__dirname, "circuits/pubkey_membership.wasm"),
 
-export const DEFAULT_MEMBERSHIP_CIRCUIT = isWeb
-  ? "https://storage.googleapis.com/personae-proving_keys/membership/membership.circuit"
-  : path.join(__dirname, "circuits/membership.circuit");
+  circuit: isWeb
+    ? "https://storage.googleapis.com/personae-proving_keys/membership/pubkey_membership.circuit"
+    : path.join(__dirname, "circuits/pubkey_membership.circuit"),
+
+  leafType: LeafType.PubKeyHash
+};
+
+// Default configs for address membership proving
+export const defaultAddressMembershipConfig: ProverConfig = {
+  spartanWasm: isWeb
+    ? "https://storage.googleapis.com/personae-proving_keys/spartan_wasm_bg.wasm"
+    : path.join(__dirname, "wasm/build/spartan_wasm_bg.wasm"),
+
+  witnessGenWasm: isWeb
+    ? "https://storage.googleapis.com/personae-proving-keys/membership/addr_membership.wasm"
+    : path.join(__dirname, "circuits/addr_membership.wasm"),
+
+  circuit: isWeb
+    ? "https://storage.googleapis.com/personae-proving_keys/membership/addr_membership.circuit"
+    : path.join(__dirname, "circuits/addr_membership.circuit"),
+
+  leafType: LeafType.Address
+};
