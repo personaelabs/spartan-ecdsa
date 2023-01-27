@@ -1,4 +1,11 @@
-import { MembershipProver, Poseidon, Tree } from "spartan-ecdsa";
+import {
+  MembershipProver,
+  Poseidon,
+  Tree,
+  SpartanWasm,
+  defaultWasmConfig,
+  defaultPubkeyMembershipConfig
+} from "spartan-ecdsa";
 import {
   hashPersonalMessage,
   ecsign,
@@ -6,7 +13,7 @@ import {
   privateToPublic
 } from "@ethereumjs/util";
 
-const main = async () => {
+const benchPubKeyMembership = async () => {
   const privKey = Buffer.from("".padStart(16, "🧙"), "utf16le");
   const msg = Buffer.from("harry potter");
   const msgHash = hashPersonalMessage(msg);
@@ -15,29 +22,44 @@ const main = async () => {
   const pubKey = ecrecover(msgHash, v, r, s);
   const sig = `0x${r.toString("hex")}${s.toString("hex")}${v.toString(16)}`;
 
+  let wasm = new SpartanWasm(defaultWasmConfig);
+
+  // Init the Poseidon hash
   const poseidon = new Poseidon();
-  await poseidon.init();
-  const treeDepth = 10;
+  await poseidon.initWasm(wasm);
+
+  const treeDepth = 20;
   const tree = new Tree(treeDepth, poseidon);
 
-  // Insert prover public key into the tree
-  tree.hashAndInsert(pubKey);
+  // Get the prover public key hash
+  const proverPubkeyHash = poseidon.hashPubKey(pubKey);
+
+  // Insert prover public key hash into the tree
+  tree.insert(proverPubkeyHash);
 
   // Insert other members into the tree
   for (const member of ["🕵️", "🥷", "👩‍🔬"]) {
     const pubKey = privateToPublic(
       Buffer.from("".padStart(16, member), "utf16le")
     );
-    tree.hashAndInsert(pubKey);
+    tree.insert(poseidon.hashPubKey(pubKey));
   }
 
-  const index = tree.indexOf(pubKey);
+  // Compute the merkle proof
+  const index = tree.indexOf(proverPubkeyHash);
   const merkleProof = tree.createProof(index);
 
-  const prover = new MembershipProver(treeDepth);
+  // Init the prover
+  const prover = new MembershipProver({
+    ...defaultPubkeyMembershipConfig,
+    enableProfiler: true
+  });
+  await prover.initWasm(wasm);
+
+  // Prove membership
   await prover.prove(sig, msgHash, merkleProof);
 
   // TODO: Verify the proof
 };
 
-main();
+export default benchPubKeyMembership;

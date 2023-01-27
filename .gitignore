@@ -33,3 +33,5 @@ build/
 packages/prover/test_circuit/test_circuit_js/
 #input files
 packages/prover/test_circuit/*.json 
+
+packages/lib/src/circuits/

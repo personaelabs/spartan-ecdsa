@@ -14,13 +14,17 @@ export interface NIZK {
   publicInput: Uint8Array;
 }
 
-export interface ProverOptions {
+export interface ProverConfig {
   proverWasm?: string;
-
-  witnessGenWasm?: string;
-  circuit?: string;
-  spartanWasm?: string;
+  witnessGenWasm: string;
+  circuit: string;
+  spartanWasm: string;
   enableProfiler?: boolean;
+  leafType: LeafType;
+}
+
+export interface WasmConfig {
+  pathOrUrl: string;
 }
 
 export interface VerifyOptions {
@@ -45,5 +49,10 @@ export interface IVerifier {
 }
 
 export interface SpartanWasmOptions {
-  spartanWasm?: string;
+  spartanWasm: string;
+}
+
+export enum LeafType {
+  PubKeyHash,
+  Address
 }

@@ -1,10 +1,10 @@
 {
   "name": "node",
   "version": "1.0.0",
-  "main": "index.ts",
+  "main": "node.bench.ts",
   "license": "MIT",
   "scripts": {
-    "bench": "ts-node ./src/index.ts"
+    "bench": "ts-node ./src/node.bench.ts"
   },
   "dependencies": {
     "@ethereumjs/util": "^8.0.3",
