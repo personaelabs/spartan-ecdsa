@@ -13,7 +13,6 @@ export interface NIZK {
 }
 
 export interface ProverConfig {
-  proverWasm?: string;
   witnessGenWasm: string;
   circuit: string;
   enableProfiler?: boolean;

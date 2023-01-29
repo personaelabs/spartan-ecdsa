@@ -8,7 +8,7 @@
     "build/**/*"
   ],
   "scripts": {
-    "build": "tsc && yarn loadWasm && sh ./copy_artifacts.sh",
+    "build": "yarn loadWasm && tsc && sh ./copy_artifacts.sh",
     "prepublishOnly": "yarn build",
     "prepare": "yarn loadWasm",
     "loadWasm": "ts-node ./load_wasm.ts"
