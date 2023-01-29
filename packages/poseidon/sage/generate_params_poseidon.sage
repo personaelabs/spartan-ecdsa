@@ -1,3 +1,5 @@
+# https://extgit.iaik.tugraz.at/krypto/hadeshash/-/blob/master/code/generate_params_poseidon.sage
+
 from math import *
 import sys
 #from sage.rings.polynomial.polynomial_gf2x import GF2X_BuildIrred_list
