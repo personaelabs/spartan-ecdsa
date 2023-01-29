@@ -1,13 +1,16 @@
 import { Profiler } from "../helpers/profiler";
 import { loadCircuit } from "../helpers/utils";
-import { IVerifier, VerifyOptions } from "../types";
+import { IVerifier, VerifyConfig } from "../types";
 import { SpartanWasm } from "../wasm";
 
+/**
+ * ECDSA Membership Verifier
+ */
 export class MembershipVerifier extends Profiler implements IVerifier {
   spartanWasm!: SpartanWasm;
   circuit: string;
 
-  constructor(options: VerifyOptions) {
+  constructor(options: VerifyConfig) {
     super({ enabled: options?.enableProfiler });
 
     this.circuit = options.circuit;

@@ -27,7 +27,7 @@ export interface WasmConfig {
   pathOrUrl: string;
 }
 
-export interface VerifyOptions {
+export interface VerifyConfig {
   circuit: string; // Path to circuit file compiled by Nova-Scotia
   spartanWasm: string; // Path to spartan wasm file
   enableProfiler?: boolean;
