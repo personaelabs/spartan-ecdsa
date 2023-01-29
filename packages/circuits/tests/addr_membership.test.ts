@@ -2,12 +2,7 @@ const wasm_tester = require("circom_tester").wasm;
 var EC = require("elliptic").ec;
 import * as path from "path";
 const ec = new EC("secp256k1");
-import {
-  Poseidon,
-  Tree,
-  SpartanWasm,
-  defaultWasmConfig
-} from "@personaelabs/spartan-ecdsa";
+import { Poseidon, Tree } from "@personaelabs/spartan-ecdsa";
 import { getEffEcdsaCircuitInput } from "./test_utils";
 import { privateToAddress } from "@ethereumjs/util";
 
@@ -21,11 +16,9 @@ describe("membership", () => {
       }
     );
 
-    const wasm = new SpartanWasm(defaultWasmConfig);
-
     // Construct the tree
     const poseidon = new Poseidon();
-    await poseidon.initWasm(wasm);
+    await poseidon.initWasm();
 
     const nLevels = 10;
     const tree = new Tree(nLevels, poseidon);

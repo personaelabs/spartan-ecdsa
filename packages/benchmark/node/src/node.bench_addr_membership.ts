@@ -4,12 +4,10 @@ import {
   ecsign
 } from "@ethereumjs/util";
 import {
-  SpartanWasm,
   Tree,
   Poseidon,
   MembershipProver,
-  defaultAddressMembershipConfig,
-  defaultWasmConfig
+  defaultAddressMembershipConfig
 } from "@personaelabs/spartan-ecdsa";
 
 const benchAddrMembership = async () => {
@@ -20,11 +18,9 @@ const benchAddrMembership = async () => {
   const { v, r, s } = ecsign(msgHash, privKey);
   const sig = `0x${r.toString("hex")}${s.toString("hex")}${v.toString(16)}`;
 
-  let wasm = new SpartanWasm(defaultWasmConfig);
-
   // Init the Poseidon hash
   const poseidon = new Poseidon();
-  await poseidon.initWasm(wasm);
+  await poseidon.initWasm();
 
   const treeDepth = 20;
   const tree = new Tree(treeDepth, poseidon);
@@ -57,7 +53,7 @@ const benchAddrMembership = async () => {
     ...defaultAddressMembershipConfig,
     enableProfiler: true
   });
-  await prover.initWasm(wasm);
+  await prover.initWasm();
 
   // Prove membership
   await prover.prove(sig, msgHash, merkleProof);

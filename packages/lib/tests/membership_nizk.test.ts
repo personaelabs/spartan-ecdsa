@@ -1,12 +1,9 @@
-import * as path from "path";
 import {
   MembershipProver,
   Tree,
   Poseidon,
   defaultAddressMembershipConfig,
-  defaultPubkeyMembershipConfig,
-  SpartanWasm,
-  defaultWasmConfig
+  defaultPubkeyMembershipConfig
 } from "../src/lib";
 import {
   hashPersonalMessage,
@@ -36,18 +33,14 @@ describe("membership prove and verify", () => {
   const sig = `0x${r.toString("hex")}${s.toString("hex")}${v.toString(16)}`;
 
   let poseidon: Poseidon;
-  let wasm: SpartanWasm;
 
   beforeAll(async () => {
-    // Init Wasm
-    wasm = new SpartanWasm(defaultWasmConfig);
-
     // Init Poseidon
     poseidon = new Poseidon();
-    await poseidon.initWasm(wasm);
+    await poseidon.initWasm();
   });
 
-  describe("pubkey_membership prover and verify", () => {
+  describe.only("pubkey_membership prover and verify", () => {
     it("should prove and verify valid signature and merkle proof", async () => {
       const pubKeyTree = new Tree(treeDepth, poseidon);
 
@@ -65,8 +58,6 @@ describe("membership prove and verify", () => {
       const pubKeyMembershipProver = new MembershipProver(
         defaultPubkeyMembershipConfig
       );
-
-      await pubKeyMembershipProver.initWasm(wasm);
 
       const index = pubKeyTree.indexOf(proverPubKeyHash as bigint);
       const merkleProof = pubKeyTree.createProof(index);
@@ -100,8 +91,6 @@ describe("membership prove and verify", () => {
       const addressMembershipProver = new MembershipProver(
         defaultAddressMembershipConfig
       );
-
-      await addressMembershipProver.initWasm(wasm);
 
       const index = addressTree.indexOf(proverAddress as bigint);
       const merkleProof = addressTree.createProof(index);

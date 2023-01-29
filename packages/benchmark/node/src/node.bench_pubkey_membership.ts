@@ -2,8 +2,6 @@ import {
   MembershipProver,
   Poseidon,
   Tree,
-  SpartanWasm,
-  defaultWasmConfig,
   defaultPubkeyMembershipConfig
 } from "@personaelabs/spartan-ecdsa";
 import {
@@ -22,11 +20,9 @@ const benchPubKeyMembership = async () => {
   const pubKey = ecrecover(msgHash, v, r, s);
   const sig = `0x${r.toString("hex")}${s.toString("hex")}${v.toString(16)}`;
 
-  let wasm = new SpartanWasm(defaultWasmConfig);
-
   // Init the Poseidon hash
   const poseidon = new Poseidon();
-  await poseidon.initWasm(wasm);
+  await poseidon.initWasm();
 
   const treeDepth = 20;
   const tree = new Tree(treeDepth, poseidon);
@@ -54,7 +50,7 @@ const benchPubKeyMembership = async () => {
     ...defaultPubkeyMembershipConfig,
     enableProfiler: true
   });
-  await prover.initWasm(wasm);
+  await prover.initWasm();
 
   // Prove membership
   await prover.prove(sig, msgHash, merkleProof);

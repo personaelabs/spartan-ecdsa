@@ -37,3 +37,5 @@ packages/prover/test_circuit/*.json
 packages/lib/src/circuits/
 
 packages/poseidon/sage/*.py
+
+wasm_bytes.ts

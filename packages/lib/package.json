@@ -8,8 +8,10 @@
     "build/**/*"
   ],
   "scripts": {
-    "build": "tsc && sh ./copy_artifacts.sh",
-    "prepublishOnly": "yarn build"
+    "build": "tsc && yarn loadWasm && sh ./copy_artifacts.sh",
+    "prepublishOnly": "yarn build",
+    "prepare": "yarn loadWasm",
+    "loadWasm": "ts-node ./load_wasm.ts"
   },
   "devDependencies": {
     "@types/jest": "^29.2.5",

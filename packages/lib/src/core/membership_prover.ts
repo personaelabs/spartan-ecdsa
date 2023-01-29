@@ -1,6 +1,5 @@
 import { Profiler } from "../helpers/profiler";
 import { IProver, MerkleProof, NIZK, ProverConfig, LeafType } from "../types";
-import { SpartanWasm } from "../wasm";
 import {
   bigIntToBytes,
   loadCircuit,
@@ -11,12 +10,12 @@ import {
   EffEcdsaPubInput,
   EffEcdsaCircuitPubInput
 } from "../helpers/efficient_ecdsa";
+import wasm, { init } from "../wasm";
 
 /**
  * ECDSA Membership Prover
  */
 export class MembershipProver extends Profiler implements IProver {
-  spartanWasm!: SpartanWasm;
   circuit: string;
   witnessGenWasm: string;
   leafType: LeafType;
@@ -29,9 +28,8 @@ export class MembershipProver extends Profiler implements IProver {
     this.witnessGenWasm = options.witnessGenWasm;
   }
 
-  async initWasm(wasm: SpartanWasm) {
-    this.spartanWasm = wasm;
-    this.spartanWasm.init();
+  async initWasm() {
+    await init();
   }
 
   // @ts-ignore
@@ -40,10 +38,6 @@ export class MembershipProver extends Profiler implements IProver {
     msgHash: Buffer,
     merkleProof: MerkleProof
   ): Promise<NIZK> {
-    if (typeof this.spartanWasm === "undefined") {
-      throw new Error("wasm not initialized. Please call initWasm().");
-    }
-
     const { r, s, v } = fromSig(sig);
 
     const circuitPubInput = EffEcdsaCircuitPubInput.computeFromSig(
@@ -86,11 +80,7 @@ export class MembershipProver extends Profiler implements IProver {
     this.timeEnd("Load circuit");
 
     this.time("Prove");
-    let proof = await this.spartanWasm.prove(
-      circuitBin,
-      witness.data,
-      pubInput
-    );
+    let proof = wasm.prove(circuitBin, witness.data, pubInput);
     this.timeEnd("Prove");
 
     return { proof, publicInput: effEcdsaPubInput.serialize() };
