@@ -1,5 +1,5 @@
 {
-  "name": "spartan-ecdsa",
+  "name": "@personaelabs/spartan-ecdsa",
   "version": "1.0.0",
   "main": "./build/lib.js",
   "license": "MIT",
