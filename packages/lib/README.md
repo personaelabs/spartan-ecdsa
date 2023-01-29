@@ -64,7 +64,7 @@ import {
   MembershipProver,
   defaultAddressMembershipConfig,
   defaultWasmConfig
-} from "spartan-ecdsa";
+} from "@personaelabs/spartan-ecdsa";
 
 const privKey = Buffer.from("".padStart(16, "🧙"), "utf16le");
 const msg = Buffer.from("harry potter");

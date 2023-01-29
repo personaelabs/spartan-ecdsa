@@ -7,7 +7,7 @@ import {
   defaultAddressMembershipConfig,
   defaultWasmConfig,
   defaultPubkeyMembershipConfig
-} from "spartan-ecdsa";
+} from "@personaelabs/spartan-ecdsa";
 import {
   ecrecover,
   ecsign,

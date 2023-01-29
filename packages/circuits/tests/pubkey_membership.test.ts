@@ -1,7 +1,12 @@
 const wasm_tester = require("circom_tester").wasm;
 var EC = require("elliptic").ec;
 import * as path from "path";
-import { Poseidon, Tree, SpartanWasm, defaultWasmConfig } from "spartan-ecdsa";
+import {
+  Poseidon,
+  Tree,
+  SpartanWasm,
+  defaultWasmConfig
+} from "@personaelabs/spartan-ecdsa";
 import { privateToPublic } from "@ethereumjs/util";
 import { getEffEcdsaCircuitInput } from "./test_utils";
 
