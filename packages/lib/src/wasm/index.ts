@@ -24,8 +24,8 @@ export class SpartanWasm {
     return wasm.prove(circuit, vars, public_inputs);
   }
 
-  verify(circuit: Uint8Array, vars: Uint8Array, public_inputs: Uint8Array) {
-    return wasm.verify(circuit, vars, public_inputs);
+  verify(circuit: Uint8Array, proof: Uint8Array, public_inputs: Uint8Array) {
+    return wasm.verify(circuit, proof, public_inputs);
   }
 
   poseidon(inputs: Uint8Array) {
