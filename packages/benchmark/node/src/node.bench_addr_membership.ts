@@ -12,7 +12,7 @@ import {
   defaultWasmConfig,
   MembershipVerifier,
   defaultAddressMembershipVConfig
-} from "spartan-ecdsa";
+} from "@personaelabs/spartan-ecdsa";
 
 const benchAddrMembership = async () => {
   const privKey = Buffer.from("".padStart(16, "🧙"), "utf16le");

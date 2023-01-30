@@ -1,5 +1,5 @@
 import { hashPersonalMessage, ecsign } from "@ethereumjs/util";
-import { EffEcdsaCircuitPubInput } from "spartan-ecdsa";
+import { EffEcdsaCircuitPubInput } from "@personaelabs/spartan-ecdsa";
 
 export const getEffEcdsaCircuitInput = (privKey: Buffer, msg: Buffer) => {
   const msgHash = hashPersonalMessage(msg);

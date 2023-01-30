@@ -1,11 +1,16 @@
 {
-  "name": "spartan-ecdsa",
-  "version": "1.0.0",
+  "name": "@personaelabs/spartan-ecdsa",
+  "version": "0.0.4",
   "main": "./build/lib.js",
+  "types": "./build/lib.d.ts",
   "license": "MIT",
+  "files": [
+    "build/**/*"
+  ],
   "scripts": {
     "build": "tsc && sh ./copy_artifacts.sh",
     "test": "jest"
+    "prepublishOnly": "yarn build"
   },
   "devDependencies": {
     "@types/jest": "^29.2.5",

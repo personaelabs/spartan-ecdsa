@@ -40,6 +40,10 @@ export class MembershipProver extends Profiler implements IProver {
     msgHash: Buffer,
     merkleProof: MerkleProof
   ): Promise<NIZK> {
+    if (typeof this.spartanWasm === "undefined") {
+      throw new Error("wasm not initialized. Please call initWasm().");
+    }
+
     const { r, s, v } = fromSig(sig);
 
     const circuitPubInput = EffEcdsaCircuitPubInput.computeFromSig(

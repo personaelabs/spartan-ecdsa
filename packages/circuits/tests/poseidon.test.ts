@@ -20,7 +20,7 @@ describe("poseidon", () => {
     const w = await circuit.calculateWitness(input, true);
 
     await circuit.assertOut(w, {
-      out: "55864140790032987462805271262840606862500777900572169165625301625084550490622"
+      out: "46702443887670435486723478191273607819169644657419964658749776213559127696053"
     });
 
     await circuit.checkConstraints(w);

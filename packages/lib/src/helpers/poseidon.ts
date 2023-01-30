@@ -10,7 +10,14 @@ export class Poseidon {
     await this.wasm.init();
   }
 
+  assertInitWasm() {
+    if (typeof this.wasm === "undefined") {
+      throw new Error("wasm not initialized. Please call initWasm().");
+    }
+  }
+
   hash(inputs: bigint[]): bigint {
+    this.assertInitWasm();
     const inputsBytes = new Uint8Array(32 * inputs.length);
     for (let i = 0; i < inputs.length; i++) {
       inputsBytes.set(bigIntToLeBytes(inputs[i], 32), i * 32);
@@ -21,6 +28,7 @@ export class Poseidon {
   }
 
   hashPubKey(pubKey: Buffer): bigint {
+    this.assertInitWasm();
     const pubKeyX = BigInt("0x" + pubKey.toString("hex").slice(0, 64));
     const pubKeyY = BigInt("0x" + pubKey.toString("hex").slice(64, 128));
 

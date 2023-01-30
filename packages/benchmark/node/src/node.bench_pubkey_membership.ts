@@ -7,7 +7,7 @@ import {
   defaultPubkeyMembershipPConfig,
   defaultPubkeyMembershipVConfig,
   MembershipVerifier
-} from "spartan-ecdsa";
+} from "@personaelabs/spartan-ecdsa";
 import {
   hashPersonalMessage,
   ecsign,

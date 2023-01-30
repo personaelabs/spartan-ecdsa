@@ -1,0 +1,6 @@
+/node_modules
+/src
+/tests
+tsconfig.json
+jest.config.js
+copy_artifacts.sh

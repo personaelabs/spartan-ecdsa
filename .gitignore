@@ -35,3 +35,5 @@ packages/prover/test_circuit/test_circuit_js/
 packages/prover/test_circuit/*.json 
 
 packages/lib/src/circuits/
+
+packages/poseidon/sage/*.py

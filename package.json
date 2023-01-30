@@ -5,6 +5,9 @@
   "main": "index.js",
   "repository": "https://github.com/DanTehrani/spartan-wasm.git",
   "author": "Daniel Tehrani <contact@dantehrani.com>",
+  "scripts": {
+    "build": "sh ./scripts/build.sh && lerna run build"
+  },
   "devDependencies": {
     "@types/jest": "^29.2.4",
     "@typescript-eslint/eslint-plugin": "5.49.0",
