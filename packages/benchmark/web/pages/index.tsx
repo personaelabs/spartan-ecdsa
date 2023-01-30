@@ -1,12 +1,15 @@
 import { useState } from "react";
 import {
   MembershipProver,
+  MembershipVerifier,
   Tree,
   Poseidon,
   SpartanWasm,
   defaultAddressMembershipPConfig,
   defaultWasmConfig,
-  defaultPubkeyMembershipPConfig
+  defaultPubkeyMembershipPConfig,
+  defaultPubkeyMembershipVConfig,
+  defaultAddressMembershipVConfig
 } from "spartan-ecdsa";
 import {
   ecrecover,
@@ -18,8 +21,6 @@ import {
 } from "@ethereumjs/util";
 
 export default function Home() {
-  const [proof, setProof] = useState<any | undefined>();
-
   const provePubKeyMembership = async () => {
     const privKey = Buffer.from("".padStart(16, "🧙"), "utf16le");
     const msg = Buffer.from("harry potter");
@@ -70,7 +71,20 @@ export default function Home() {
       proof.length,
       "bytes"
     );
-    setProof({ proof, publicInput });
+
+    console.log("Verifying...");
+    const verifier = new MembershipVerifier(defaultPubkeyMembershipVConfig);
+    await verifier.initWasm(wasm);
+
+    console.time("Verification time");
+    const result = await verifier.verify(proof, publicInput);
+    console.timeEnd("Verification time");
+
+    if (result) {
+      console.log("Successfully verified proof!");
+    } else {
+      console.log("Failed to verify proof :(");
+    }
   };
 
   const proverAddressMembership = async () => {
@@ -127,23 +141,21 @@ export default function Home() {
       proof.length,
       "bytes"
     );
-    setProof({ proof, publicInput });
-  };
 
-  /*
-  const verify = async () => {
-    if (!proof) {
-      console.log("No proof yet!");
+    console.log("Verifying...");
+    const verifier = new MembershipVerifier(defaultAddressMembershipVConfig);
+    await verifier.initWasm(wasm);
+
+    console.time("Verification time");
+    const result = await verifier.verify(proof, publicInput);
+    console.timeEnd("Verification time");
+
+    if (result) {
+      console.log("Successfully verified proof!");
     } else {
-      const verifier = new EffECDSAVerifier({
-        enableProfiler: true
-      });
-
-      const verified = await verifier.verify(proof.proof, proof.publicInput);
-      console.log("Verified?", verified);
+      console.log("Failed to verify proof :(");
     }
   };
-  */
 
   return (
     <div>
