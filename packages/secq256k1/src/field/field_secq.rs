@@ -1132,9 +1132,9 @@ mod tests {
     }
 
     const LARGEST: FieldElement = FieldElement([
-        0xfffffffefffffc2e,
-        0xffffffffffffffff,
-        0xffffffffffffffff,
+        0xbfd25e8cd0364140,
+        0xbaaedce6af48a03b,
+        0xfffffffffffffffe,
         0xffffffffffffffff,
         0,
     ]);
@@ -1145,9 +1145,9 @@ mod tests {
         tmp += &LARGEST;
 
         let target = FieldElement([
-            0xfffffffefffffc2d,
-            0xffffffffffffffff,
-            0xffffffffffffffff,
+            0xbfd25e8cd036413f,
+            0xbaaedce6af48a03b,
+            0xfffffffffffffffe,
             0xffffffffffffffff,
             0,
         ]);
@@ -1244,18 +1244,6 @@ mod tests {
 
             cur.add_assign(&LARGEST);
         }
-    }
-
-    #[test]
-    fn test_sqrt() {
-        /*
-        let a = FieldElement::from_be_hex(
-            "4f513cd2261276cff62ee29f160e37ab696186232f43ae681fe57fad91ef2135",
-        );
-        println!("a {:?}", a);
-        let result = a.sqrt().unwrap();
-        println!("result {:?}", result);
-         */
     }
 
     #[test]
