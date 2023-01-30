@@ -4,7 +4,9 @@ import {
   Tree,
   SpartanWasm,
   defaultWasmConfig,
-  defaultPubkeyMembershipConfig
+  defaultPubkeyMembershipPConfig,
+  defaultPubkeyMembershipVConfig,
+  MembershipVerifier
 } from "spartan-ecdsa";
 import {
   hashPersonalMessage,
@@ -51,15 +53,23 @@ const benchPubKeyMembership = async () => {
 
   // Init the prover
   const prover = new MembershipProver({
-    ...defaultPubkeyMembershipConfig,
+    ...defaultPubkeyMembershipPConfig,
     enableProfiler: true
   });
   await prover.initWasm(wasm);
 
   // Prove membership
-  await prover.prove(sig, msgHash, merkleProof);
+  const { proof, publicInput } = await prover.prove(sig, msgHash, merkleProof);
 
-  // TODO: Verify the proof
+  // Init verifier
+  const verifier = new MembershipVerifier({
+    ...defaultPubkeyMembershipVConfig,
+    enableProfiler: true
+  });
+  await verifier.initWasm(wasm);
+
+  // Verify proof
+  await verifier.verify(proof, publicInput);
 };
 
 export default benchPubKeyMembership;

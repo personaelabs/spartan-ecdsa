@@ -26,6 +26,13 @@ export class MembershipVerifier extends Profiler implements IVerifier {
     const circuitBin = await loadCircuit(this.circuit);
     this.timeEnd("Load circuit");
 
-    return this.spartanWasm.verify(circuitBin, proof, publicInput);
+    this.time("Verify proof");
+    const result = await this.spartanWasm.verify(
+      circuitBin,
+      proof,
+      publicInput
+    );
+    this.timeEnd("Verify proof");
+    return result;
   }
 }
