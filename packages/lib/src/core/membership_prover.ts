@@ -1,5 +1,5 @@
 import { Profiler } from "../helpers/profiler";
-import { IProver, MerkleProof, NIZK, ProverOptions } from "../types";
+import { IProver, MerkleProof, NIZK, ProverConfig, LeafType } from "../types";
 import { SpartanWasm } from "../wasm";
 import {
   bigIntToBytes,
@@ -11,27 +11,27 @@ import {
   EffEcdsaPubInput,
   EffEcdsaCircuitPubInput
 } from "../helpers/efficient_ecdsa";
-import {
-  DEFAULT_MEMBERSHIP_CIRCUIT,
-  DEFAULT_MEMBERSHIP_WITNESS_GEN_WASM
-} from "../config";
 
 /**
  * ECDSA Membership Prover
  */
 export class MembershipProver extends Profiler implements IProver {
-  spartanWasm: SpartanWasm;
+  spartanWasm!: SpartanWasm;
   circuit: string;
   witnessGenWasm: string;
+  leafType: LeafType;
 
-  constructor(treeDepth: number = 10, options?: ProverOptions) {
+  constructor(options: ProverConfig) {
     super({ enabled: options?.enableProfiler });
 
-    const spartanWasm = new SpartanWasm({ spartanWasm: options?.spartanWasm });
-    this.spartanWasm = spartanWasm;
-    this.circuit = options?.circuit || DEFAULT_MEMBERSHIP_CIRCUIT;
-    this.witnessGenWasm =
-      options?.witnessGenWasm || DEFAULT_MEMBERSHIP_WITNESS_GEN_WASM;
+    this.leafType = options.leafType;
+    this.circuit = options.circuit;
+    this.witnessGenWasm = options.witnessGenWasm;
+  }
+
+  async initWasm(wasm: SpartanWasm) {
+    this.spartanWasm = wasm;
+    this.spartanWasm.init();
   }
 
   // @ts-ignore
@@ -40,6 +40,10 @@ export class MembershipProver extends Profiler implements IProver {
     msgHash: Buffer,
     merkleProof: MerkleProof
   ): Promise<NIZK> {
+    if (typeof this.spartanWasm === "undefined") {
+      throw new Error("wasm not initialized. Please call initWasm().");
+    }
+
     const { r, s, v } = fromSig(sig);
 
     const circuitPubInput = EffEcdsaCircuitPubInput.computeFromSig(
@@ -81,7 +85,6 @@ export class MembershipProver extends Profiler implements IProver {
     const circuitBin = await loadCircuit(this.circuit);
     this.timeEnd("Load circuit");
 
-    await this.spartanWasm.init();
     this.time("Prove");
     let proof = await this.spartanWasm.prove(
       circuitBin,

@@ -1184,21 +1184,23 @@ mod tests {
         assert_eq!(
             R2,
             FieldElement::from_bytes_wide(&[
-                191, 190, 201, 47, 115, 161, 45, 64, 196, 95, 183, 80, 25, 35, 81, 69, 1, 0, 0, 0,
+                209, 3, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+                0, 0, 0, 0, 0, 0, 0, 0, 0
             ])
         );
     }
 
     #[test]
     fn test_from_bytes_wide_negative_one() {
+        println!("{:?}", (-&FieldElement::one()).to_bytes());
         assert_eq!(
             -&FieldElement::one(),
             FieldElement::from_bytes_wide(&[
-                64, 65, 54, 208, 140, 94, 210, 191, 59, 160, 72, 175, 230, 220, 174, 186, 254, 255,
-                255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 0, 0, 0, 0,
+                46, 252, 255, 255, 254, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+                255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 0, 0, 0,
                 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                0,
             ])
         );
     }
@@ -1347,13 +1349,6 @@ mod tests {
     }
 
     #[test]
-    fn test_sqrt() {
-        let a = FieldElement::from(123);
-        let result = a.sqrt().unwrap();
-        println!("result {:?}", result);
-    }
-
-    #[test]
     fn test_inversion() {
         assert_eq!(FieldElement::zero().invert().is_none().unwrap_u8(), 1);
         assert_eq!(FieldElement::one().invert().unwrap(), FieldElement::one());
@@ -1381,9 +1376,9 @@ mod tests {
     #[test]
     fn test_invert_is_pow() {
         let q_minus_2 = [
-            0xbfd25e8cd036413f,
-            0xbaaedce6af48a03b,
-            0xfffffffffffffffe,
+            0xfffffffefffffc2d,
+            0xffffffffffffffff,
+            0xffffffffffffffff,
             0xffffffffffffffff,
         ];
 
@@ -1408,7 +1403,12 @@ mod tests {
     #[test]
     fn test_from_raw() {
         assert_eq!(
-            FieldElement::from_raw([0x402da1732fc9bebe, 0x4551231950b75fc4, 0x1, 0x0]),
+            FieldElement::from_raw([
+                0x00000001000003d0,
+                0x0000000000000000,
+                0x0000000000000000,
+                0x0000000000000000,
+            ]),
             FieldElement::from_raw([0xffffffffffffffff; 4])
         );
 

@@ -36,3 +36,4 @@ packages/prover/test_circuit/*.json
 
 
 **/sage/*.sage.py
+packages/lib/src/circuits/

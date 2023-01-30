@@ -2,8 +2,9 @@
 use bincode;
 use ff::PrimeField;
 use libspartan::Instance;
-use nova_scotia::circom::circuit::R1CS;
-use nova_scotia::circom::reader::load_r1cs;
+use secq256k1::AffinePoint;
+use secq256k1::FieldBytes;
+use spartan_wasm::circom_reader::{load_r1cs_from_bin_file, R1CS};
 use std::env::{args, current_dir};
 use std::fs::File;
 use std::io::Write;
@@ -31,14 +32,14 @@ pub fn load_as_spartan_inst(circuit_file: PathBuf, num_pub_inputs: usize) -> Ins
     let root = current_dir().unwrap();
 
     let circuit_file = root.join(circuit_file);
-    let r1cs = load_r1cs(&circuit_file);
+    let (r1cs, _) = load_r1cs_from_bin_file::<AffinePoint>(&circuit_file);
 
     let spartan_inst = convert_to_spartan_r1cs(&r1cs, num_pub_inputs);
 
     spartan_inst
 }
 
-fn convert_to_spartan_r1cs<F: PrimeField<Repr = [u8; 32]>>(
+fn convert_to_spartan_r1cs<F: PrimeField<Repr = FieldBytes>>(
     r1cs: &R1CS<F>,
     num_pub_inputs: usize,
 ) -> Instance {
@@ -54,18 +55,18 @@ fn convert_to_spartan_r1cs<F: PrimeField<Repr = [u8; 32]>>(
         let (a, b, c) = constraint;
 
         for (j, coeff) in a.iter() {
-            let bytes: [u8; 32] = coeff.to_repr();
+            let bytes: [u8; 32] = coeff.to_repr().into();
 
             A.push((i, *j, bytes));
         }
 
         for (j, coeff) in b.iter() {
-            let bytes: [u8; 32] = coeff.to_repr();
+            let bytes: [u8; 32] = coeff.to_repr().into();
             B.push((i, *j, bytes));
         }
 
         for (j, coeff) in c.iter() {
-            let bytes: [u8; 32] = coeff.to_repr();
+            let bytes: [u8; 32] = coeff.to_repr().into();
             C.push((i, *j, bytes));
         }
     }

@@ -7,7 +7,7 @@ use crate::field::BaseField;
 use crate::hashtocurve::iso_curve::hash_to_curve;
 use crate::{EncodedPoint, Scalar};
 use k256::elliptic_curve::subtle::Choice;
-use primeorder::elliptic_curve::group::Group;
+pub use primeorder::elliptic_curve::group::Group;
 use primeorder::elliptic_curve::sec1::FromEncodedPoint;
 use primeorder::elliptic_curve::sec1::ToEncodedPoint;
 use primeorder::elliptic_curve::subtle::CtOption;

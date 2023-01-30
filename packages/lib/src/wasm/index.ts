@@ -2,20 +2,14 @@ import * as wasm from "./wasm";
 import _initWeb from "./wasm.js";
 import fs from "fs";
 import path from "path";
-import { SpartanWasmOptions } from "../types";
-import { DEFAULT_SPARTAN_WASM } from "../config";
+import { WasmConfig } from "../types";
 
 // TODO: Rename this to just Wasm since it includes not only Spartan but also Poseidon
 export class SpartanWasm {
   private spartanWasmPathOrUrl: any;
 
-  constructor(options?: SpartanWasmOptions) {
-    const defaultWasmPath =
-      typeof window === "undefined"
-        ? path.join(__dirname, "./build/spartan_wasm_bg.wasm")
-        : DEFAULT_SPARTAN_WASM;
-
-    this.spartanWasmPathOrUrl = options?.spartanWasm || defaultWasmPath;
+  constructor(config: WasmConfig) {
+    this.spartanWasmPathOrUrl = config.pathOrUrl;
   }
 
   async init() {
