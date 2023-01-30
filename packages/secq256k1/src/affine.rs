@@ -5,7 +5,7 @@ use std::ops::{AddAssign, SubAssign};
 use super::{ProjectivePoint, Secq256K1};
 use crate::{EncodedPoint, Scalar};
 use k256::elliptic_curve::subtle::Choice;
-use primeorder::elliptic_curve::group::Group;
+pub use primeorder::elliptic_curve::group::Group;
 use primeorder::elliptic_curve::sec1::FromEncodedPoint;
 use primeorder::elliptic_curve::sec1::ToEncodedPoint;
 use primeorder::elliptic_curve::subtle::CtOption;
