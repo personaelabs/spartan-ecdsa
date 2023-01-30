@@ -92,7 +92,7 @@ describe("membership prove and verify", () => {
     });
   });
 
-  describe("adddr_membership prover and verify", () => {
+  describe("addr_membership prover and verify", () => {
     it("should prove and verify valid signature and merkle proof", async () => {
       const addressTree = new Tree(treeDepth, poseidon);
 
