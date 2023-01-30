@@ -1,3 +1,4 @@
+#[cfg(test)]
 use crate::field::field_secp::FieldElement as Fp;
 use crate::field::field_secq::FieldElement as Fq;
 

@@ -10,7 +10,6 @@ use core::fmt;
 use core::iter::{Product, Sum};
 use core::ops::{Add, AddAssign, Mul, MulAssign, Neg, Sub, SubAssign};
 use k256::Scalar;
-use primeorder::elliptic_curve::generic_array::arr;
 use primeorder::elliptic_curve::subtle::{
     Choice, ConditionallySelectable, ConstantTimeEq, CtOption,
 };
@@ -1052,11 +1051,6 @@ impl FieldElement {
 
 #[cfg(test)]
 mod tests {
-    use hex_literal::hex;
-    use primeorder::elliptic_curve::ops::Invert;
-
-    use crate::Secq256K1;
-
     use super::*;
 
     #[test]

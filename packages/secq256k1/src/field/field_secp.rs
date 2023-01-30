@@ -1052,11 +1052,6 @@ impl FieldElement {
 
 #[cfg(test)]
 mod tests {
-    use hex_literal::hex;
-    use primeorder::elliptic_curve::ops::Invert;
-
-    use crate::Secq256K1;
-
     use super::*;
 
     #[test]
@@ -1430,20 +1425,5 @@ mod tests {
         ]);
 
         assert_eq!(a.double(), a + a);
-    }
-
-    #[test]
-    fn test_all() {
-        let a = FieldElement::from(123);
-        let b = FieldElement::from(456);
-        let add = a + a;
-        let sub = a - b;
-        let mul = a * b;
-        let neg = -a;
-        let inv = a.invert().unwrap();
-        let square = a.square();
-        let cube = a.cube();
-
-        println!("a {:?}", FieldElement::one());
     }
 }
