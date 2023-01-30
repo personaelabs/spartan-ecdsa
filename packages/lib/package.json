@@ -9,7 +9,7 @@
   ],
   "scripts": {
     "build": "tsc && sh ./copy_artifacts.sh",
-    "test": "jest"
+    "test": "jest",
     "prepublishOnly": "yarn build"
   },
   "devDependencies": {
