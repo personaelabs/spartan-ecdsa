@@ -210,7 +210,7 @@ use serde::{Deserializer, Serializer};
 use super::{BaseField, SqrtRatio};
 impl SqrtRatio for FieldElement {
     // https://www.ietf.org/archive/id/draft-irtf-cfrg-hash-to-curve-16.html#appendix-F.2.1.1
-    fn sqrt_ratio(u: &Self, v: &Self, z: &Self) -> (Choice, Self) {
+    fn sqrt_ratio(u: &Self, v: &Self) -> (Choice, Self) {
         let c1 = 6;
 
         let c3 = Self::from_str_vartime(
@@ -247,9 +247,9 @@ impl SqrtRatio for FieldElement {
         tv4 = Self::conditional_select(&tv5, &tv4, is_qr);
 
         let two = Self::from(2);
-        for i in c1..2 {
+        for i in (2..(c1 + 1)).rev() {
             let i = Self::from(i);
-            let mut tv5 = i - two;
+            tv5 = i - two;
             tv5 = two.pow_by_self(&tv5);
             tv5 = tv4.pow_by_self(&tv5);
             let e1 = tv5.ct_eq(&Self::one());

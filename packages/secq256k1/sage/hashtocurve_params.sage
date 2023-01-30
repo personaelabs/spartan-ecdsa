@@ -30,7 +30,7 @@ def find_iso(E):
     
 
 
-# https://www.ietf.org/archive/id/draft-irtf-cfrg-hash-to-curve-10.html#sswu-z-code
+# https://www.ietf.org/archive/id/draft-irtf-cfrg-hash-to-curve-16.html#sswu-z-code
 # Arguments:
 # - F, a field object
 # - A and B, the coefficients of the curve equation y^2 = x^3 + A * x + B

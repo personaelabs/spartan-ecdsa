@@ -211,7 +211,7 @@ use super::BaseField;
 use super::SqrtRatio;
 
 impl SqrtRatio for FieldElement {
-    fn sqrt_ratio(u: &Self, v: &Self, z: &Self) -> (Choice, Self) {
+    fn sqrt_ratio(u: &Self, v: &Self) -> (Choice, Self) {
         let c1 = 1;
 
         let c3 = Self::from_str_vartime(
@@ -248,7 +248,7 @@ impl SqrtRatio for FieldElement {
         tv4 = Self::conditional_select(&tv5, &tv4, is_qr);
 
         let two = Self::from(2);
-        for i in c1..2 {
+        for i in (2..(c1 + 1)).rev() {
             let i = Self::from(i);
             let mut tv5 = i - two;
             tv5 = two.pow_by_self(&tv5);

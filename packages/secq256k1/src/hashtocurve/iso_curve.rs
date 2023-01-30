@@ -22,7 +22,7 @@ pub fn hash_to_curve<F: BaseField + SqrtRatio>(
 
 // https://www.ietf.org/archive/id/draft-irtf-cfrg-hash-to-curve-13.html#appendix-E.1
 fn iso_map<F: BaseField + SqrtRatio>(x: F, y: F, k: [F; 13]) -> (F, F) {
-    let x_squared = x.pow_vartime(&[2]);
+    let x_squared = x.pow_vartime(&[2, 0, 0, 0]);
     let x_cubed = x_squared * x;
 
     let x_num = k[0] * x_cubed + k[1] * x_squared + k[2] * x + k[3];
@@ -73,7 +73,7 @@ fn map_to_curve_simple_swu<F: BaseField + SqrtRatio>(
     tv2 = tv2 + tv5;
     let mut x = tv1 * tv3;
 
-    let (is_gx1_square, y1) = F::sqrt_ratio(&tv2, &tv6, &z);
+    let (is_gx1_square, y1) = F::sqrt_ratio(&tv2, &tv6);
 
     let mut y = tv1 * u;
     y = y * y1;

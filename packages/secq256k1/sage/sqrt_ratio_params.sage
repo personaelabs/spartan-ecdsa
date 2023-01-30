@@ -1,9 +1,9 @@
 # https://www.ietf.org/archive/id/draft-irtf-cfrg-hash-to-curve-16.html#name-sqrt_ratio-for-any-field
 def sqrt_ratio_params(p, z) -> tuple([int, int, int, int, int, int, int]):
     for i in range(256):
-        if ((q - 1) % (2^i) == 0):
+        if ((p - 1) % (2^i) == 0):
             c1 = i
-    c2 = (q - 1) / 2^c1
+    c2 = (p - 1) / 2^c1
     c3 = (c2 - 1) / 2
     c4 = 2^c1 - 1               
     c5 = 2^(c1 - 1)              

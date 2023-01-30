@@ -112,14 +112,14 @@ impl AffinePoint {
 
         let (p1_coords, p2_coords) = hash_to_curve(bytes, iso_a, iso_b, z, SECQ_CONSTANTS);
         let p1 = EncodedPoint::from_affine_coordinates(
-            &p1_coords.0.to_bytes().into(),
-            &p1_coords.1.to_bytes().into(),
+            &p1_coords.0.to_be_bytes().into(),
+            &p1_coords.1.to_be_bytes().into(),
             false,
         );
 
         let p2 = EncodedPoint::from_affine_coordinates(
-            &p2_coords.0.to_bytes().into(),
-            &p2_coords.1.to_bytes().into(),
+            &p2_coords.0.to_be_bytes().into(),
+            &p2_coords.1.to_be_bytes().into(),
             false,
         );
 

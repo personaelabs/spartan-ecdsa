@@ -12,7 +12,7 @@ pub trait BaseField: PrimeField {
 }
 
 pub trait SqrtRatio: BaseField {
-    fn sqrt_ratio(u: &Self, v: &Self, z: &Self) -> (Choice, Self);
+    fn sqrt_ratio(u: &Self, v: &Self) -> (Choice, Self);
 }
 
 pub mod field_secp;
