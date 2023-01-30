@@ -4,9 +4,9 @@ import {
   Tree,
   Poseidon,
   SpartanWasm,
-  defaultAddressMembershipConfig,
+  defaultAddressMembershipPConfig,
   defaultWasmConfig,
-  defaultPubkeyMembershipConfig
+  defaultPubkeyMembershipPConfig
 } from "spartan-ecdsa";
 import {
   ecrecover,
@@ -54,7 +54,7 @@ export default function Home() {
     console.log("Proving...");
     console.time("Full proving time");
 
-    const prover = new MembershipProver(defaultPubkeyMembershipConfig);
+    const prover = new MembershipProver(defaultPubkeyMembershipPConfig);
 
     prover.initWasm(wasm);
 
@@ -109,7 +109,7 @@ export default function Home() {
     console.time("Full proving time");
 
     const prover = new MembershipProver({
-      ...defaultAddressMembershipConfig,
+      ...defaultAddressMembershipPConfig,
       enableProfiler: true
     });
 
