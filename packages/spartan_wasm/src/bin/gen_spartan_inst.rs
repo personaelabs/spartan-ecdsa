@@ -4,6 +4,7 @@ use ff::PrimeField;
 use libspartan::Instance;
 use nova_scotia::circom::circuit::R1CS;
 use nova_scotia::circom::reader::load_r1cs;
+use secq256k1::FieldBytes;
 use std::env::{args, current_dir};
 use std::fs::File;
 use std::io::Write;
@@ -38,7 +39,7 @@ pub fn load_as_spartan_inst(circuit_file: PathBuf, num_pub_inputs: usize) -> Ins
     spartan_inst
 }
 
-fn convert_to_spartan_r1cs<F: PrimeField<Repr = [u8; 32]>>(
+fn convert_to_spartan_r1cs<F: PrimeField<Repr = FieldBytes>>(
     r1cs: &R1CS<F>,
     num_pub_inputs: usize,
 ) -> Instance {
@@ -54,18 +55,18 @@ fn convert_to_spartan_r1cs<F: PrimeField<Repr = [u8; 32]>>(
         let (a, b, c) = constraint;
 
         for (j, coeff) in a.iter() {
-            let bytes: [u8; 32] = coeff.to_repr();
+            let bytes: [u8; 32] = coeff.to_repr().into();
 
             A.push((i, *j, bytes));
         }
 
         for (j, coeff) in b.iter() {
-            let bytes: [u8; 32] = coeff.to_repr();
+            let bytes: [u8; 32] = coeff.to_repr().into();
             B.push((i, *j, bytes));
         }
 
         for (j, coeff) in c.iter() {
-            let bytes: [u8; 32] = coeff.to_repr();
+            let bytes: [u8; 32] = coeff.to_repr().into();
             C.push((i, *j, bytes));
         }
     }

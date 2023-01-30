@@ -4,11 +4,11 @@ use ff::PrimeField;
 use libspartan::{Assignment, Instance, NIZKGens, NIZK};
 use merlin::Transcript;
 use poseidon::poseidon_k256::{hash, FieldElement};
-use secpq_curves::group::Group;
+use secq256k1::affine::Group;
 use std::io::{Error, Read};
 use wasm_bindgen::prelude::*;
 
-pub type G1 = secpq_curves::secq256k1::Point;
+pub type G1 = secq256k1::AffinePoint;
 pub type F1 = <G1 as Group>::Scalar;
 
 #[wasm_bindgen]
@@ -21,7 +21,7 @@ pub fn prove(circuit: &[u8], vars: &[u8], public_inputs: &[u8]) -> Result<Vec<u8
     let witness = load_witness_from_bin_reader::<F1, _>(vars).unwrap();
     let witness_bytes = witness
         .iter()
-        .map(|w| w.to_repr())
+        .map(|w| w.to_repr().into())
         .collect::<Vec<[u8; 32]>>();
 
     let assignment = Assignment::new(&witness_bytes).unwrap();
