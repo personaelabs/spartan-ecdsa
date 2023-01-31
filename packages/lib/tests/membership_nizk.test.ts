@@ -2,7 +2,8 @@ import {
   MembershipProver,
   MembershipVerifier,
   Tree,
-  Poseidon
+  Poseidon,
+  NIZK
 } from "../src/lib";
 import {
   hashPersonalMessage,
@@ -52,6 +53,16 @@ describe("membership prove and verify", () => {
       )
     };
 
+    let pubKeyMembershipVerifier: MembershipVerifier, nizk: NIZK;
+
+    beforeAll(async () => {
+      pubKeyMembershipVerifier = new MembershipVerifier({
+        circuit: config.circuit
+      });
+
+      await pubKeyMembershipVerifier.initWasm();
+    });
+
     it("should prove and verify valid signature and merkle proof", async () => {
       const pubKeyTree = new Tree(treeDepth, poseidon);
 
@@ -68,23 +79,34 @@ describe("membership prove and verify", () => {
 
       const pubKeyMembershipProver = new MembershipProver(config);
 
+      await pubKeyMembershipProver.initWasm();
+
       const index = pubKeyTree.indexOf(proverPubKeyHash as bigint);
       const merkleProof = pubKeyTree.createProof(index);
 
-      const { proof, publicInput } = await pubKeyMembershipProver.prove(
-        sig,
-        msgHash,
-        merkleProof
-      );
+      nizk = await pubKeyMembershipProver.prove(sig, msgHash, merkleProof);
 
-      const pubKeyMembershipVerifier = new MembershipVerifier({
-        circuit: config.circuit
-      });
-
-      await pubKeyMembershipVerifier.initWasm();
-
+      const { proof, publicInput } = nizk;
       expect(await pubKeyMembershipVerifier.verify(proof, publicInput)).toBe(
         true
+      );
+    });
+
+    it("should assert invalid proof", async () => {
+      const { publicInput } = nizk;
+      let proof = nizk.proof;
+      proof[0] = proof[0] += 1;
+      expect(await pubKeyMembershipVerifier.verify(proof, publicInput)).toBe(
+        false
+      );
+    });
+
+    it("should assert invalid public input", async () => {
+      const { proof } = nizk;
+      let publicInput = nizk.publicInput;
+      publicInput[0] = publicInput[0] += 1;
+      expect(await pubKeyMembershipVerifier.verify(proof, publicInput)).toBe(
+        false
       );
     });
   });
@@ -101,6 +123,15 @@ describe("membership prove and verify", () => {
       )
     };
 
+    let addressMembershipVerifier: MembershipVerifier, nizk: NIZK;
+    beforeAll(async () => {
+      addressMembershipVerifier = new MembershipVerifier({
+        circuit: config.circuit
+      });
+
+      await addressMembershipVerifier.initWasm();
+    });
+
     it("should prove and verify valid signature and merkle proof", async () => {
       const addressTree = new Tree(treeDepth, poseidon);
 
@@ -116,25 +147,36 @@ describe("membership prove and verify", () => {
         if (proverPrivKey === privKey) proverAddress = address;
       }
 
-      const addressMembershipProver = new MembershipProver(config);
-
       const index = addressTree.indexOf(proverAddress as bigint);
       const merkleProof = addressTree.createProof(index);
 
-      const { proof, publicInput } = await addressMembershipProver.prove(
-        sig,
-        msgHash,
-        merkleProof
-      );
+      const addressMembershipProver = new MembershipProver(config);
 
-      const addressMembershipVerifier = new MembershipVerifier({
-        circuit: config.circuit
-      });
+      await addressMembershipProver.initWasm();
 
+      nizk = await addressMembershipProver.prove(sig, msgHash, merkleProof);
       await addressMembershipVerifier.initWasm();
 
+      expect(
+        await addressMembershipVerifier.verify(nizk.proof, nizk.publicInput)
+      ).toBe(true);
+    });
+
+    it("should assert invalid proof", async () => {
+      const { publicInput } = nizk;
+      let proof = nizk.proof;
+      proof[0] = proof[0] += 1;
       expect(await addressMembershipVerifier.verify(proof, publicInput)).toBe(
-        true
+        false
+      );
+    });
+
+    it("should assert invalid public input", async () => {
+      const { proof } = nizk;
+      let publicInput = nizk.publicInput;
+      publicInput[0] = publicInput[0] += 1;
+      expect(await addressMembershipVerifier.verify(proof, publicInput)).toBe(
+        false
       );
     });
   });

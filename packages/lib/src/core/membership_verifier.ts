@@ -41,7 +41,12 @@ export class MembershipVerifier extends Profiler implements IVerifier {
     this.timeEnd("Load circuit");
 
     this.time("Verify proof");
-    const result = await wasm.verify(circuitBin, proof, publicInput);
+    let result;
+    try {
+      result = await wasm.verify(circuitBin, proof, publicInput);
+    } catch (_e) {
+      result = false;
+    }
     this.timeEnd("Verify proof");
     return result;
   }
