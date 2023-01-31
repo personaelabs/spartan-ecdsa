@@ -19,7 +19,7 @@ import { hashPersonalMessage } from "@ethereumjs/util";
 const poseidon = new Poseidon();
 await poseidon.initWasm();
 
-const treeDepth = 20;
+const treeDepth = 20; // Provided circuits have tree depth = 20
 const tree = new Tree(treeDepth, poseidon);
 
 const proverPubKey = Buffer.from("...");
@@ -74,7 +74,7 @@ import { hashPersonalMessage } from "@ethereumjs/util";
 const poseidon = new Poseidon();
 await poseidon.initWasm();
 
-const treeDepth = 20;
+const treeDepth = 20; // Provided circuits have tree depth = 20
 const tree = new Tree(treeDepth, poseidon);
 
 // Get the prover public key hash
@@ -115,17 +115,20 @@ await verifier.verify(proof, publicInput);
 
 ## Circuit downloads
 
+_Provided circuits have Merkle tree depth = 20.
+Change in the tree depth doesn't significantly affect the proving time, hence we only provide a single tree depth that is adequate (2^20 ~= 1 million leaves) for most situations._
+
 **Public key membership**
-  | | |
-  | --- | --- |
-  | circuit | https://storage.googleapis.com/personae-proving-keys/membership/pubkey_membership.circuit |
-  | witnessGenWasm | https://storage.googleapis.com/personae-proving-keys/membership/pubkey_membership.wasm |
+| | |
+| --- | --- |
+| circuit | https://storage.googleapis.com/personae-proving-keys/membership/pubkey_membership.circuit |
+| witnessGenWasm | https://storage.googleapis.com/personae-proving-keys/membership/pubkey_membership.wasm |
 
 **Ethereum address membership**
-  |||
-  | --- | --- |
-  | circuit | https://storage.googleapis.com/personae-proving-keys/membership/addr_membership.circuit |
-  | witnessGenWasm | https://storage.googleapis.com/personae-proving-keys/membership/addr_membership.wasm |
+|||
+| --- | --- |
+| circuit | https://storage.googleapis.com/personae-proving-keys/membership/addr_membership.circuit |
+| witnessGenWasm | https://storage.googleapis.com/personae-proving-keys/membership/addr_membership.wasm |
 
 ## Development
 
