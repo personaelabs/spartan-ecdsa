@@ -1,13 +1,12 @@
 import { Profiler } from "../helpers/profiler";
 import { loadCircuit } from "../helpers/utils";
 import { IVerifier, VerifyConfig } from "../types";
-import { SpartanWasm } from "../wasm";
+import wasm, { init } from "../wasm";
 
 /**
  * ECDSA Membership Verifier
  */
 export class MembershipVerifier extends Profiler implements IVerifier {
-  spartanWasm!: SpartanWasm;
   circuit: string;
 
   constructor(options: VerifyConfig) {
@@ -16,9 +15,8 @@ export class MembershipVerifier extends Profiler implements IVerifier {
     this.circuit = options.circuit;
   }
 
-  async initWasm(wasm: SpartanWasm) {
-    this.spartanWasm = wasm;
-    this.spartanWasm.init();
+  async initWasm() {
+    await init();
   }
 
   async verify(proof: Uint8Array, publicInput: Uint8Array): Promise<boolean> {
@@ -27,11 +25,7 @@ export class MembershipVerifier extends Profiler implements IVerifier {
     this.timeEnd("Load circuit");
 
     this.time("Verify proof");
-    const result = await this.spartanWasm.verify(
-      circuitBin,
-      proof,
-      publicInput
-    );
+    const result = await wasm.verify(circuitBin, proof, publicInput);
     this.timeEnd("Verify proof");
     return result;
   }

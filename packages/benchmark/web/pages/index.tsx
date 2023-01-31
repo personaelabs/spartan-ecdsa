@@ -4,9 +4,7 @@ import {
   MembershipVerifier,
   Tree,
   Poseidon,
-  SpartanWasm,
   defaultAddressMembershipPConfig,
-  defaultWasmConfig,
   defaultPubkeyMembershipPConfig,
   defaultPubkeyMembershipVConfig,
   defaultAddressMembershipVConfig
@@ -59,7 +57,7 @@ export default function Home() {
       enableProfiler: true
     });
 
-    prover.initWasm(wasm);
+    prover.initWasm();
 
     const { proof, publicInput } = await prover.prove(
       sig,
@@ -79,7 +77,7 @@ export default function Home() {
       ...defaultPubkeyMembershipVConfig,
       enableProfiler: true
     });
-    await verifier.initWasm(wasm);
+    await verifier.initWasm();
 
     console.time("Verification time");
     const result = await verifier.verify(proof, publicInput);
@@ -150,7 +148,7 @@ export default function Home() {
       ...defaultAddressMembershipVConfig,
       enableProfiler: true
     });
-    await verifier.initWasm(wasm);
+    await verifier.initWasm();
 
     console.time("Verification time");
     const result = await verifier.verify(proof, publicInput);

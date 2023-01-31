@@ -8,7 +8,6 @@ import {
   Poseidon,
   MembershipProver,
   defaultAddressMembershipPConfig,
-  defaultWasmConfig,
   MembershipVerifier,
   defaultAddressMembershipVConfig
 } from "@personaelabs/spartan-ecdsa";
@@ -66,7 +65,7 @@ const benchAddrMembership = async () => {
     ...defaultAddressMembershipVConfig,
     enableProfiler: true
   });
-  await verifier.initWasm(wasm);
+  await verifier.initWasm();
 
   // Verify proof
   await verifier.verify(proof, publicInput);

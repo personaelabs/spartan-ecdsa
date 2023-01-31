@@ -5,8 +5,6 @@ import {
   Poseidon,
   defaultAddressMembershipPConfig,
   defaultPubkeyMembershipPConfig,
-  SpartanWasm,
-  defaultWasmConfig,
   defaultPubkeyMembershipVConfig,
   defaultAddressMembershipVConfig
 } from "../src/lib";
@@ -45,7 +43,7 @@ describe("membership prove and verify", () => {
     await poseidon.initWasm();
   });
 
-  describe.only("pubkey_membership prover and verify", () => {
+  describe("pubkey_membership prover and verify", () => {
     it("should prove and verify valid signature and merkle proof", async () => {
       const pubKeyTree = new Tree(treeDepth, poseidon);
 
@@ -77,7 +75,7 @@ describe("membership prove and verify", () => {
         defaultPubkeyMembershipVConfig
       );
 
-      await pubKeyMembershipVerifier.initWasm(wasm);
+      await pubKeyMembershipVerifier.initWasm();
 
       expect(await pubKeyMembershipVerifier.verify(proof, publicInput)).toBe(
         true
@@ -118,7 +116,7 @@ describe("membership prove and verify", () => {
         defaultAddressMembershipVConfig
       );
 
-      await addressMembershipVerifier.initWasm(wasm);
+      await addressMembershipVerifier.initWasm();
 
       expect(await addressMembershipVerifier.verify(proof, publicInput)).toBe(
         true

@@ -2,8 +2,6 @@ import {
   MembershipProver,
   Poseidon,
   Tree,
-  SpartanWasm,
-  defaultWasmConfig,
   defaultPubkeyMembershipPConfig,
   defaultPubkeyMembershipVConfig,
   MembershipVerifier
@@ -64,7 +62,7 @@ const benchPubKeyMembership = async () => {
     ...defaultPubkeyMembershipVConfig,
     enableProfiler: true
   });
-  await verifier.initWasm(wasm);
+  await verifier.initWasm();
 
   // Verify proof
   await verifier.verify(proof, publicInput);
