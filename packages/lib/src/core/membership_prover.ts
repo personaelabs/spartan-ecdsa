@@ -11,6 +11,10 @@ import {
   EffEcdsaCircuitPubInput
 } from "../helpers/efficient_ecdsa";
 import wasm, { init } from "../wasm";
+import {
+  defaultPubkeyMembershipPConfig,
+  defaultAddressMembershipPConfig
+} from "../config";
 
 /**
  * ECDSA Membership Prover
@@ -21,6 +25,16 @@ export class MembershipProver extends Profiler implements IProver {
 
   constructor(options: ProverConfig) {
     super({ enabled: options?.enableProfiler });
+
+    if (
+      options.circuit === defaultPubkeyMembershipPConfig.circuit ||
+      options.witnessGenWasm === defaultPubkeyMembershipPConfig.witnessGenWasm
+    ) {
+      console.warn(`
+      We recommend using defaultPubkeyMembershipPConfig/defaultPubkeyMembershipVConfig only for testing purposes.
+      Please host and specify the circuit and witnessGenWasm files on your own server for sovereign control.
+      `);
+    }
 
     this.circuit = options.circuit;
     this.witnessGenWasm = options.witnessGenWasm;

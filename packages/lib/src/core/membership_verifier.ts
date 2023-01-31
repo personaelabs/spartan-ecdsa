@@ -1,3 +1,7 @@
+import {
+  defaultAddressMembershipVConfig,
+  defaultPubkeyMembershipVConfig
+} from "../config";
 import { Profiler } from "../helpers/profiler";
 import { loadCircuit } from "../helpers/utils";
 import { IVerifier, VerifyConfig } from "../types";
@@ -11,6 +15,16 @@ export class MembershipVerifier extends Profiler implements IVerifier {
 
   constructor(options: VerifyConfig) {
     super({ enabled: options?.enableProfiler });
+
+    if (
+      options.circuit === defaultAddressMembershipVConfig.circuit ||
+      options.circuit === defaultPubkeyMembershipVConfig.circuit
+    ) {
+      console.warn(`
+      We recommend using defaultPubkeyMembershipVConfig/defaultAddressMembershipVConfig only for testing purposes.
+      Please host and specify the circuit and witnessGenWasm files on your own server for sovereign control.
+      `);
+    }
 
     this.circuit = options.circuit;
   }
