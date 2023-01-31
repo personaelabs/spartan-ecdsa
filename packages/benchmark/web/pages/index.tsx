@@ -57,7 +57,7 @@ export default function Home() {
       enableProfiler: true
     });
 
-    prover.initWasm();
+    await prover.initWasm();
 
     const { proof, publicInput } = await prover.prove(
       sig,
@@ -99,6 +99,7 @@ export default function Home() {
     const sig = `0x${r.toString("hex")}${s.toString("hex")}${v.toString(16)}`;
 
     const poseidon = new Poseidon();
+    await poseidon.initWasm();
 
     const treeDepth = 20;
     const addressTree = new Tree(treeDepth, poseidon);
