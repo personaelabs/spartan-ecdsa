@@ -16,7 +16,6 @@ export interface ProverConfig {
   witnessGenWasm: string;
   circuit: string;
   enableProfiler?: boolean;
-  leafType: LeafType;
 }
 
 export interface VerifyConfig {
@@ -35,9 +34,4 @@ export interface IVerifier {
   circuit: string; // Path to circuit file compiled by Nova-Scotia
 
   verify(proof: Uint8Array, publicInput: Uint8Array): Promise<boolean>;
-}
-
-export enum LeafType {
-  PubKeyHash,
-  Address
 }

@@ -2,11 +2,7 @@ import {
   MembershipProver,
   MembershipVerifier,
   Tree,
-  Poseidon,
-  defaultAddressMembershipPConfig,
-  defaultPubkeyMembershipPConfig,
-  defaultPubkeyMembershipVConfig,
-  defaultAddressMembershipVConfig
+  Poseidon
 } from "../src/lib";
 import {
   hashPersonalMessage,
@@ -15,6 +11,7 @@ import {
   privateToPublic
 } from "@ethereumjs/util";
 var EC = require("elliptic").ec;
+import * as path from "path";
 
 describe("membership prove and verify", () => {
   // Init prover
@@ -44,6 +41,17 @@ describe("membership prove and verify", () => {
   });
 
   describe("pubkey_membership prover and verify", () => {
+    const config = {
+      witnessGenWasm: path.join(
+        __dirname,
+        "../../circuits/build/pubkey_membership/pubkey_membership_js/pubkey_membership.wasm"
+      ),
+      circuit: path.join(
+        __dirname,
+        "../../circuits/build/pubkey_membership/pubkey_membership.circuit"
+      )
+    };
+
     it("should prove and verify valid signature and merkle proof", async () => {
       const pubKeyTree = new Tree(treeDepth, poseidon);
 
@@ -58,9 +66,7 @@ describe("membership prove and verify", () => {
         if (proverPrivKey === privKey) proverPubKeyHash = pubKeyHash;
       }
 
-      const pubKeyMembershipProver = new MembershipProver(
-        defaultPubkeyMembershipPConfig
-      );
+      const pubKeyMembershipProver = new MembershipProver(config);
 
       const index = pubKeyTree.indexOf(proverPubKeyHash as bigint);
       const merkleProof = pubKeyTree.createProof(index);
@@ -71,9 +77,9 @@ describe("membership prove and verify", () => {
         merkleProof
       );
 
-      const pubKeyMembershipVerifier = new MembershipVerifier(
-        defaultPubkeyMembershipVConfig
-      );
+      const pubKeyMembershipVerifier = new MembershipVerifier({
+        circuit: config.circuit
+      });
 
       await pubKeyMembershipVerifier.initWasm();
 
@@ -84,6 +90,17 @@ describe("membership prove and verify", () => {
   });
 
   describe("addr_membership prover and verify", () => {
+    const config = {
+      witnessGenWasm: path.join(
+        __dirname,
+        "../../circuits/build/addr_membership/addr_membership_js/addr_membership.wasm"
+      ),
+      circuit: path.join(
+        __dirname,
+        "../../circuits/build/addr_membership/addr_membership.circuit"
+      )
+    };
+
     it("should prove and verify valid signature and merkle proof", async () => {
       const addressTree = new Tree(treeDepth, poseidon);
 
@@ -99,9 +116,7 @@ describe("membership prove and verify", () => {
         if (proverPrivKey === privKey) proverAddress = address;
       }
 
-      const addressMembershipProver = new MembershipProver(
-        defaultAddressMembershipPConfig
-      );
+      const addressMembershipProver = new MembershipProver(config);
 
       const index = addressTree.indexOf(proverAddress as bigint);
       const merkleProof = addressTree.createProof(index);
@@ -112,9 +127,9 @@ describe("membership prove and verify", () => {
         merkleProof
       );
 
-      const addressMembershipVerifier = new MembershipVerifier(
-        defaultAddressMembershipVConfig
-      );
+      const addressMembershipVerifier = new MembershipVerifier({
+        circuit: config.circuit
+      });
 
       await addressMembershipVerifier.initWasm();
 

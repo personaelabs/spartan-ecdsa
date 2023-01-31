@@ -7,10 +7,9 @@ import {
   Tree,
   Poseidon,
   MembershipProver,
-  defaultAddressMembershipPConfig,
-  MembershipVerifier,
-  defaultAddressMembershipVConfig
+  MembershipVerifier
 } from "@personaelabs/spartan-ecdsa";
+import * as path from "path";
 
 const benchAddrMembership = async () => {
   const privKey = Buffer.from("".padStart(16, "🧙"), "utf16le");
@@ -48,23 +47,34 @@ const benchAddrMembership = async () => {
 
   // Compute the merkle proof
   const index = tree.indexOf(proverAddress);
+
+  const proverConfig = {
+    circuit: path.join(
+      __dirname,
+      "../../../circuits/build/addr_membership/addr_membership.circuit"
+    ),
+    witnessGenWasm: path.join(
+      __dirname,
+      "../../../circuits/build/addr_membership/addr_membership_js/addr_membership.wasm"
+    ),
+    enableProfiler: true
+  };
   const merkleProof = tree.createProof(index);
 
   // Init the prover
-  const prover = new MembershipProver({
-    ...defaultAddressMembershipPConfig,
-    enableProfiler: true
-  });
+  const prover = new MembershipProver(proverConfig);
   await prover.initWasm();
 
   // Prove membership
   const { proof, publicInput } = await prover.prove(sig, msgHash, merkleProof);
 
-  // Init verifier
-  const verifier = new MembershipVerifier({
-    ...defaultAddressMembershipVConfig,
+  const verifierConfig = {
+    circuit: proverConfig.circuit,
     enableProfiler: true
-  });
+  };
+
+  // Init verifier
+  const verifier = new MembershipVerifier(verifierConfig);
   await verifier.initWasm();
 
   // Verify proof

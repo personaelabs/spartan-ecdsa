@@ -1,5 +1,5 @@
 import { Profiler } from "../helpers/profiler";
-import { IProver, MerkleProof, NIZK, ProverConfig, LeafType } from "../types";
+import { IProver, MerkleProof, NIZK, ProverConfig } from "../types";
 import {
   bigIntToBytes,
   loadCircuit,
@@ -18,12 +18,10 @@ import wasm, { init } from "../wasm";
 export class MembershipProver extends Profiler implements IProver {
   circuit: string;
   witnessGenWasm: string;
-  leafType: LeafType;
 
   constructor(options: ProverConfig) {
     super({ enabled: options?.enableProfiler });
 
-    this.leafType = options.leafType;
     this.circuit = options.circuit;
     this.witnessGenWasm = options.witnessGenWasm;
   }
