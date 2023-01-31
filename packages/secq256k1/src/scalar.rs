@@ -1,6 +1,7 @@
 use crate::field::field_secp::FieldElement;
 
 use super::{FieldBytes, Secq256K1};
+use crate::field::BaseField;
 
 use ff::{Field, PrimeField, PrimeFieldBits};
 use k256::elliptic_curve::bigint::Encoding;

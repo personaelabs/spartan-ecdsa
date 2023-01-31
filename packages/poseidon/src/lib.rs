@@ -124,8 +124,7 @@ impl<F: PrimeField> Poseidon<F> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use ff::Field;
-    use secq256k1::field::field_secp;
+    use secq256k1::field::{field_secp, BaseField};
 
     #[test]
     fn test_k256() {
