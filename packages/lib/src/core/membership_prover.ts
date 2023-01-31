@@ -93,6 +93,9 @@ export class MembershipProver extends Profiler implements IProver {
     );
     this.timeEnd("Prove");
 
-    return { proof, publicInput: effEcdsaPubInput.serialize() };
+    return {
+      proof,
+      publicInput: pubInput
+    };
   }
 }

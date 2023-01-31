@@ -1,12 +1,15 @@
 import { useState } from "react";
 import {
   MembershipProver,
+  MembershipVerifier,
   Tree,
   Poseidon,
   SpartanWasm,
-  defaultAddressMembershipConfig,
+  defaultAddressMembershipPConfig,
   defaultWasmConfig,
-  defaultPubkeyMembershipConfig
+  defaultPubkeyMembershipPConfig,
+  defaultPubkeyMembershipVConfig,
+  defaultAddressMembershipVConfig
 } from "@personaelabs/spartan-ecdsa";
 import {
   ecrecover,
@@ -18,8 +21,6 @@ import {
 } from "@ethereumjs/util";
 
 export default function Home() {
-  const [proof, setProof] = useState<any | undefined>();
-
   const provePubKeyMembership = async () => {
     const privKey = Buffer.from("".padStart(16, "🧙"), "utf16le");
     const msg = Buffer.from("harry potter");
@@ -54,7 +55,10 @@ export default function Home() {
     console.log("Proving...");
     console.time("Full proving time");
 
-    const prover = new MembershipProver(defaultPubkeyMembershipConfig);
+    const prover = new MembershipProver({
+      ...defaultPubkeyMembershipPConfig,
+      enableProfiler: true
+    });
 
     prover.initWasm(wasm);
 
@@ -70,7 +74,23 @@ export default function Home() {
       proof.length,
       "bytes"
     );
-    setProof({ proof, publicInput });
+
+    console.log("Verifying...");
+    const verifier = new MembershipVerifier({
+      ...defaultPubkeyMembershipVConfig,
+      enableProfiler: true
+    });
+    await verifier.initWasm(wasm);
+
+    console.time("Verification time");
+    const result = await verifier.verify(proof, publicInput);
+    console.timeEnd("Verification time");
+
+    if (result) {
+      console.log("Successfully verified proof!");
+    } else {
+      console.log("Failed to verify proof :(");
+    }
   };
 
   const proverAddressMembership = async () => {
@@ -109,7 +129,7 @@ export default function Home() {
     console.time("Full proving time");
 
     const prover = new MembershipProver({
-      ...defaultAddressMembershipConfig,
+      ...defaultAddressMembershipPConfig,
       enableProfiler: true
     });
 
@@ -127,23 +147,24 @@ export default function Home() {
       proof.length,
       "bytes"
     );
-    setProof({ proof, publicInput });
-  };
 
-  /*
-  const verify = async () => {
-    if (!proof) {
-      console.log("No proof yet!");
+    console.log("Verifying...");
+    const verifier = new MembershipVerifier({
+      ...defaultAddressMembershipVConfig,
+      enableProfiler: true
+    });
+    await verifier.initWasm(wasm);
+
+    console.time("Verification time");
+    const result = await verifier.verify(proof, publicInput);
+    console.timeEnd("Verification time");
+
+    if (result) {
+      console.log("Successfully verified proof!");
     } else {
-      const verifier = new EffECDSAVerifier({
-        enableProfiler: true
-      });
-
-      const verified = await verifier.verify(proof.proof, proof.publicInput);
-      console.log("Verified?", verified);
+      console.log("Failed to verify proof :(");
     }
   };
-  */
 
   return (
     <div>

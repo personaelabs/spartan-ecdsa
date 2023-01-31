@@ -1,12 +1,15 @@
 import * as path from "path";
 import {
   MembershipProver,
+  MembershipVerifier,
   Tree,
   Poseidon,
-  defaultAddressMembershipConfig,
-  defaultPubkeyMembershipConfig,
+  defaultAddressMembershipPConfig,
+  defaultPubkeyMembershipPConfig,
   SpartanWasm,
-  defaultWasmConfig
+  defaultWasmConfig,
+  defaultPubkeyMembershipVConfig,
+  defaultAddressMembershipVConfig
 } from "../src/lib";
 import {
   hashPersonalMessage,
@@ -63,7 +66,7 @@ describe("membership prove and verify", () => {
       }
 
       const pubKeyMembershipProver = new MembershipProver(
-        defaultPubkeyMembershipConfig
+        defaultPubkeyMembershipPConfig
       );
 
       await pubKeyMembershipProver.initWasm(wasm);
@@ -77,11 +80,19 @@ describe("membership prove and verify", () => {
         merkleProof
       );
 
-      // TODO: Verify the proof
+      const pubKeyMembershipVerifier = new MembershipVerifier(
+        defaultPubkeyMembershipVConfig
+      );
+
+      await pubKeyMembershipVerifier.initWasm(wasm);
+
+      expect(await pubKeyMembershipVerifier.verify(proof, publicInput)).toBe(
+        true
+      );
     });
   });
 
-  describe("adddr_membership prover and verify", () => {
+  describe("addr_membership prover and verify", () => {
     it("should prove and verify valid signature and merkle proof", async () => {
       const addressTree = new Tree(treeDepth, poseidon);
 
@@ -98,7 +109,7 @@ describe("membership prove and verify", () => {
       }
 
       const addressMembershipProver = new MembershipProver(
-        defaultAddressMembershipConfig
+        defaultAddressMembershipPConfig
       );
 
       await addressMembershipProver.initWasm(wasm);
@@ -112,7 +123,15 @@ describe("membership prove and verify", () => {
         merkleProof
       );
 
-      // TODO: Verify the proof
+      const addressMembershipVerifier = new MembershipVerifier(
+        defaultAddressMembershipVConfig
+      );
+
+      await addressMembershipVerifier.initWasm(wasm);
+
+      expect(await addressMembershipVerifier.verify(proof, publicInput)).toBe(
+        true
+      );
     });
   });
 });
