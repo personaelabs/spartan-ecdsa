@@ -83,6 +83,9 @@ export class MembershipProver extends Profiler implements IProver {
     let proof = wasm.prove(circuitBin, witness.data, pubInput);
     this.timeEnd("Prove");
 
-    return { proof, publicInput: effEcdsaPubInput.serialize() };
+    return {
+      proof,
+      publicInput: pubInput
+    };
   }
 }

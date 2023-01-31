@@ -11,7 +11,8 @@
     "build": "yarn loadWasm && tsc && sh ./copy_artifacts.sh",
     "prepublishOnly": "yarn build",
     "prepare": "yarn loadWasm",
-    "loadWasm": "ts-node ./load_wasm.ts"
+    "loadWasm": "ts-node ./load_wasm.ts",
+    "test": "jest"
   },
   "devDependencies": {
     "@types/jest": "^29.2.5",

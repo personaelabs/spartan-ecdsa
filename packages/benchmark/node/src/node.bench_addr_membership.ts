@@ -7,7 +7,10 @@ import {
   Tree,
   Poseidon,
   MembershipProver,
-  defaultAddressMembershipConfig
+  defaultAddressMembershipPConfig,
+  defaultWasmConfig,
+  MembershipVerifier,
+  defaultAddressMembershipVConfig
 } from "@personaelabs/spartan-ecdsa";
 
 const benchAddrMembership = async () => {
@@ -50,13 +53,23 @@ const benchAddrMembership = async () => {
 
   // Init the prover
   const prover = new MembershipProver({
-    ...defaultAddressMembershipConfig,
+    ...defaultAddressMembershipPConfig,
     enableProfiler: true
   });
   await prover.initWasm();
 
   // Prove membership
-  await prover.prove(sig, msgHash, merkleProof);
+  const { proof, publicInput } = await prover.prove(sig, msgHash, merkleProof);
+
+  // Init verifier
+  const verifier = new MembershipVerifier({
+    ...defaultAddressMembershipVConfig,
+    enableProfiler: true
+  });
+  await verifier.initWasm(wasm);
+
+  // Verify proof
+  await verifier.verify(proof, publicInput);
 };
 
 export default benchAddrMembership;

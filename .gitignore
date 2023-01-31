@@ -34,8 +34,7 @@ packages/prover/test_circuit/test_circuit_js/
 #input files
 packages/prover/test_circuit/*.json 
 
-packages/lib/src/circuits/
-
-packages/poseidon/sage/*.py
 
 wasm_bytes.ts
+**/sage/*.sage.py
+packages/lib/src/circuits/

@@ -19,8 +19,13 @@ export interface ProverConfig {
   leafType: LeafType;
 }
 
-export interface VerifyOptions {
-  circuit?: string; // Path to circuit file compiled by Nova-Scotia
+export interface WasmConfig {
+  pathOrUrl: string;
+}
+
+export interface VerifyConfig {
+  circuit: string; // Path to circuit file compiled by Nova-Scotia
+  spartanWasm: string; // Path to spartan wasm file
   enableProfiler?: boolean;
 }
 

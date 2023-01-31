@@ -207,6 +207,78 @@ pub struct FieldElement(pub(crate) [u64; 5]);
 use serde::ser::SerializeSeq;
 use serde::{Deserializer, Serializer};
 
+use super::BaseField;
+use super::SqrtRatio;
+
+impl SqrtRatio for FieldElement {
+    const C1: u64 = 1;
+
+    //  28948022309329048855892746252171976963317496166410141009864396001977208667915
+    const C3: Self = FieldElement([
+        18446744069414583343,
+        18446744073709551615,
+        18446744073709551615,
+        4611686018427387903,
+        0,
+    ]);
+
+    const C4: Self = Self::ONE;
+    const C5: Self = Self::ONE;
+
+    // 115792089237316195423570985008687907853269984665640564039457584007908834671662
+    const C6: Self = FieldElement([
+        18446744065119615070,
+        18446744073709551615,
+        18446744073709551615,
+        18446744073709551615,
+        0,
+    ]);
+
+    // 22612019078283109002402354608917265420620653587239490778472842791191070919257
+    const C7: Self = FieldElement([
+        10660218062043021626,
+        12685808213265501903,
+        5194980534593283555,
+        4353995932822220413,
+        0,
+    ]);
+
+    fn sqrt_ratio(u: &Self, v: &Self) -> (Choice, Self) {
+        let mut tv1 = Self::C6;
+        let mut tv2 = v.pow_by_self(&Self::C4);
+        let mut tv3 = tv2.pow_by_self(&Self::from(2));
+        tv3 = tv3 * v;
+        let mut tv5 = u * tv3;
+        tv5 = tv5.pow_by_self(&Self::C3);
+        tv5 = tv5 * tv2;
+        tv2 = tv5 * v;
+        tv3 = tv5 * u;
+        let mut tv4 = tv3 * tv2;
+        tv5 = tv4.pow_by_self(&Self::C5);
+        let is_qr = tv5.ct_eq(&Self::one());
+        tv2 = tv3 * Self::C7;
+        tv5 = tv4 * tv1;
+        tv3 = Self::conditional_select(&tv2, &tv3, is_qr);
+        tv4 = Self::conditional_select(&tv5, &tv4, is_qr);
+
+        let two = Self::from(2);
+        for i in (2..(Self::C1 + 1)).rev() {
+            let i = Self::from(i);
+            let mut tv5 = i - two;
+            tv5 = two.pow_by_self(&tv5);
+            tv5 = tv4.pow_by_self(&tv5);
+            let e1 = tv5.ct_eq(&Self::one());
+            tv2 = tv3 * tv1;
+            tv1 = tv1 * tv1;
+            tv5 = tv4 * tv1;
+            tv3 = Self::conditional_select(&tv2, &tv3, e1);
+            tv4 = Self::conditional_select(&tv5, &tv4, e1);
+        }
+
+        (is_qr, tv3)
+    }
+}
+
 impl Serialize for FieldElement {
     fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
         let values: Vec<u8> = self.0.iter().map(|v| v.to_le_bytes()).flatten().collect();
@@ -361,19 +433,16 @@ impl PrimeField for FieldElement {
     }
 
     fn multiplicative_generator() -> Self {
-        7.into()
+        3.into()
     }
 
     fn root_of_unity() -> Self {
-        Self::from_repr(
-            [
-                0xff, 0xff, 0xff, 0xff, 0x0, 0x0, 0x0, 0x1, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
-                0x0, 0x0, 0x0, 0x0, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
-                0xff, 0xfe,
-            ]
-            .into(),
-        )
-        .unwrap()
+        Self::from_raw([
+            18446744069414583342,
+            18446744073709551615,
+            18446744073709551615,
+            18446744073709551615,
+        ])
     }
 }
 
@@ -572,70 +641,6 @@ impl FieldElement {
         self.add(self)
     }
 
-    /// Attempts to convert a little-endian byte representation of
-    /// a scalar into a `FieldElement`, failing if the input is not canonical.
-    pub fn from_bytes(bytes: &[u8; 32]) -> CtOption<FieldElement> {
-        let mut tmp = FieldElement([0, 0, 0, 0, 0]);
-
-        tmp.0[0] = u64::from_le_bytes(<[u8; 8]>::try_from(&bytes[..8]).unwrap());
-        tmp.0[1] = u64::from_le_bytes(<[u8; 8]>::try_from(&bytes[8..16]).unwrap());
-        tmp.0[2] = u64::from_le_bytes(<[u8; 8]>::try_from(&bytes[16..24]).unwrap());
-        tmp.0[3] = u64::from_le_bytes(<[u8; 8]>::try_from(&bytes[24..32]).unwrap());
-
-        // Try to subtract the modulus
-        let (_, borrow) = sbb(tmp.0[0], MODULUS.0[0], 0);
-        let (_, borrow) = sbb(tmp.0[1], MODULUS.0[1], borrow);
-        let (_, borrow) = sbb(tmp.0[2], MODULUS.0[2], borrow);
-        let (_, borrow) = sbb(tmp.0[3], MODULUS.0[3], borrow);
-
-        // If the element is smaller than MODULUS then the
-        // subtraction will underflow, producing a borrow value
-        // of 0xffff...ffff. Otherwise, it'll be zero.
-        let is_some = (borrow as u8) & 1;
-
-        // Convert to Montgomery form by computing
-        // (a.R^0 * R^2) / R = a.R
-        tmp *= &R2;
-
-        CtOption::new(tmp, Choice::from(is_some))
-    }
-
-    /// Converts an element of `FieldElement` into a byte representation in
-    /// little-endian byte order.
-    pub fn to_bytes(&self) -> [u8; 32] {
-        // Turn into canonical form by computing
-        // (a.R) / R = a
-        let tmp = FieldElement::montgomery_reduce(
-            self.0[0], self.0[1], self.0[2], self.0[3], self.0[4], 0, 0, 0, 0,
-        );
-
-        let mut res = [0; 32];
-        res[..8].copy_from_slice(&tmp.0[0].to_le_bytes());
-        res[8..16].copy_from_slice(&tmp.0[1].to_le_bytes());
-        res[16..24].copy_from_slice(&tmp.0[2].to_le_bytes());
-        res[24..32].copy_from_slice(&tmp.0[3].to_le_bytes());
-
-        res
-    }
-
-    /// Converts an element of `FieldElement` into a byte representation in
-    /// big-endian byte order.
-    pub fn to_be_bytes(&self) -> [u8; 32] {
-        // Turn into canonical form by computing
-        // (a.R) / R = a
-        let tmp = FieldElement::montgomery_reduce(
-            self.0[0], self.0[1], self.0[2], self.0[3], self.0[4], 0, 0, 0, 0,
-        );
-
-        let mut res = [0; 32];
-        res[..8].copy_from_slice(&tmp.0[3].to_be_bytes());
-        res[8..16].copy_from_slice(&tmp.0[2].to_be_bytes());
-        res[16..24].copy_from_slice(&tmp.0[1].to_be_bytes());
-        res[24..32].copy_from_slice(&tmp.0[0].to_be_bytes());
-
-        res
-    }
-
     /// Converts a 512-bit little endian integer into
     /// a `FieldElement` by reducing by the modulus.
     pub fn from_bytes_wide(bytes: &[u8; 64]) -> FieldElement {
@@ -722,6 +727,18 @@ impl FieldElement {
             }
         }
         res
+    }
+
+    pub fn pow_by_self(&self, exp: &Self) -> Self {
+        let mut registers = [0u64; 4];
+
+        let exp_bytes = exp.to_bytes();
+        registers[0] = u64::from_ne_bytes(exp_bytes[0..8].try_into().unwrap());
+        registers[1] = u64::from_ne_bytes(exp_bytes[8..16].try_into().unwrap());
+        registers[2] = u64::from_ne_bytes(exp_bytes[16..24].try_into().unwrap());
+        registers[3] = u64::from_ne_bytes(exp_bytes[24..32].try_into().unwrap());
+
+        self.pow(&registers)
     }
 
     /// Exponentiates `self` by `by`, where `by` is a
@@ -959,6 +976,70 @@ impl FieldElement {
     }
 }
 
+impl BaseField for FieldElement {
+    /// Converts an element of `FieldElement` into a byte representation in
+    /// little-endian byte order.
+    fn to_bytes(&self) -> [u8; 32] {
+        // Turn into canonical form by computing
+        // (a.R) / R = a
+        let tmp = FieldElement::montgomery_reduce(
+            self.0[0], self.0[1], self.0[2], self.0[3], self.0[4], 0, 0, 0, 0,
+        );
+
+        let mut res = [0; 32];
+        res[..8].copy_from_slice(&tmp.0[0].to_le_bytes());
+        res[8..16].copy_from_slice(&tmp.0[1].to_le_bytes());
+        res[16..24].copy_from_slice(&tmp.0[2].to_le_bytes());
+        res[24..32].copy_from_slice(&tmp.0[3].to_le_bytes());
+
+        res
+    }
+
+    /// Converts an element of `FieldElement` into a byte representation in
+    /// big-endian byte order.
+    fn to_be_bytes(&self) -> [u8; 32] {
+        // Turn into canonical form by computing
+        // (a.R) / R = a
+        let tmp = Self::montgomery_reduce(
+            self.0[0], self.0[1], self.0[2], self.0[3], self.0[4], 0, 0, 0, 0,
+        );
+
+        let mut res = [0; 32];
+        res[..8].copy_from_slice(&tmp.0[3].to_be_bytes());
+        res[8..16].copy_from_slice(&tmp.0[2].to_be_bytes());
+        res[16..24].copy_from_slice(&tmp.0[1].to_be_bytes());
+        res[24..32].copy_from_slice(&tmp.0[0].to_be_bytes());
+
+        res
+    }
+
+    fn from_bytes(bytes: &[u8; 32]) -> CtOption<Self> {
+        let mut tmp = Self([0, 0, 0, 0, 0]);
+
+        tmp.0[0] = u64::from_le_bytes(<[u8; 8]>::try_from(&bytes[..8]).unwrap());
+        tmp.0[1] = u64::from_le_bytes(<[u8; 8]>::try_from(&bytes[8..16]).unwrap());
+        tmp.0[2] = u64::from_le_bytes(<[u8; 8]>::try_from(&bytes[16..24]).unwrap());
+        tmp.0[3] = u64::from_le_bytes(<[u8; 8]>::try_from(&bytes[24..32]).unwrap());
+
+        // Try to subtract the modulus
+        let (_, borrow) = sbb(tmp.0[0], MODULUS.0[0], 0);
+        let (_, borrow) = sbb(tmp.0[1], MODULUS.0[1], borrow);
+        let (_, borrow) = sbb(tmp.0[2], MODULUS.0[2], borrow);
+        let (_, borrow) = sbb(tmp.0[3], MODULUS.0[3], borrow);
+
+        // If the element is smaller than MODULUS then the
+        // subtraction will underflow, producing a borrow value
+        // of 0xffff...ffff. Otherwise, it'll be zero.
+        let is_some = (borrow as u8) & 1;
+
+        // Convert to Montgomery form by computing
+        // (a.R^0 * R^2) / R = a.R
+        tmp *= &R2;
+
+        CtOption::new(tmp, Choice::from(is_some))
+    }
+}
+
 impl<'a> From<&'a FieldElement> for [u8; 32] {
     fn from(value: &'a FieldElement) -> [u8; 32] {
         value.to_bytes()
@@ -985,11 +1066,6 @@ impl FieldElement {
 
 #[cfg(test)]
 mod tests {
-    use hex_literal::hex;
-    use primeorder::elliptic_curve::ops::Invert;
-
-    use crate::Secq256K1;
-
     use super::*;
 
     #[test]
@@ -1117,21 +1193,23 @@ mod tests {
         assert_eq!(
             R2,
             FieldElement::from_bytes_wide(&[
-                191, 190, 201, 47, 115, 161, 45, 64, 196, 95, 183, 80, 25, 35, 81, 69, 1, 0, 0, 0,
+                209, 3, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+                0, 0, 0, 0, 0, 0, 0, 0, 0
             ])
         );
     }
 
     #[test]
     fn test_from_bytes_wide_negative_one() {
+        println!("{:?}", (-&FieldElement::one()).to_bytes());
         assert_eq!(
             -&FieldElement::one(),
             FieldElement::from_bytes_wide(&[
-                64, 65, 54, 208, 140, 94, 210, 191, 59, 160, 72, 175, 230, 220, 174, 186, 254, 255,
-                255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 0, 0, 0, 0,
+                46, 252, 255, 255, 254, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+                255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 0, 0, 0,
                 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                0,
             ])
         );
     }
@@ -1280,13 +1358,6 @@ mod tests {
     }
 
     #[test]
-    fn test_sqrt() {
-        let a = FieldElement::from(123);
-        let result = a.sqrt().unwrap();
-        println!("result {:?}", result);
-    }
-
-    #[test]
     fn test_inversion() {
         assert_eq!(FieldElement::zero().invert().is_none().unwrap_u8(), 1);
         assert_eq!(FieldElement::one().invert().unwrap(), FieldElement::one());
@@ -1303,7 +1374,6 @@ mod tests {
 
         for _ in 0..100 {
             let mut tmp2 = tmp.invert().unwrap();
-            println!("tmp2 {:?}", tmp2);
             tmp2.mul_assign(&tmp);
 
             assert_eq!(tmp2, FieldElement::one());
@@ -1315,9 +1385,9 @@ mod tests {
     #[test]
     fn test_invert_is_pow() {
         let q_minus_2 = [
-            0xbfd25e8cd036413f,
-            0xbaaedce6af48a03b,
-            0xfffffffffffffffe,
+            0xfffffffefffffc2d,
+            0xffffffffffffffff,
+            0xffffffffffffffff,
             0xffffffffffffffff,
         ];
 
@@ -1342,7 +1412,12 @@ mod tests {
     #[test]
     fn test_from_raw() {
         assert_eq!(
-            FieldElement::from_raw([0x402da1732fc9bebe, 0x4551231950b75fc4, 0x1, 0x0]),
+            FieldElement::from_raw([
+                0x00000001000003d0,
+                0x0000000000000000,
+                0x0000000000000000,
+                0x0000000000000000,
+            ]),
             FieldElement::from_raw([0xffffffffffffffff; 4])
         );
 
@@ -1364,20 +1439,5 @@ mod tests {
         ]);
 
         assert_eq!(a.double(), a + a);
-    }
-
-    #[test]
-    fn test_all() {
-        let a = FieldElement::from(123);
-        let b = FieldElement::from(456);
-        let add = a + a;
-        let sub = a - b;
-        let mul = a * b;
-        let neg = -a;
-        let inv = a.invert().unwrap();
-        let square = a.square();
-        let cube = a.cube();
-
-        println!("a {:?}", FieldElement::one());
     }
 }
