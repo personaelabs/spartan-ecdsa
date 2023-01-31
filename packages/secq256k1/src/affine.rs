@@ -4,7 +4,7 @@ use std::ops::{AddAssign, SubAssign};
 
 use super::{ProjectivePoint, Secq256K1};
 use crate::field::BaseField;
-use crate::hashtocurve::iso_curve::hash_to_curve;
+use crate::hashtocurve::hashtocurve::hash_to_curve;
 use crate::{EncodedPoint, Scalar};
 use k256::elliptic_curve::subtle::Choice;
 pub use primeorder::elliptic_curve::group::Group;

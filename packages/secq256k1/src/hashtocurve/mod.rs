@@ -1,2 +1,2 @@
 pub mod constants;
-pub mod iso_curve;
+pub mod hashtocurve;
