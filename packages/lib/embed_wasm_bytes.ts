@@ -3,7 +3,7 @@ import * as fs from "fs";
 /**
  * Load the wasm file and output a typescript file with the wasm bytes embedded
  */
-const loadWasm = async () => {
+const embedWasmBytes = async () => {
   let wasm = fs.readFileSync("../spartan_wasm/build/spartan_wasm_bg.wasm");
 
   let bytes = new Uint8Array(wasm.buffer);
@@ -15,4 +15,4 @@ const loadWasm = async () => {
   fs.writeFileSync("./src/wasm/wasm_bytes.ts", file);
 };
 
-loadWasm();
+embedWasmBytes();

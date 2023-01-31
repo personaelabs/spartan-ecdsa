@@ -8,10 +8,10 @@
     "build/**/*"
   ],
   "scripts": {
-    "build": "yarn loadWasm && tsc",
+    "build": "yarn embedWasmBytes && tsc",
     "prepublishOnly": "yarn build",
-    "prepare": "yarn loadWasm",
-    "loadWasm": "ts-node ./load_wasm.ts",
+    "prepare": "yarn embedWasmBytes",
+    "embedWasmBytes": "ts-node ./embed_wasm_bytes.ts",
     "test": "jest"
   },
   "devDependencies": {
