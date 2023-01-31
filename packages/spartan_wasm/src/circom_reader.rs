@@ -39,7 +39,7 @@ pub struct R1CSFile<Fr: PrimeField> {
     pub constraints: Vec<Constraint<Fr>>,
     pub wire_mapping: Vec<u64>,
 }
-use std::fs::{File, OpenOptions};
+use std::fs::OpenOptions;
 use std::path::Path;
 
 pub fn load_r1cs_from_bin_file<G1: Group>(filename: &Path) -> (R1CS<G1::Scalar>, Vec<usize>) {
@@ -99,10 +99,7 @@ fn read_header<R: Read>(mut reader: R, size: u64) -> Result<Header> {
     })
 }
 
-fn read_constraint_vec<R: Read, Fr: PrimeField>(
-    mut reader: R,
-    header: &Header,
-) -> Result<Vec<(usize, Fr)>> {
+fn read_constraint_vec<R: Read, Fr: PrimeField>(mut reader: R) -> Result<Vec<(usize, Fr)>> {
     let n_vec = reader.read_u32::<LittleEndian>()? as usize;
     let mut vec = Vec::with_capacity(n_vec);
     for _ in 0..n_vec {
@@ -116,16 +113,15 @@ fn read_constraint_vec<R: Read, Fr: PrimeField>(
 
 fn read_constraints<R: Read, Fr: PrimeField>(
     mut reader: R,
-    size: u64,
     header: &Header,
 ) -> Result<Vec<Constraint<Fr>>> {
     // todo check section size
     let mut vec = Vec::with_capacity(header.n_constraints as usize);
     for _ in 0..header.n_constraints {
         vec.push((
-            read_constraint_vec::<&mut R, Fr>(&mut reader, header)?,
-            read_constraint_vec::<&mut R, Fr>(&mut reader, header)?,
-            read_constraint_vec::<&mut R, Fr>(&mut reader, header)?,
+            read_constraint_vec::<&mut R, Fr>(&mut reader)?,
+            read_constraint_vec::<&mut R, Fr>(&mut reader)?,
+            read_constraint_vec::<&mut R, Fr>(&mut reader)?,
         ));
     }
     Ok(vec)
@@ -199,11 +195,7 @@ pub fn from_reader<G1: Group, R: Read + Seek>(mut reader: R) -> Result<R1CSFile<
     reader.seek(SeekFrom::Start(
         *section_offsets.get(&constraint_type).unwrap(),
     ))?;
-    let constraints = read_constraints::<&mut R, <G1 as Group>::Scalar>(
-        &mut reader,
-        *section_sizes.get(&constraint_type).unwrap(),
-        &header,
-    )?;
+    let constraints = read_constraints::<&mut R, <G1 as Group>::Scalar>(&mut reader, &header)?;
 
     reader.seek(SeekFrom::Start(
         *section_offsets.get(&wire2label_type).unwrap(),
