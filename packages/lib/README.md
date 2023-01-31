@@ -115,14 +115,16 @@ await verifier.verify(proof, publicInput);
 
 ## Circuit downloads
 
-- Public key membership
-  | circuit | https://storage.googleapis.com/personae-proving-keys/membership/pubkey_membership.circuit |
+**Public key membership**
+  | | |
   | --- | --- |
+  | circuit | https://storage.googleapis.com/personae-proving-keys/membership/pubkey_membership.circuit |
   | witnessGenWasm | https://storage.googleapis.com/personae-proving-keys/membership/pubkey_membership.wasm |
 
-- Ethereum address membership
-  | circuit | https://storage.googleapis.com/personae-proving-keys/membership/addr_membership.circuit |
+**Ethereum address membership**
+  |||
   | --- | --- |
+  | circuit | https://storage.googleapis.com/personae-proving-keys/membership/addr_membership.circuit |
   | witnessGenWasm | https://storage.googleapis.com/personae-proving-keys/membership/addr_membership.wasm |
 
 ## Development
