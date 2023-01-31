@@ -55,7 +55,10 @@ export default function Home() {
     console.log("Proving...");
     console.time("Full proving time");
 
-    const prover = new MembershipProver(defaultPubkeyMembershipPConfig);
+    const prover = new MembershipProver({
+      ...defaultPubkeyMembershipPConfig,
+      enableProfiler: true
+    });
 
     prover.initWasm(wasm);
 
@@ -73,7 +76,10 @@ export default function Home() {
     );
 
     console.log("Verifying...");
-    const verifier = new MembershipVerifier(defaultPubkeyMembershipVConfig);
+    const verifier = new MembershipVerifier({
+      ...defaultPubkeyMembershipVConfig,
+      enableProfiler: true
+    });
     await verifier.initWasm(wasm);
 
     console.time("Verification time");
@@ -143,7 +149,10 @@ export default function Home() {
     );
 
     console.log("Verifying...");
-    const verifier = new MembershipVerifier(defaultAddressMembershipVConfig);
+    const verifier = new MembershipVerifier({
+      ...defaultAddressMembershipVConfig,
+      enableProfiler: true
+    });
     await verifier.initWasm(wasm);
 
     console.time("Verification time");
