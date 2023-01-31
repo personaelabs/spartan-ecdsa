@@ -12,6 +12,13 @@ pub trait BaseField: PrimeField {
 }
 
 pub trait SqrtRatio: BaseField {
+    const C1: u64;
+    const C3: Self;
+    const C4: Self;
+    const C5: Self;
+    const C6: Self;
+    const C7: Self;
+
     fn sqrt_ratio(u: &Self, v: &Self) -> (Choice, Self);
 }
 

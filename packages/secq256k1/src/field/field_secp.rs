@@ -211,44 +211,58 @@ use super::BaseField;
 use super::SqrtRatio;
 
 impl SqrtRatio for FieldElement {
+    const C1: u64 = 1;
+
+    //  28948022309329048855892746252171976963317496166410141009864396001977208667915
+    const C3: Self = FieldElement([
+        18446744069414583343,
+        18446744073709551615,
+        18446744073709551615,
+        4611686018427387903,
+        0,
+    ]);
+
+    const C4: Self = Self::ONE;
+    const C5: Self = Self::ONE;
+
+    // 115792089237316195423570985008687907853269984665640564039457584007908834671662
+    const C6: Self = FieldElement([
+        18446744065119615070,
+        18446744073709551615,
+        18446744073709551615,
+        18446744073709551615,
+        0,
+    ]);
+
+    // 22612019078283109002402354608917265420620653587239490778472842791191070919257
+    const C7: Self = FieldElement([
+        10660218062043021626,
+        12685808213265501903,
+        5194980534593283555,
+        4353995932822220413,
+        0,
+    ]);
+
     fn sqrt_ratio(u: &Self, v: &Self) -> (Choice, Self) {
-        let c1 = 1;
-
-        let c3 = Self::from_str_vartime(
-            "28948022309329048855892746252171976963317496166410141009864396001977208667915",
-        )
-        .unwrap();
-
-        let c4 = Self::from(1);
-        let c5 = Self::from(1);
-        let c6 = Self::from_str_vartime(
-            "115792089237316195423570985008687907853269984665640564039457584007908834671662",
-        )
-        .unwrap();
-        let c7 = Self::from_str_vartime(
-            "22612019078283109002402354608917265420620653587239490778472842791191070919257",
-        )
-        .unwrap();
-
-        let mut tv1 = c6;
-        let mut tv2 = v.pow_by_self(&c4);
+        let mut tv1 = Self::C6;
+        let mut tv2 = v.pow_by_self(&Self::C4);
         let mut tv3 = tv2.pow_by_self(&Self::from(2));
         tv3 = tv3 * v;
         let mut tv5 = u * tv3;
-        tv5 = tv5.pow_by_self(&c3);
+        tv5 = tv5.pow_by_self(&Self::C3);
         tv5 = tv5 * tv2;
         tv2 = tv5 * v;
         tv3 = tv5 * u;
         let mut tv4 = tv3 * tv2;
-        tv5 = tv4.pow_by_self(&c5);
+        tv5 = tv4.pow_by_self(&Self::C5);
         let is_qr = tv5.ct_eq(&Self::one());
-        tv2 = tv3 * c7;
+        tv2 = tv3 * Self::C7;
         tv5 = tv4 * tv1;
         tv3 = Self::conditional_select(&tv2, &tv3, is_qr);
         tv4 = Self::conditional_select(&tv5, &tv4, is_qr);
 
         let two = Self::from(2);
-        for i in (2..(c1 + 1)).rev() {
+        for i in (2..(Self::C1 + 1)).rev() {
             let i = Self::from(i);
             let mut tv5 = i - two;
             tv5 = two.pow_by_self(&tv5);
