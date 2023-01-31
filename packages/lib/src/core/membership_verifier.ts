@@ -24,7 +24,7 @@ export class MembershipVerifier extends Profiler implements IVerifier {
       Spartan-ecdsa default config warning:
       We recommend using defaultPubkeyMembershipPConfig/defaultPubkeyMembershipVConfig only for testing purposes.
       Please host and specify the circuit and witnessGenWasm files on your own server for sovereign control.
-      Download files: https://github.com/personaelabs/spartan-ecdsa/blob/dan/embed-spartan-wasm/packages/lib/README.md#circuit-downloads
+      Download files: https://github.com/personaelabs/spartan-ecdsa/blob/main/packages/lib/README.md#circuit-downloads
       `);
     }
 
