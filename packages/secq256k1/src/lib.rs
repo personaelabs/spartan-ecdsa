@@ -18,7 +18,6 @@ pub type FieldBytes = primeorder::elliptic_curve::FieldBytes<Secq256K1>;
 pub type ProjectivePoint = primeorder::ProjectivePoint<Secq256K1>;
 
 pub const ORDER: U256 =
-    // U256::from_be_hex("fffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141");
     U256::from_be_hex("fffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffc2f");
 
 #[derive(Copy, Clone, Debug, Default, Eq, PartialEq, PartialOrd, Ord)]
@@ -28,7 +27,6 @@ impl Curve for Secq256K1 {
     type UInt = U256;
 
     const ORDER: U256 =
-        //    U256::from_be_hex("fffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141");
         U256::from_be_hex("fffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffc2f");
 }
 
