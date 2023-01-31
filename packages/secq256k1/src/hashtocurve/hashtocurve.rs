@@ -1,6 +1,7 @@
 use crate::field::{BaseField, SqrtRatio};
 use k256::elliptic_curve::subtle::{Choice, ConstantTimeEq};
 
+// https://www.ietf.org/archive/id/draft-irtf-cfrg-hash-to-curve-13.html#section-3
 pub fn hash_to_curve<F: BaseField + SqrtRatio>(
     u1: F,
     u2: F,
@@ -34,11 +35,7 @@ fn iso_map<F: BaseField + SqrtRatio>(x: F, y: F, k: [F; 13]) -> (F, F) {
 
     let y_f0 = y * (y_num * y_den.invert().unwrap());
 
-    (
-        // F::from_bytes(&x_f0.to_bytes()).unwrap(),
-        //        F::from_bytes(&y_f0.to_bytes()).unwrap(),
-        x_f0, y_f0,
-    )
+    (x_f0, y_f0)
 }
 
 // https://www.ietf.org/archive/id/draft-irtf-cfrg-hash-to-curve-16.html#appendix-F.2
@@ -87,6 +84,8 @@ mod tests {
     use k256::{AffinePoint, EncodedPoint, ProjectivePoint};
     type F = FieldElement;
 
+    // The constants are outputs of hashtocurve_params.sage
+
     // 28734576633528757162648956269730739219262246272443394170905244663053633733939
     const ISO_A: F = FieldElement([
         15812504324673914017,
@@ -113,13 +112,13 @@ mod tests {
             10248191149674768524,
             4099276460824344803,
             16397105843297379214,
-            10248191152060862008, // k_(1,3)
+            10248191152060862008,
         ]),
         F::from_raw([
             5677861232072053346,
             16451756383528566833,
             16331199996347402988,
-            6002227985152881894, // k_(1,2)
+            6002227985152881894,
         ]),
         F::from_raw([
             16140637477814429057,

@@ -211,6 +211,8 @@ use super::BaseField;
 use super::SqrtRatio;
 
 impl SqrtRatio for FieldElement {
+    // The constants are outputs of hashtocurve_params.sage
+
     const C1: u64 = 1;
 
     //  28948022309329048855892746252171976963317496166410141009864396001977208667915
