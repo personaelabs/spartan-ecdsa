@@ -4,7 +4,7 @@ use ff::PrimeField;
 use libspartan::{Assignment, Instance, NIZKGens, NIZK};
 use merlin::Transcript;
 use poseidon::poseidon_k256::{hash, FieldElement};
-use secq256k1::affine::Group;
+use secq256k1::{affine::Group, field::BaseField};
 use std::io::{Error, Read};
 use wasm_bindgen::prelude::*;
 
