@@ -4,7 +4,7 @@ use std::ops::{AddAssign, SubAssign};
 
 use super::{ProjectivePoint, Secq256K1};
 use crate::field::BaseField;
-use crate::hashtocurve::hashtocurve::hash_to_curve;
+use crate::hashtocurve::hash_to_curve;
 use crate::{EncodedPoint, Scalar};
 use k256::elliptic_curve::subtle::Choice;
 pub use primeorder::elliptic_curve::group::Group;
@@ -91,6 +91,8 @@ impl AffinePoint {
     pub const fn generator() -> Self {
         AffinePoint(AffinePointCore::GENERATOR)
     }
+
+    // The isogeny constants are outputs of hashtocurve_params.sage
 
     pub const fn iso_a() -> FieldElement {
         // 3642995984045157452672683439396299070953881827175886364060394186787010798372
@@ -222,20 +224,19 @@ impl AffinePoint {
             Self::iso_z(),
             Self::iso_constants(),
         );
-        let p1 = EncodedPoint::from_affine_coordinates(
+        let p1 = AffinePoint::decompress(EncodedPoint::from_affine_coordinates(
             &p1_coords.0.to_be_bytes().into(),
             &p1_coords.1.to_be_bytes().into(),
             false,
-        );
+        ))
+        .unwrap();
 
-        let p2 = EncodedPoint::from_affine_coordinates(
+        let p2 = AffinePoint::decompress(EncodedPoint::from_affine_coordinates(
             &p2_coords.0.to_be_bytes().into(),
             &p2_coords.1.to_be_bytes().into(),
             false,
-        );
-
-        let p1 = AffinePoint::decompress(p1).unwrap();
-        let p2 = AffinePoint::decompress(p2).unwrap();
+        ))
+        .unwrap();
 
         p1 + p2
     }

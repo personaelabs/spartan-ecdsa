@@ -208,6 +208,8 @@ use serde::{Deserializer, Serializer};
 
 use super::{BaseField, SqrtRatio};
 impl SqrtRatio for FieldElement {
+    // The constants are outputs of hashtocurve_params.sage
+
     const C1: u64 = 6;
 
     //  904625697166532776746648320380374280100293470930272690489102837043110636674

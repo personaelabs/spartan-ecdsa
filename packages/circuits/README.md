@@ -1,3 +1,13 @@
+## Node.js
+
+Recommended: v18 or later
+
+## Install dependencies
+
+```
+yarn
+```
+
 ## Run tests
 
 Install [this](https://github.com/DanTehrani/circom-secq) fork of Circom that supports compiling to the secp256k1 base field.

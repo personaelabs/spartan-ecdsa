@@ -2,14 +2,14 @@
 
 Recommended: v18 or later
 
-### Install dependencies
+## Install dependencies
 
 ```
 yarn
 ```
 
-### Start server
+## Run benchmark
 
 ```
-yarn dev
+yarn bench
 ```
