@@ -2,14 +2,13 @@ use crate::field::{BaseField, SqrtRatio};
 use k256::elliptic_curve::subtle::{Choice, ConstantTimeEq};
 
 pub fn hash_to_curve<F: BaseField + SqrtRatio>(
-    bytes: &[u8; 64],
+    u1: F,
+    u2: F,
     curve_a: F,
     curve_b: F,
     z: F,
     k: [F; 13],
 ) -> ((F, F), (F, F)) {
-    let u1: &[u8; 32] = &bytes[..32].try_into().unwrap();
-    let u2: &[u8; 32] = &bytes[32..].try_into().unwrap();
     let q1 = map_to_curve_simple_swu(u1, curve_a, curve_b, z);
     let q2 = map_to_curve_simple_swu(u2, curve_a, curve_b, z);
 
@@ -43,14 +42,7 @@ fn iso_map<F: BaseField + SqrtRatio>(x: F, y: F, k: [F; 13]) -> (F, F) {
 }
 
 // https://www.ietf.org/archive/id/draft-irtf-cfrg-hash-to-curve-16.html#appendix-F.2
-fn map_to_curve_simple_swu<F: BaseField + SqrtRatio>(
-    u: &[u8; 32],
-    curve_a: F,
-    curve_b: F,
-    z: F,
-) -> (F, F) {
-    let u = F::from_bytes(u).unwrap();
-
+fn map_to_curve_simple_swu<F: BaseField + SqrtRatio>(u: F, curve_a: F, curve_b: F, z: F) -> (F, F) {
     let mut tv1 = u * u;
     tv1 = z * tv1;
     let mut tv2 = tv1 * tv1;
@@ -110,7 +102,7 @@ mod tests {
         }
     }
 
-    fn assert_hash_to_curve(bytes: [u8; 64], expected: AffinePoint) {
+    fn assert_hash_to_curve(u1: FieldElement, u2: FieldElement, expected: AffinePoint) {
         let iso_a = F::from_str_vartime(
             "28734576633528757162648956269730739219262246272443394170905244663053633733939",
         )
@@ -119,7 +111,7 @@ mod tests {
 
         let z_secp: F = F::from(11u64).neg(); // -11
 
-        let (p1_coords, p2_coords) = hash_to_curve(&bytes, iso_a, iso_b, z_secp, SECP_CONSTANTS);
+        let (p1_coords, p2_coords) = hash_to_curve(u1, u2, iso_a, iso_b, z_secp, SECP_CONSTANTS);
 
         let p1x = p1_coords.0.to_be_bytes();
         let p1y = p1_coords.1.to_be_bytes();
@@ -179,16 +171,15 @@ mod tests {
                 EncodedPoint::from_affine_coordinates(&suite.px.into(), &suite.py.into(), false);
             let expected_point = AffinePoint::from_encoded_point(&expected_point).unwrap();
 
-            let mut bytes = [0u8; 64];
             let mut u1 = suite.u1.clone();
             u1.reverse();
             let mut u2 = suite.u2.clone();
             u2.reverse();
 
-            bytes[..32].copy_from_slice(&u1);
-            bytes[32..].copy_from_slice(&u2);
+            let u1 = FieldElement::from_bytes(&u1).unwrap();
+            let u2 = FieldElement::from_bytes(&u2).unwrap();
 
-            assert_hash_to_curve(bytes, expected_point);
+            assert_hash_to_curve(u1, u2, expected_point);
         }
     }
 }

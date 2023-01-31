@@ -102,7 +102,7 @@ impl AffinePoint {
         AffinePointCore::from_encoded_point(&bytes).map(AffinePoint)
     }
 
-    pub fn from_uniform_bytes(bytes: &[u8; 64]) -> Self {
+    pub fn from_uniform_bytes(bytes: &[u8; 128]) -> Self {
         let z = FieldElement::from(14).neg();
         let iso_a = FieldElement::from_str_vartime(
             "3642995984045157452672683439396299070953881827175886364060394186787010798372",
@@ -110,7 +110,10 @@ impl AffinePoint {
         .unwrap();
         let iso_b = FieldElement::from_str_vartime("1771").unwrap();
 
-        let (p1_coords, p2_coords) = hash_to_curve(bytes, iso_a, iso_b, z, SECQ_CONSTANTS);
+        let u1 = FieldElement::from_bytes_wide(bytes[0..64].try_into().unwrap());
+        let u2 = FieldElement::from_bytes_wide(bytes[64..128].try_into().unwrap());
+
+        let (p1_coords, p2_coords) = hash_to_curve(u1, u2, iso_a, iso_b, z, SECQ_CONSTANTS);
         let p1 = EncodedPoint::from_affine_coordinates(
             &p1_coords.0.to_be_bytes().into(),
             &p1_coords.1.to_be_bytes().into(),
@@ -214,8 +217,33 @@ mod tests {
 
     #[test]
     fn test_from_uniform_bytes() {
-        //!Still not working!
-        let pseudo_bytes = [1u8; 64];
-        let p = AffinePoint::from_uniform_bytes(&pseudo_bytes);
+        // Case 1
+        let pseudo_bytes = [1u8; 128];
+        let p1 = AffinePoint::from_uniform_bytes(&pseudo_bytes);
+
+        let expected_point_1 = AffinePoint::decompress(
+            EncodedPoint::from_bytes(&[
+                3, 24, 36, 60, 213, 183, 10, 225, 197, 211, 160, 231, 226, 115, 43, 236, 156, 4,
+                195, 217, 173, 140, 136, 199, 137, 204, 135, 28, 56, 55, 158, 90, 42,
+            ])
+            .unwrap(),
+        )
+        .unwrap();
+
+        assert_eq!(p1, expected_point_1);
+
+        // Case 2
+        let pseudo_bytes = [255u8; 128];
+        let p2 = AffinePoint::from_uniform_bytes(&pseudo_bytes);
+        let expected_point_2 = AffinePoint::decompress(
+            EncodedPoint::from_bytes(&[
+                2, 224, 201, 211, 109, 246, 2, 231, 80, 53, 75, 7, 198, 101, 138, 177, 41, 203, 12,
+                215, 7, 190, 221, 177, 146, 53, 58, 202, 32, 229, 192, 136, 229,
+            ])
+            .unwrap(),
+        )
+        .unwrap();
+
+        assert_eq!(p2, expected_point_2);
     }
 }
