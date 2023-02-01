@@ -1,5 +1,4 @@
 import * as wasm from "./wasm";
-import _initWeb from "./wasm.js";
 
 import { wasmBytes } from "./wasm_bytes";
 
