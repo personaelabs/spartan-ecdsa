@@ -4,7 +4,7 @@ include "./secp256k1/mul.circom";
 include "../../../node_modules/circomlib/circuits/bitify.circom";
 
 /**
- *  EfficientECDSAToAddr
+ *  EfficientECDSA
  *  ====================
  *  
  *  Converts inputted efficient ECDSA signature to an public key. There is no
