@@ -4,6 +4,11 @@ import * as path from "path";
 const ec = new EC("secp256k1");
 
 describe("secp256k1", () => {
+  /**
+   * Test adding two points that have different x coordinates; doubling a point or
+   * adding a point to its negative will not work as we will have a division by
+   * zero in the circuit.
+   */
   it("Secp256k1AddIncomplete", async () => {
     const circuit = await wasm_tester(
       path.join(__dirname, "./circuits/add_incomplete_test.circom"),
@@ -33,6 +38,10 @@ describe("secp256k1", () => {
     await circuit.checkConstraints(w);
   });
 
+  /**
+   * Go through all 6 cases included in the analysis of complete addition in
+   * https://zcash.github.io/halo2/design/gadgets/ecc/addition.html
+   */
   describe("Secp256k1AddComplete", () => {
     let circuit;
     const p1 = ec.keyFromPrivate(Buffer.from("🪄", "utf16le")).getPublic();
@@ -165,6 +174,9 @@ describe("secp256k1", () => {
     });
   });
 
+  /**
+   * Test doubling circuit on the generator point.
+   */
   it("Secp256k1Double", async () => {
     const circuit = await wasm_tester(
       path.join(__dirname, "./circuits/double_test.circom"),
@@ -192,6 +204,10 @@ describe("secp256k1", () => {
   });
 
   describe("mul", () => {
+    /**
+     * Test the K() function for correctness with the two cases: (s + tQ) > q and
+     * (s + tQ) < q.
+     */
     describe("K", () => {
       let circuit;
       const q = BigInt(
@@ -258,6 +274,11 @@ describe("secp256k1", () => {
       });
     });
 
+    /**
+     * Test the mul circuit for correctness with:
+     * 1. scalar = q-1 (highest possible scalar)
+     * 2. scalar < q-1 (a few random cases)
+     */
     describe("Secp256k1Mul", () => {
       let circuit;
       beforeAll(async () => {

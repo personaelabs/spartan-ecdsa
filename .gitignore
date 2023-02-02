@@ -28,6 +28,7 @@ circom_witness.wtns
 build/
 
 *.r1cs
+*.sym
 !test_circuit.r1cs
 
 packages/prover/test_circuit/test_circuit_js/

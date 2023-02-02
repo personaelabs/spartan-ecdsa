@@ -2,8 +2,15 @@ pragma circom 2.1.2;
 include "../poseidon/poseidon.circom";
 include "../../../node_modules/circomlib/circuits/mux1.circom";
 
-// Copy of this implementation: https://github.com/semaphore-protocol/semaphore/blob/main/packages/circuits/tree.circom
-// We use our own Poseidon hash function instead of the one from circomlib.
+/**
+ *  MerkleTreeInclusionProof
+ *  ========================
+ *  
+ *  Copy of the Merkle Tree implementation in Semaphore:
+ *  https://github.com/semaphore-protocol/semaphore/blob/main/packages/circuits/tree.circom
+ *  Instead of using the circomlib Poseidon, we use our own implementation which
+ *  uses constants specific to the secp256k1 curve.
+ */
 template MerkleTreeInclusionProof(nLevels) {
     signal input leaf;
     signal input pathIndices[nLevels];

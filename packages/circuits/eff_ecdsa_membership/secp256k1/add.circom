@@ -3,6 +3,16 @@ pragma circom 2.1.2;
 include "../../../../node_modules/circomlib/circuits/comparators.circom";
 include "../../../../node_modules/circomlib/circuits/gates.circom";
 
+/**
+ *  Secp256k1AddIncomplete
+ *  ======================
+ *
+ *  Adds two points (xP, yP) and (xQ, yQ) on the secp256k1 curve. This function 
+ *  only works for points where xP != xQ and are not at infinity. We can implement 
+ *  the raw formulae for this operation as we are doing right field arithmetic 
+ *  (we are doing secp256k1 base field arithmetic in the secq256k1 scalar field, 
+ *  which are equal). Should work for any short Weierstrass curve (Pasta, P-256).
+ */
 template Secp256k1AddIncomplete() {
     signal input xP;
     signal input yP;
@@ -25,7 +35,14 @@ template Secp256k1AddIncomplete() {
     outY <== lambda * (xP - outX) - yP;
 }
 
-// Assuming that (0, 0) is not a valid point.
+/**
+ *  Secp256k1AddComplete
+ *  ====================
+ *
+ *  Implements https://zcash.github.io/halo2/design/gadgets/ecc/addition.html#complete-addition
+ *  so we can add any pair of points. Assumes (0, 0) is not a valid point (which 
+ *  is true for secp256k1) and is used as the point at infinity.
+ */
 template Secp256k1AddComplete() {
     signal input xP;
     signal input yP;
@@ -49,7 +66,6 @@ template Secp256k1AddComplete() {
 
     component isXEitherZero = IsZero();
     isXEitherZero.in <== (1 - isXpZero.out) * (1 - isXqZero.out);
-
     
     // dx = xQ - xP
     // dy = xP != xQ ? yQ - yP : 0
@@ -94,6 +110,7 @@ template Secp256k1AddComplete() {
     zeroizeB.b <== isXqZero.out;
 
     // zeroize = (xP = xQ and yP = -yQ) or (xP = 0 and xQ = 0) ? 1 : 0
+    // for this case we want to output the point at infinity (0, 0)
     component zeroize = OR();
     zeroize.a <== zeroizeA.out;
     zeroize.b <== zeroizeB.out;

@@ -6,7 +6,16 @@ include "../../../../node_modules/circomlib/circuits/bitify.circom";
 include "../../../../node_modules/circomlib/circuits/comparators.circom";
 include "../../../../node_modules/circomlib/circuits/gates.circom";
 
-// Implements https://zcash.github.io/halo2/design/gadgets/ecc/var-base-scalar-mul.html
+// 
+
+/**
+ *  Secp256k1Mul
+ *  ============
+ *
+ *  Implements https://zcash.github.io/halo2/design/gadgets/ecc/var-base-scalar-mul.html
+ *  which allows us to use incomplete addition for the majority of the addition steps
+ *  and only use complete addition for the final 3 steps.
+ */
 template Secp256k1Mul() {
     var bits = 256;
     signal input scalar;
@@ -93,7 +102,7 @@ template Secp256k1Mul() {
     outY <== out.outY;
 }
 
-// Calculate k = (s + tQ) % q as follwos:
+// Calculate k = (s + tQ) % q as follows:
 // Define notation: (s + tQ) / q = (quotient, remainder)
 // We can calculate the quotient and remainder as:
 // (s + tQ) < q ? = (0, s - tQ) : (1, (s - tQ) - q)

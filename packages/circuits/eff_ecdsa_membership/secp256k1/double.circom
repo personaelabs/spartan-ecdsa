@@ -1,5 +1,12 @@
 pragma circom 2.1.2;
 
+/**
+ *  Secp256k1Double
+ *  ===============
+ *
+ *  Double a specific point (xP, yP) on the secp256k1 curve. Should work for any 
+ *  short Weierstrass curve (Pasta, P-256).
+ */
 template Secp256k1Double() {
     signal input xP; 
     signal input yP;

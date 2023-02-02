@@ -1,12 +1,12 @@
 import { hashPersonalMessage, ecsign } from "@ethereumjs/util";
-import { EffEcdsaCircuitPubInput } from "@personaelabs/spartan-ecdsa";
+import { computeEffEcdsaPubInput } from "@personaelabs/spartan-ecdsa";
 
 export const getEffEcdsaCircuitInput = (privKey: Buffer, msg: Buffer) => {
   const msgHash = hashPersonalMessage(msg);
   const { v, r: _r, s } = ecsign(msgHash, privKey);
   const r = BigInt("0x" + _r.toString("hex"));
 
-  const circuitPubInput = EffEcdsaCircuitPubInput.computeFromSig(r, v, msgHash);
+  const circuitPubInput = computeEffEcdsaPubInput(r, v, msgHash);
   const input = {
     s: BigInt("0x" + s.toString("hex")),
     Tx: circuitPubInput.Tx,
