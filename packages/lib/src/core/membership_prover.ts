@@ -1,37 +1,61 @@
 import { Profiler } from "../helpers/profiler";
-import { IProver, MerkleProof, NIZK, ProverConfig, LeafType } from "../types";
-import { SpartanWasm } from "../wasm";
+import { IProver, MerkleProof, NIZK, ProverConfig } from "../types";
+import { loadCircuit, fromSig, snarkJsWitnessGen } from "../helpers/utils";
 import {
-  bigIntToBytes,
-  loadCircuit,
-  fromSig,
-  snarkJsWitnessGen
-} from "../helpers/utils";
+  PublicInput,
+  computeEffEcdsaPubInput,
+  CircuitPubInput
+} from "../helpers/public_input";
+import wasm, { init } from "../wasm";
 import {
-  EffEcdsaPubInput,
-  EffEcdsaCircuitPubInput
-} from "../helpers/efficient_ecdsa";
+  defaultPubkeyMembershipPConfig,
+  defaultAddressMembershipPConfig
+} from "../config";
 
 /**
  * ECDSA Membership Prover
  */
 export class MembershipProver extends Profiler implements IProver {
-  spartanWasm!: SpartanWasm;
   circuit: string;
   witnessGenWasm: string;
-  leafType: LeafType;
 
   constructor(options: ProverConfig) {
     super({ enabled: options?.enableProfiler });
 
-    this.leafType = options.leafType;
+    if (
+      options.circuit === defaultPubkeyMembershipPConfig.circuit ||
+      options.witnessGenWasm ===
+        defaultPubkeyMembershipPConfig.witnessGenWasm ||
+      options.circuit === defaultAddressMembershipPConfig.circuit ||
+      options.witnessGenWasm === defaultAddressMembershipPConfig.witnessGenWasm
+    ) {
+      console.warn(`
+      Spartan-ecdsa default config warning:
+      We recommend using defaultPubkeyMembershipPConfig/defaultPubkeyMembershipVConfig only for testing purposes.
+      Please host and specify the circuit and witnessGenWasm files on your own server for sovereign control.
+      Download files: https://github.com/personaelabs/spartan-ecdsa/blob/main/packages/lib/README.md#circuit-downloads
+      `);
+    }
+
+    const isNode = typeof window === "undefined";
+    if (isNode) {
+      if (
+        options.circuit.includes("http") ||
+        options.witnessGenWasm.includes("http")
+      ) {
+        throw new Error(
+          `An URL was given for circuit/witnessGenWasm in Node.js environment. Please specify a local path.
+          `
+        );
+      }
+    }
+
     this.circuit = options.circuit;
     this.witnessGenWasm = options.witnessGenWasm;
   }
 
-  async initWasm(wasm: SpartanWasm) {
-    this.spartanWasm = wasm;
-    this.spartanWasm.init();
+  async initWasm() {
+    await init();
   }
 
   // @ts-ignore
@@ -40,38 +64,22 @@ export class MembershipProver extends Profiler implements IProver {
     msgHash: Buffer,
     merkleProof: MerkleProof
   ): Promise<NIZK> {
-    if (typeof this.spartanWasm === "undefined") {
-      throw new Error("wasm not initialized. Please call initWasm().");
-    }
-
     const { r, s, v } = fromSig(sig);
 
-    const circuitPubInput = EffEcdsaCircuitPubInput.computeFromSig(
-      r,
-      v,
-      msgHash
+    const effEcdsaPubInput = computeEffEcdsaPubInput(r, v, msgHash);
+    const circuitPubInput = new CircuitPubInput(
+      merkleProof.root,
+      effEcdsaPubInput.Tx,
+      effEcdsaPubInput.Ty,
+      effEcdsaPubInput.Ux,
+      effEcdsaPubInput.Uy
     );
-    const effEcdsaPubInput = new EffEcdsaPubInput(
-      r,
-      v,
-      msgHash,
-      circuitPubInput
-    );
-
-    const merkleRootSer: Uint8Array = bigIntToBytes(merkleProof.root, 32);
-    const circuitPubInputSer = circuitPubInput.serialize();
-
-    // Concatenate circuitPubInputSer and merkleRootSer to construct the full public input
-    const pubInput = new Uint8Array(
-      merkleRootSer.length + circuitPubInputSer.length
-    );
-    pubInput.set(merkleRootSer);
-    pubInput.set(circuitPubInputSer, merkleRootSer.length);
+    const publicInput = new PublicInput(r, v, msgHash, circuitPubInput);
 
     const witnessGenInput = {
       s,
       ...merkleProof,
-      ...effEcdsaPubInput.circuitPubInput
+      ...effEcdsaPubInput
     };
 
     this.time("Generate witness");
@@ -85,17 +93,17 @@ export class MembershipProver extends Profiler implements IProver {
     const circuitBin = await loadCircuit(this.circuit);
     this.timeEnd("Load circuit");
 
+    // Get the public input in bytes
+    const circuitPublicInput: Uint8Array =
+      publicInput.circuitPubInput.serialize();
+
     this.time("Prove");
-    let proof = await this.spartanWasm.prove(
-      circuitBin,
-      witness.data,
-      pubInput
-    );
+    let proof = wasm.prove(circuitBin, witness.data, circuitPublicInput);
     this.timeEnd("Prove");
 
     return {
       proof,
-      publicInput: pubInput
+      publicInput
     };
   }
 }

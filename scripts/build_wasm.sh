@@ -1,3 +1,3 @@
-rm -rf ./packages/lib/src/wasm/build &&
+rm -rf ./packages/spartan_wasm/build &&
 cd ./packages/spartan_wasm &&
-wasm-pack build --target web --out-dir ../lib/src/wasm/build
+wasm-pack build --target web --out-dir ../spartan_wasm/build

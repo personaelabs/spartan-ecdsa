@@ -4,3 +4,4 @@
 tsconfig.json
 jest.config.js
 copy_artifacts.sh
+load_wasm.ts

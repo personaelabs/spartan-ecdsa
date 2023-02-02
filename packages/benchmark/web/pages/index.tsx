@@ -4,9 +4,7 @@ import {
   MembershipVerifier,
   Tree,
   Poseidon,
-  SpartanWasm,
   defaultAddressMembershipPConfig,
-  defaultWasmConfig,
   defaultPubkeyMembershipPConfig,
   defaultPubkeyMembershipVConfig,
   defaultAddressMembershipVConfig
@@ -30,9 +28,8 @@ export default function Home() {
     const pubKey = ecrecover(msgHash, v, r, s);
     const sig = `0x${r.toString("hex")}${s.toString("hex")}${v.toString(16)}`;
 
-    const wasm = new SpartanWasm(defaultWasmConfig);
     const poseidon = new Poseidon();
-    await poseidon.initWasm(wasm);
+    await poseidon.initWasm();
 
     const treeDepth = 20;
     const pubKeyTree = new Tree(treeDepth, poseidon);
@@ -60,7 +57,7 @@ export default function Home() {
       enableProfiler: true
     });
 
-    prover.initWasm(wasm);
+    await prover.initWasm();
 
     const { proof, publicInput } = await prover.prove(
       sig,
@@ -80,10 +77,10 @@ export default function Home() {
       ...defaultPubkeyMembershipVConfig,
       enableProfiler: true
     });
-    await verifier.initWasm(wasm);
+    await verifier.initWasm();
 
     console.time("Verification time");
-    const result = await verifier.verify(proof, publicInput);
+    const result = await verifier.verify(proof, publicInput.serialize());
     console.timeEnd("Verification time");
 
     if (result) {
@@ -101,9 +98,8 @@ export default function Home() {
     const { v, r, s } = ecsign(msgHash, privKey);
     const sig = `0x${r.toString("hex")}${s.toString("hex")}${v.toString(16)}`;
 
-    const wasm = new SpartanWasm(defaultWasmConfig);
     const poseidon = new Poseidon();
-    await poseidon.initWasm(wasm);
+    await poseidon.initWasm();
 
     const treeDepth = 20;
     const addressTree = new Tree(treeDepth, poseidon);
@@ -133,7 +129,7 @@ export default function Home() {
       enableProfiler: true
     });
 
-    prover.initWasm(wasm);
+    await prover.initWasm();
 
     const { proof, publicInput } = await prover.prove(
       sig,
@@ -153,10 +149,10 @@ export default function Home() {
       ...defaultAddressMembershipVConfig,
       enableProfiler: true
     });
-    await verifier.initWasm(wasm);
+    await verifier.initWasm();
 
     console.time("Verification time");
-    const result = await verifier.verify(proof, publicInput);
+    const result = await verifier.verify(proof, publicInput.serialize());
     console.timeEnd("Verification time");
 
     if (result) {

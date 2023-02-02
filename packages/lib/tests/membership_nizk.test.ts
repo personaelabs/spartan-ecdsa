@@ -1,15 +1,9 @@
-import * as path from "path";
 import {
   MembershipProver,
   MembershipVerifier,
   Tree,
   Poseidon,
-  defaultAddressMembershipPConfig,
-  defaultPubkeyMembershipPConfig,
-  SpartanWasm,
-  defaultWasmConfig,
-  defaultPubkeyMembershipVConfig,
-  defaultAddressMembershipVConfig
+  NIZK
 } from "../src/lib";
 import {
   hashPersonalMessage,
@@ -18,6 +12,7 @@ import {
   privateToPublic
 } from "@ethereumjs/util";
 var EC = require("elliptic").ec;
+import * as path from "path";
 
 describe("membership prove and verify", () => {
   // Init prover
@@ -39,18 +34,35 @@ describe("membership prove and verify", () => {
   const sig = `0x${r.toString("hex")}${s.toString("hex")}${v.toString(16)}`;
 
   let poseidon: Poseidon;
-  let wasm: SpartanWasm;
 
   beforeAll(async () => {
-    // Init Wasm
-    wasm = new SpartanWasm(defaultWasmConfig);
-
     // Init Poseidon
     poseidon = new Poseidon();
-    await poseidon.initWasm(wasm);
+    await poseidon.initWasm();
   });
 
   describe("pubkey_membership prover and verify", () => {
+    const config = {
+      witnessGenWasm: path.join(
+        __dirname,
+        "../../circuits/build/pubkey_membership/pubkey_membership_js/pubkey_membership.wasm"
+      ),
+      circuit: path.join(
+        __dirname,
+        "../../circuits/build/pubkey_membership/pubkey_membership.circuit"
+      )
+    };
+
+    let pubKeyMembershipVerifier: MembershipVerifier, nizk: NIZK;
+
+    beforeAll(async () => {
+      pubKeyMembershipVerifier = new MembershipVerifier({
+        circuit: config.circuit
+      });
+
+      await pubKeyMembershipVerifier.initWasm();
+    });
+
     it("should prove and verify valid signature and merkle proof", async () => {
       const pubKeyTree = new Tree(treeDepth, poseidon);
 
@@ -65,34 +77,61 @@ describe("membership prove and verify", () => {
         if (proverPrivKey === privKey) proverPubKeyHash = pubKeyHash;
       }
 
-      const pubKeyMembershipProver = new MembershipProver(
-        defaultPubkeyMembershipPConfig
-      );
+      const pubKeyMembershipProver = new MembershipProver(config);
 
-      await pubKeyMembershipProver.initWasm(wasm);
+      await pubKeyMembershipProver.initWasm();
 
       const index = pubKeyTree.indexOf(proverPubKeyHash as bigint);
       const merkleProof = pubKeyTree.createProof(index);
 
-      const { proof, publicInput } = await pubKeyMembershipProver.prove(
-        sig,
-        msgHash,
-        merkleProof
-      );
+      nizk = await pubKeyMembershipProver.prove(sig, msgHash, merkleProof);
 
-      const pubKeyMembershipVerifier = new MembershipVerifier(
-        defaultPubkeyMembershipVConfig
-      );
+      const { proof, publicInput } = nizk;
+      expect(
+        await pubKeyMembershipVerifier.verify(proof, publicInput.serialize())
+      ).toBe(true);
+    });
 
-      await pubKeyMembershipVerifier.initWasm(wasm);
+    it("should assert invalid proof", async () => {
+      const { publicInput } = nizk;
+      let proof = nizk.proof;
+      proof[0] = proof[0] += 1;
+      expect(
+        await pubKeyMembershipVerifier.verify(proof, publicInput.serialize())
+      ).toBe(false);
+    });
 
+    it("should assert invalid public input", async () => {
+      const { proof } = nizk;
+      let publicInput = nizk.publicInput.serialize();
+      publicInput[0] = publicInput[0] += 1;
       expect(await pubKeyMembershipVerifier.verify(proof, publicInput)).toBe(
-        true
+        false
       );
     });
   });
 
   describe("addr_membership prover and verify", () => {
+    const config = {
+      witnessGenWasm: path.join(
+        __dirname,
+        "../../circuits/build/addr_membership/addr_membership_js/addr_membership.wasm"
+      ),
+      circuit: path.join(
+        __dirname,
+        "../../circuits/build/addr_membership/addr_membership.circuit"
+      )
+    };
+
+    let addressMembershipVerifier: MembershipVerifier, nizk: NIZK;
+    beforeAll(async () => {
+      addressMembershipVerifier = new MembershipVerifier({
+        circuit: config.circuit
+      });
+
+      await addressMembershipVerifier.initWasm();
+    });
+
     it("should prove and verify valid signature and merkle proof", async () => {
       const addressTree = new Tree(treeDepth, poseidon);
 
@@ -108,29 +147,39 @@ describe("membership prove and verify", () => {
         if (proverPrivKey === privKey) proverAddress = address;
       }
 
-      const addressMembershipProver = new MembershipProver(
-        defaultAddressMembershipPConfig
-      );
-
-      await addressMembershipProver.initWasm(wasm);
-
       const index = addressTree.indexOf(proverAddress as bigint);
       const merkleProof = addressTree.createProof(index);
 
-      const { proof, publicInput } = await addressMembershipProver.prove(
-        sig,
-        msgHash,
-        merkleProof
-      );
+      const addressMembershipProver = new MembershipProver(config);
 
-      const addressMembershipVerifier = new MembershipVerifier(
-        defaultAddressMembershipVConfig
-      );
+      await addressMembershipProver.initWasm();
 
-      await addressMembershipVerifier.initWasm(wasm);
+      nizk = await addressMembershipProver.prove(sig, msgHash, merkleProof);
+      await addressMembershipVerifier.initWasm();
 
+      expect(
+        await addressMembershipVerifier.verify(
+          nizk.proof,
+          nizk.publicInput.serialize()
+        )
+      ).toBe(true);
+    });
+
+    it("should assert invalid proof", async () => {
+      const { publicInput } = nizk;
+      let proof = nizk.proof;
+      proof[0] = proof[0] += 1;
+      expect(
+        await addressMembershipVerifier.verify(proof, publicInput.serialize())
+      ).toBe(false);
+    });
+
+    it("should assert invalid public input", async () => {
+      const { proof } = nizk;
+      let publicInput = nizk.publicInput.serialize();
+      publicInput[0] = publicInput[0] += 1;
       expect(await addressMembershipVerifier.verify(proof, publicInput)).toBe(
-        true
+        false
       );
     });
   });

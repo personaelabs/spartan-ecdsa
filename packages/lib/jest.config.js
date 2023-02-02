@@ -4,5 +4,6 @@ module.exports = {
   testEnvironment: 'node',
   transform: {
     "^.+\\.js?$": "ts-jest"
-  }
+  },
+  testTimeout: 600000,
 };
