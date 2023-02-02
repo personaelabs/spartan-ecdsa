@@ -1,4 +1,4 @@
-import { PublicInput } from "./helpers/efficient_ecdsa";
+import { PublicInput } from "./helpers/public_input";
 
 // The same structure as MerkleProof in @zk-kit/incremental-merkle-tree.
 // Not directly using MerkleProof defined in @zk-kit/incremental-merkle-tree so

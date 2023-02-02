@@ -5,7 +5,7 @@ import {
   PublicInput,
   computeEffEcdsaPubInput,
   CircuitPubInput
-} from "../helpers/efficient_ecdsa";
+} from "../helpers/public_input";
 import wasm, { init } from "../wasm";
 import {
   defaultPubkeyMembershipPConfig,

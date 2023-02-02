@@ -6,10 +6,7 @@ import { Profiler } from "../helpers/profiler";
 import { loadCircuit } from "../helpers/utils";
 import { IVerifier, VerifyConfig } from "../types";
 import wasm, { init } from "../wasm";
-import {
-  PublicInput,
-  verifyEffEcdsaPubInput
-} from "../helpers/efficient_ecdsa";
+import { PublicInput, verifyEffEcdsaPubInput } from "../helpers/public_input";
 
 /**
  * ECDSA Membership Verifier
