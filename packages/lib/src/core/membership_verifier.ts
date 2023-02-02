@@ -6,6 +6,10 @@ import { Profiler } from "../helpers/profiler";
 import { loadCircuit } from "../helpers/utils";
 import { IVerifier, VerifyConfig } from "../types";
 import wasm, { init } from "../wasm";
+import {
+  PublicInput,
+  verifyEffEcdsaPubInput
+} from "../helpers/efficient_ecdsa";
 
 /**
  * ECDSA Membership Verifier
@@ -35,19 +39,32 @@ export class MembershipVerifier extends Profiler implements IVerifier {
     await init();
   }
 
-  async verify(proof: Uint8Array, publicInput: Uint8Array): Promise<boolean> {
+  async verify(
+    proof: Uint8Array,
+    publicInputSer: Uint8Array
+  ): Promise<boolean> {
     this.time("Load circuit");
     const circuitBin = await loadCircuit(this.circuit);
     this.timeEnd("Load circuit");
 
+    this.time("Verify public input");
+    const publicInput = PublicInput.deserialize(publicInputSer);
+    const isPubInputValid = verifyEffEcdsaPubInput(publicInput);
+    this.timeEnd("Verify public input");
+
     this.time("Verify proof");
-    let result;
+    let isProofValid;
     try {
-      result = await wasm.verify(circuitBin, proof, publicInput);
+      isProofValid = await wasm.verify(
+        circuitBin,
+        proof,
+        publicInput.circuitPubInput.serialize()
+      );
     } catch (_e) {
-      result = false;
+      isProofValid = false;
     }
+
     this.timeEnd("Verify proof");
-    return result;
+    return isProofValid && isPubInputValid;
   }
 }

@@ -80,7 +80,7 @@ export default function Home() {
     await verifier.initWasm();
 
     console.time("Verification time");
-    const result = await verifier.verify(proof, publicInput);
+    const result = await verifier.verify(proof, publicInput.serialize());
     console.timeEnd("Verification time");
 
     if (result) {
@@ -152,7 +152,7 @@ export default function Home() {
     await verifier.initWasm();
 
     console.time("Verification time");
-    const result = await verifier.verify(proof, publicInput);
+    const result = await verifier.verify(proof, publicInput.serialize());
     console.timeEnd("Verification time");
 
     if (result) {

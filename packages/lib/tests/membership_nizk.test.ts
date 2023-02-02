@@ -87,23 +87,23 @@ describe("membership prove and verify", () => {
       nizk = await pubKeyMembershipProver.prove(sig, msgHash, merkleProof);
 
       const { proof, publicInput } = nizk;
-      expect(await pubKeyMembershipVerifier.verify(proof, publicInput)).toBe(
-        true
-      );
+      expect(
+        await pubKeyMembershipVerifier.verify(proof, publicInput.serialize())
+      ).toBe(true);
     });
 
     it("should assert invalid proof", async () => {
       const { publicInput } = nizk;
       let proof = nizk.proof;
       proof[0] = proof[0] += 1;
-      expect(await pubKeyMembershipVerifier.verify(proof, publicInput)).toBe(
-        false
-      );
+      expect(
+        await pubKeyMembershipVerifier.verify(proof, publicInput.serialize())
+      ).toBe(false);
     });
 
     it("should assert invalid public input", async () => {
       const { proof } = nizk;
-      let publicInput = nizk.publicInput;
+      let publicInput = nizk.publicInput.serialize();
       publicInput[0] = publicInput[0] += 1;
       expect(await pubKeyMembershipVerifier.verify(proof, publicInput)).toBe(
         false
@@ -158,7 +158,10 @@ describe("membership prove and verify", () => {
       await addressMembershipVerifier.initWasm();
 
       expect(
-        await addressMembershipVerifier.verify(nizk.proof, nizk.publicInput)
+        await addressMembershipVerifier.verify(
+          nizk.proof,
+          nizk.publicInput.serialize()
+        )
       ).toBe(true);
     });
 
@@ -166,14 +169,14 @@ describe("membership prove and verify", () => {
       const { publicInput } = nizk;
       let proof = nizk.proof;
       proof[0] = proof[0] += 1;
-      expect(await addressMembershipVerifier.verify(proof, publicInput)).toBe(
-        false
-      );
+      expect(
+        await addressMembershipVerifier.verify(proof, publicInput.serialize())
+      ).toBe(false);
     });
 
     it("should assert invalid public input", async () => {
       const { proof } = nizk;
-      let publicInput = nizk.publicInput;
+      let publicInput = nizk.publicInput.serialize();
       publicInput[0] = publicInput[0] += 1;
       expect(await addressMembershipVerifier.verify(proof, publicInput)).toBe(
         false
