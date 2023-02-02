@@ -18,6 +18,11 @@ Proving membership to a group of ECDSA public keys
 - Measured on a M1 MacBook Pro with 80Mbps internet speed.
 - Both proving and verification time in browser includes the time to download the circuit.
 
+## Disclaimers
+
+- Spartan-ecdsa is unaudited. Please use it at your own risk.
+- Usage on mobile browsers isn’t currently supported.
+
 ## Install
 
 ```jsx

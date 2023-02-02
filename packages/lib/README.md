@@ -1,5 +1,10 @@
 # Spartan-ecdsa
 
+## Disclaimers
+
+- Spartan-ecdsa is unaudited. Please use it at your own risk.
+- Usage on mobile browsers isn’t currently supported.
+
 ## Usage example
 
 ### Proving membership to a group of public keys
