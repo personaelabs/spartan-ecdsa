@@ -1,12 +1,12 @@
 # Spartan-ecdsa
 
-Spartan-ecdsa (which to our knowledge) is the fastest open-source method to verify ECDSA (secp256k1) signatures in zero-knowledge. It can prove ECDSA group membership 10 times faster than [efficient-zk-ecdsa](https://github.com/personaelabs/efficient-zk-ecdsa), our previous implementation of fast ECDSA signature proving. Please refer to this blog post for further information.
+Spartan-ecdsa (which to our knowledge) is the fastest open-source method to verify ECDSA (secp256k1) signatures in zero-knowledge. It can prove ECDSA group membership 10 times faster than [efficient-zk-ecdsa](https://github.com/personaelabs/efficient-zk-ecdsa), our previous implementation of fast ECDSA signature proving. Please refer to our blog post for further information.
 
 ## Benchmarks
 
 Proving membership to a group of ECDSA public keys
 
-|                              |       |
+|          Benchmark           |   #   |
 | :--------------------------: | :---: |
 |         Constraints          | 8,076 |
 |   Proving time in browser    |  4s   |
