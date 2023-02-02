@@ -2,10 +2,6 @@ import {
   MembershipProver,
   Poseidon,
   Tree,
-  SpartanWasm,
-  defaultWasmConfig,
-  defaultPubkeyMembershipPConfig,
-  defaultPubkeyMembershipVConfig,
   MembershipVerifier
 } from "@personaelabs/spartan-ecdsa";
 import {
@@ -14,6 +10,7 @@ import {
   ecrecover,
   privateToPublic
 } from "@ethereumjs/util";
+import * as path from "path";
 
 const benchPubKeyMembership = async () => {
   const privKey = Buffer.from("".padStart(16, "🧙"), "utf16le");
@@ -24,11 +21,9 @@ const benchPubKeyMembership = async () => {
   const pubKey = ecrecover(msgHash, v, r, s);
   const sig = `0x${r.toString("hex")}${s.toString("hex")}${v.toString(16)}`;
 
-  let wasm = new SpartanWasm(defaultWasmConfig);
-
   // Init the Poseidon hash
   const poseidon = new Poseidon();
-  await poseidon.initWasm(wasm);
+  await poseidon.initWasm();
 
   const treeDepth = 20;
   const tree = new Tree(treeDepth, poseidon);
@@ -51,22 +46,33 @@ const benchPubKeyMembership = async () => {
   const index = tree.indexOf(proverPubkeyHash);
   const merkleProof = tree.createProof(index);
 
-  // Init the prover
-  const prover = new MembershipProver({
-    ...defaultPubkeyMembershipPConfig,
+  const proverConfig = {
+    circuit: path.join(
+      __dirname,
+      "../../../circuits/build/pubkey_membership/pubkey_membership.circuit"
+    ),
+    witnessGenWasm: path.join(
+      __dirname,
+      "../../../circuits/build/pubkey_membership/pubkey_membership_js/pubkey_membership.wasm"
+    ),
     enableProfiler: true
-  });
-  await prover.initWasm(wasm);
+  };
+
+  // Init the prover
+  const prover = new MembershipProver(proverConfig);
+  await prover.initWasm();
 
   // Prove membership
   const { proof, publicInput } = await prover.prove(sig, msgHash, merkleProof);
 
-  // Init verifier
-  const verifier = new MembershipVerifier({
-    ...defaultPubkeyMembershipVConfig,
+  const verifierConfig = {
+    circuit: proverConfig.circuit,
     enableProfiler: true
-  });
-  await verifier.initWasm(wasm);
+  };
+
+  // Init verifier
+  const verifier = new MembershipVerifier(verifierConfig);
+  await verifier.initWasm();
 
   // Verify proof
   await verifier.verify(proof, publicInput);

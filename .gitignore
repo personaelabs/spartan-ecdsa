@@ -35,5 +35,8 @@ packages/prover/test_circuit/test_circuit_js/
 packages/prover/test_circuit/*.json 
 
 
+wasm_bytes.ts
 **/sage/*.sage.py
 packages/lib/src/circuits/
+
+packages/lib/example/

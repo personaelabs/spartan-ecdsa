@@ -1,24 +1,38 @@
+import {
+  defaultAddressMembershipVConfig,
+  defaultPubkeyMembershipVConfig
+} from "../config";
 import { Profiler } from "../helpers/profiler";
 import { loadCircuit } from "../helpers/utils";
 import { IVerifier, VerifyConfig } from "../types";
-import { SpartanWasm } from "../wasm";
+import wasm, { init } from "../wasm";
 
 /**
  * ECDSA Membership Verifier
  */
 export class MembershipVerifier extends Profiler implements IVerifier {
-  spartanWasm!: SpartanWasm;
   circuit: string;
 
   constructor(options: VerifyConfig) {
     super({ enabled: options?.enableProfiler });
 
+    if (
+      options.circuit === defaultAddressMembershipVConfig.circuit ||
+      options.circuit === defaultPubkeyMembershipVConfig.circuit
+    ) {
+      console.warn(`
+      Spartan-ecdsa default config warning:
+      We recommend using defaultPubkeyMembershipPConfig/defaultPubkeyMembershipVConfig only for testing purposes.
+      Please host and specify the circuit and witnessGenWasm files on your own server for sovereign control.
+      Download files: https://github.com/personaelabs/spartan-ecdsa/blob/main/packages/lib/README.md#circuit-downloads
+      `);
+    }
+
     this.circuit = options.circuit;
   }
 
-  async initWasm(wasm: SpartanWasm) {
-    this.spartanWasm = wasm;
-    this.spartanWasm.init();
+  async initWasm() {
+    await init();
   }
 
   async verify(proof: Uint8Array, publicInput: Uint8Array): Promise<boolean> {
@@ -27,11 +41,12 @@ export class MembershipVerifier extends Profiler implements IVerifier {
     this.timeEnd("Load circuit");
 
     this.time("Verify proof");
-    const result = await this.spartanWasm.verify(
-      circuitBin,
-      proof,
-      publicInput
-    );
+    let result;
+    try {
+      result = await wasm.verify(circuitBin, proof, publicInput);
+    } catch (_e) {
+      result = false;
+    }
     this.timeEnd("Verify proof");
     return result;
   }
