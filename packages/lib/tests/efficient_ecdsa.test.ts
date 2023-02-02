@@ -2,10 +2,10 @@ import {
   CircuitPubInput,
   PublicInput,
   verifyEffEcdsaPubInput
-} from "../src/helpers/efficient_ecdsa";
+} from "../src/helpers/public_input";
 import { hashPersonalMessage } from "@ethereumjs/util";
 
-describe("efficient_ecdsa", () => {
+describe("public_input", () => {
   /**
      Hard coded values were computed in sage using the following code 
       p = 0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffc2f
