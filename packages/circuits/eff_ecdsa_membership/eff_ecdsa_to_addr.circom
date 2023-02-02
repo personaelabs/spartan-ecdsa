@@ -3,6 +3,12 @@ pragma circom 2.1.2;
 include "./eff_ecdsa.circom";
 include "./to_address/zk-identity/eth.circom";
 
+/**
+ *  EfficientECDSAToAddr
+ *  ====================
+ *  
+ *  Converts inputted efficient ECDSA signature to an address.
+ */
 template EfficientECDSAToAddr() {
     var bits = 256;
     signal input s;

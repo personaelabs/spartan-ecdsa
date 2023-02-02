@@ -17,7 +17,7 @@ git clone https://github.com/DanTehrani/circom-secq
 ```
 
 ```
-cd circom && cargo build --release && cargo install --path circom
+cd circom-secq && cargo build --release && cargo install --path circom
 ```
 
 (In this directory) Install dependencies
