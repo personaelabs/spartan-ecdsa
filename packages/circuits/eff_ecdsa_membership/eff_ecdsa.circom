@@ -19,7 +19,7 @@ template EfficientECDSA() {
     var gY = 32670510020758816978083085130507043184471273380659243275938904335757337482424;
     var a = 7;
 
-    // t * R = s * r^-1 * R
+    // s * T
     component sMultT = Secp256k1Mul();
     sMultT.scalar <== s;
     sMultT.xP <== Tx;
