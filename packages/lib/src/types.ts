@@ -1,3 +1,5 @@
+import { PublicInput } from "./helpers/public_input";
+
 // The same structure as MerkleProof in @zk-kit/incremental-merkle-tree.
 // Not directly using MerkleProof defined in @zk-kit/incremental-merkle-tree so
 // library users can choose whatever merkle tree management method they want.
@@ -6,10 +8,16 @@ export interface MerkleProof {
   siblings: bigint[];
   pathIndices: number[];
 }
+export interface EffECDSAPubInput {
+  Tx: bigint;
+  Ty: bigint;
+  Ux: bigint;
+  Uy: bigint;
+}
 
 export interface NIZK {
   proof: Uint8Array;
-  publicInput: Uint8Array;
+  publicInput: PublicInput;
 }
 
 export interface ProverConfig {

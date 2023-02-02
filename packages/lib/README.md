@@ -61,7 +61,7 @@ const verifier = new MembershipVerifier(defaultPubkeyMembershipVConfig);
 await verifier.initWasm();
 
 // Verify proof
-await verifier.verify(proof, publicInput);
+await verifier.verify(proof, publicInput.serialize());
 ```
 
 ### Proving membership to a group of addresses
@@ -117,7 +117,7 @@ const verifier = new MembershipVerifier(defaultAddressMembershipVConfig);
 await verifier.initWasm();
 
 // Verify proof
-await verifier.verify(proof, publicInput);
+await verifier.verify(proof, publicInput.serialize());
 ```
 
 ## Circuit downloads

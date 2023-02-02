@@ -78,7 +78,7 @@ const benchAddrMembership = async () => {
   await verifier.initWasm();
 
   // Verify proof
-  await verifier.verify(proof, publicInput);
+  await verifier.verify(proof, publicInput.serialize());
 };
 
 export default benchAddrMembership;
