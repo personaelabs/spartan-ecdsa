@@ -1,5 +1,7 @@
 # Spartan-ecdsa
 
+Spartan-ecdsa (which to our knowledge) is the fastest open-source method to verify ECDSA (secp256k1) signatures in zero-knowledge.
+
 ## Disclaimers
 
 - Spartan-ecdsa is unaudited. Please use it at your own risk.
