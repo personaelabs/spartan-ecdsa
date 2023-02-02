@@ -41,6 +41,19 @@ export class MembershipProver extends Profiler implements IProver {
       `);
     }
 
+    const isNode = typeof window === "undefined";
+    if (isNode) {
+      if (
+        options.circuit.includes("http") ||
+        options.witnessGenWasm.includes("http")
+      ) {
+        throw new Error(
+          `An URL was given for circuit/witnessGenWasm in Node.js environment. Please specify a local path.
+          `
+        );
+      }
+    }
+
     this.circuit = options.circuit;
     this.witnessGenWasm = options.witnessGenWasm;
   }
