@@ -18,7 +18,7 @@ where $G$ is the generator point of the curve. The efficient ECDSA signature con
 s * T + U == Q_a
 ```
 
-Thus, verifying a standard ECDSA signature instead of the efficient ECDSA signature requires (1) computing $s^-1$, $r \* s^-1$, $m \* s^-1$, and (2) an extra ECC scalar multiply to compute $m s ^{-1} * G$. The former happens in the _scalar field of secp_, which is unequal to the scalar field of secq, and so we incur 11,494 additional constraints for the wrong-field math. The latter can use the `Secp256k1Mul` subroutine and incurs 3,011 additional constraints.
+Thus, verifying a standard ECDSA signature instead of the efficient ECDSA signature requires (1) computing $s^{-1}$, $r \* s^{-1}$, $m \* s^{-1}$, and (2) an extra ECC scalar multiply to compute $m s ^{-1} * G$. The former computations happen in the scalar field of secp, which is unequal to the scalar field of secq, and so we incur 11,494 additional constraints for the wrong-field math. The latter can use the `Secp256k1Mul` subroutine and incurs 3,011 additional constraints.
 
 ## Benchmarks
 
