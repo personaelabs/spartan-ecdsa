@@ -12,7 +12,7 @@ keywords = ["zkSNARKs", "cryptography", "proofs"]
 
 [dependencies]
 num-bigint-dig = "^0.7"
-secq256k1 = { git = "https://github.com/personaelabs/spartan-ecdsa.git" }
+secq256k1 = { path = "../secq256k1" }
 merlin = "3.0.0"
 rand = "0.7.3"
 digest = "0.8.1"
