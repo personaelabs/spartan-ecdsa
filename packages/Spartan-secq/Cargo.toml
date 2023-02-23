@@ -1,0 +1,57 @@
+[package]
+name = "spartan"
+version = "0.7.1"
+authors = ["Srinath Setty <srinath@microsoft.com>"]
+edition = "2021"
+description = "High-speed zkSNARKs without trusted setup"
+documentation = "https://docs.rs/spartan/"
+readme = "README.md"
+repository = "https://github.com/microsoft/Spartan"
+license-file = "LICENSE"
+keywords = ["zkSNARKs", "cryptography", "proofs"]
+
+[dependencies]
+num-bigint-dig = "^0.7"
+secq256k1 = { git = "https://github.com/personaelabs/spartan-ecdsa.git" }
+merlin = "3.0.0"
+rand = "0.7.3"
+digest = "0.8.1"
+sha3 = "0.8.2"
+byteorder = "1.3.4"
+rayon = { version = "1.3.0", optional = true }
+serde = { version = "1.0.106", features = ["derive"] }
+bincode = "1.2.1"
+subtle = { version = "2.4", default-features = false }
+rand_core = { version = "0.6", default-features = false }
+zeroize = { version = "1", default-features = false }
+itertools = "0.10.0"
+colored = "2.0.0"
+flate2 = "1.0.14"
+thiserror = "1.0"
+num-traits = "0.2.15"
+hex-literal = { version = "0.3" }
+multiexp = "0.2.2"
+
+[dev-dependencies]
+criterion = "0.3.1"
+
+[lib]
+name = "libspartan"
+path = "src/lib.rs"
+crate-type = ["cdylib", "rlib"]
+
+[[bin]]
+name = "snark"
+path = "profiler/snark.rs"
+
+[[bin]]
+name = "nizk"
+path = "profiler/nizk.rs"
+
+[[bench]]
+name = "snark"
+harness = false
+
+[[bench]]
+name = "nizk"
+harness = false
