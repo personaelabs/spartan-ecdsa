@@ -1,0 +1,12 @@
+[package]
+name = "hoplite"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+secq256k1 = { path = "../secq256k1" }
+spartan = { git = "https://github.com/DanTehrani/Spartan-secq", branch = "hoplite" }
+sha3 = { version = "0.8.2" }
+secpq_curves = { git = "https://github.com/DanTehrani/secpq_curves.git" }
