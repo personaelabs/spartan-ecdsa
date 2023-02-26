@@ -75,6 +75,12 @@ pub fn verify_nizk(
         &gens_4.into(),
         &mut transcript,
     ));
+
+    // ############################
+    // # Verify Phase 2 SumCheck
+    // ############################
+
+    // TBD
 }
 
 #[cfg(test)]
