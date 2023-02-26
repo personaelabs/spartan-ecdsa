@@ -6,7 +6,6 @@ use libspartan::{
     transcript::{AppendToTranscript, ProofTranscript, Transcript},
     Instance, NIZKGens, NIZK,
 };
-
 pub mod commitments;
 pub mod dotprod;
 pub mod sumcheck;
@@ -21,14 +20,13 @@ use libspartan::commitments::Commitments;
 pub const DEGREE_BOUND: usize = 3;
 pub const N_ROUNDS: usize = 1;
 
-#[allow(dead_code)]
-fn verify_nizk(
+pub fn verify_nizk(
     inst: &Instance,
     num_cons: usize,
     num_vars: usize,
     input: &[libspartan::scalar::Scalar],
-    proof: NIZK,
-    gens: NIZKGens,
+    proof: &NIZK,
+    gens: &NIZKGens,
 ) {
     let mut transcript = Transcript::new(b"test_verify");
 
@@ -56,8 +54,8 @@ fn verify_nizk(
 
     let _tau = transcript.challenge_vector(b"challenge_tau", num_rounds_x);
 
-    let gens_1 = gens.gens_r1cs_sat.gens_sc.gens_1;
-    let gens_4 = gens.gens_r1cs_sat.gens_sc.gens_4;
+    let gens_1 = gens.gens_r1cs_sat.gens_sc.gens_1.clone();
+    let gens_4 = gens.gens_r1cs_sat.gens_sc.gens_4.clone();
 
     // ############################
     // # Verify Phase 1 SumCheck
@@ -141,8 +139,8 @@ mod tests {
             num_cons,
             num_vars,
             &assignment_inputs.assignment,
-            proof,
-            gens,
+            &proof,
+            &gens,
         );
     }
 }

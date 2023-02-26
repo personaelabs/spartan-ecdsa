@@ -1,6 +1,6 @@
 use crate::{
     commitments::Commitments, sumcheck::FromCircuitVal, utils::to_fq, Fq, MultiCommitGens,
-    DEGREE_BOUND, N_ROUNDS,
+    DEGREE_BOUND,
 };
 use libspartan::{
     group::CompressedGroup,
