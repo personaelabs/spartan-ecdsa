@@ -1,6 +1,5 @@
 use crate::{
     commitments::Commitments, sumcheck::FromCircuitVal, utils::to_fq, Fq, MultiCommitGens,
-    DEGREE_BOUND,
 };
 use libspartan::{
     group::CompressedGroup,
@@ -9,10 +8,10 @@ use libspartan::{
 use secpq_curves::Secq256k1;
 
 #[derive(Debug, Clone, Copy)]
-pub struct ZKDotProdProof {
+pub struct ZKDotProdProof<const DIMENSION: usize> {
     pub delta: Secq256k1,
     pub beta: Secq256k1,
-    pub z: [Fq; DEGREE_BOUND + 1],
+    pub z: [Fq; DIMENSION],
     pub z_delta: Fq,
     pub z_beta: Fq,
 }
@@ -29,15 +28,15 @@ pub fn dot_prod(x: &[Fq], a: &[Fq]) -> Fq {
 
 // https://eprint.iacr.org/2017/1132.pdf
 // P.18, Figure 6, steps 4
-pub fn verify(
+pub fn verify<const DIMENSION: usize>(
     tau: &Secq256k1,
     a: &[Fq],
-    proof: &ZKDotProdProof,
+    proof: &ZKDotProdProof<DIMENSION>,
     com_poly: &Secq256k1,
     gens_1: &MultiCommitGens,
     gens_n: &MultiCommitGens,
     transcript: &mut Transcript,
-) -> bool {
+) {
     transcript.append_protocol_name(b"dot product proof");
 
     CompressedGroup::from_circuit_val(com_poly).append_to_transcript(b"Cx", transcript);
@@ -60,17 +59,11 @@ pub fn verify(
     let lhs = (com_poly * c) + proof.delta;
     let rhs = proof.z.commit(&proof.z_delta, gens_n);
 
-    if lhs != rhs {
-        return false;
-    }
+    assert!(lhs == rhs, "dot prod verification failed (13)");
 
     // (14)
     let lhs = (tau * c) + proof.beta;
     let rhs = dot_prod(&proof.z, a).commit(&proof.z_beta, gens_1);
 
-    if lhs != rhs {
-        return false;
-    }
-
-    return true;
+    assert!(lhs == rhs, "dot prod verification failed (14)");
 }

@@ -9,7 +9,6 @@ use std::io::Read;
 
 use crate::sumcheck::ToCircuitVal;
 
-#[allow(non_snake_case)]
 pub struct MultiCommitGens {
     pub G: Vec<Secq256k1>,
     pub h: Secq256k1,
