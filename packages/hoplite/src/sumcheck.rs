@@ -28,23 +28,23 @@ pub fn verify<const N_ROUNDS: usize, const DIMENSION: usize>(
 ) -> (Secq256k1, Vec<Fq>) {
     let mut r = vec![];
     for (i, round_dotprod_proof) in proof.proofs.iter().enumerate() {
-        let com_poly = &proof.comm_polys[i];
+        let com_poly = &proof.comm_polys[i].unwrap();
         let com_poly_encoded = CompressedGroup::from_circuit_val(com_poly);
         com_poly_encoded.append_to_transcript(b"comm_poly", transcript);
 
-        let com_eval = &proof.comm_evals[i];
+        let com_eval = &proof.comm_evals[i].unwrap();
 
         let r_i = to_fq(&transcript.challenge_scalar(b"challenge_nextround"));
         r.push(r_i);
 
         // The sum over (0, 1) is expected to be equal to the challenge evaluation of the prev round
         let com_round_sum = if i == 0 {
-            target_com
+            *target_com
         } else {
-            &proof.comm_evals[i - 1]
+            proof.comm_evals[i - 1].unwrap()
         };
 
-        let com_round_sum_encoded = CompressedGroup::from_circuit_val(com_round_sum);
+        let com_round_sum_encoded = CompressedGroup::from_circuit_val(&com_round_sum);
         com_round_sum_encoded.append_to_transcript(b"comm_claim_per_round", transcript);
 
         CompressedGroup::from_circuit_val(&com_eval.clone())
@@ -85,12 +85,12 @@ pub fn verify<const N_ROUNDS: usize, const DIMENSION: usize>(
             &tau,
             &a,
             &round_dotprod_proof,
-            com_poly,
+            &com_poly,
             &gens_1,
             &gens_n,
             transcript,
         );
     }
 
-    (proof.comm_evals[proof.comm_evals.len() - 1], r)
+    (proof.comm_evals[proof.comm_evals.len() - 1].unwrap(), r)
 }

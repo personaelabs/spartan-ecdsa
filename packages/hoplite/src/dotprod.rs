@@ -43,21 +43,26 @@ pub fn verify<const DIMENSION: usize>(
     }
     transcript.append_message(b"a", b"end_append_vector");
 
-    CompressedGroup::from_circuit_val(&proof.delta).append_to_transcript(b"delta", transcript);
+    CompressedGroup::from_circuit_val(&proof.delta.unwrap())
+        .append_to_transcript(b"delta", transcript);
 
-    CompressedGroup::from_circuit_val(&proof.beta).append_to_transcript(b"beta", transcript);
+    CompressedGroup::from_circuit_val(&proof.beta.unwrap())
+        .append_to_transcript(b"beta", transcript);
 
     let c = to_fq(&transcript.challenge_scalar(b"c"));
 
     // (13)
-    let lhs = (com_poly * c) + proof.delta;
-    let rhs = proof.z.commit(&proof.z_delta, gens_n);
+    let lhs = (com_poly * c) + proof.delta.unwrap();
+    let rhs = proof
+        .z
+        .map(|z_i| z_i.unwrap())
+        .commit(&proof.z_delta.unwrap(), gens_n);
 
     assert!(lhs == rhs, "dot prod verification failed (13)");
 
     // (14)
-    let lhs = (tau * c) + proof.beta;
-    let rhs = dot_prod(&proof.z, a).commit(&proof.z_beta, gens_1);
+    let lhs = (tau * c) + proof.beta.unwrap();
+    let rhs = dot_prod(&proof.z.map(|z_i| z_i.unwrap()), a).commit(&proof.z_beta.unwrap(), gens_1);
 
     assert!(lhs == rhs, "dot prod verification failed (14)");
 }

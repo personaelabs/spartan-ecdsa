@@ -45,8 +45,8 @@ pub fn verify<const DIMENSION: usize>(
     let G_L = &gens_n.G[0..DIMENSION].try_into().unwrap();
     let G_R = &gens_n.G[DIMENSION..].try_into().unwrap();
 
-    let upsilon_L = &bullet_reduction_proof.L_vec;
-    let upsilon_R = &bullet_reduction_proof.R_vec;
+    let upsilon_L = &bullet_reduction_proof.L_vec.map(|L_i| L_i.unwrap());
+    let upsilon_R = &bullet_reduction_proof.R_vec.map(|L_i| L_i.unwrap());
 
     let (Gamma_hat, a_hat, g_hat) =
         proof_bullet_reduce::verify(&Gamma, a_L, a_R, upsilon_L, upsilon_R, G_L, G_R, transcript);

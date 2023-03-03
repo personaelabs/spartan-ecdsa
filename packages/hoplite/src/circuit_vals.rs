@@ -7,26 +7,27 @@ use libspartan::{
 };
 use secpq_curves::group::{prime::PrimeCurveAffine, Curve};
 use secpq_curves::{CurveAffine, Secq256k1, Secq256k1Affine};
+use std::option::Option;
 
 #[derive(Debug, Clone, Copy)]
 pub struct CVSumCheckProof<const N_ROUNDS: usize, const DIMENSION: usize> {
-    pub comm_polys: [Secq256k1; N_ROUNDS],
-    pub comm_evals: [Secq256k1; N_ROUNDS],
+    pub comm_polys: [Option<Secq256k1>; N_ROUNDS],
+    pub comm_evals: [Option<Secq256k1>; N_ROUNDS],
     pub proofs: [CVDotProdProof<DIMENSION>; N_ROUNDS],
 }
 
 pub struct CVBulletReductionProof<const DIMENSION: usize> {
-    pub L_vec: [Secq256k1; DIMENSION],
-    pub R_vec: [Secq256k1; DIMENSION],
+    pub L_vec: [Option<Secq256k1>; DIMENSION],
+    pub R_vec: [Option<Secq256k1>; DIMENSION],
 }
 
 #[derive(Debug, Clone, Copy)]
 pub struct CVDotProdProof<const DIMENSION: usize> {
-    pub delta: Secq256k1,
-    pub beta: Secq256k1,
-    pub z: [Fq; DIMENSION],
-    pub z_delta: Fq,
-    pub z_beta: Fq,
+    pub delta: Option<Secq256k1>,
+    pub beta: Option<Secq256k1>,
+    pub z: [Option<Fq>; DIMENSION],
+    pub z_delta: Option<Fq>,
+    pub z_beta: Option<Fq>,
 }
 
 // We define our own trait rather than using the `From` trait because
@@ -111,15 +112,15 @@ impl ToCircuitVal<Secq256k1> for CompressedGroup {
 impl<const DIMENSION: usize> ToCircuitVal<CVDotProdProof<DIMENSION>> for DotProductProof {
     fn to_circuit_val(&self) -> CVDotProdProof<DIMENSION> {
         CVDotProdProof {
-            delta: self.delta.to_circuit_val(),
-            beta: self.beta.to_circuit_val(),
-            z_beta: self.z_beta.to_circuit_val(),
-            z_delta: self.z_delta.to_circuit_val(),
+            delta: Some(self.delta.to_circuit_val()),
+            beta: Some(self.beta.to_circuit_val()),
+            z_beta: Some(self.z_beta.to_circuit_val()),
+            z_delta: Some(self.z_delta.to_circuit_val()),
             z: self
                 .z
                 .iter()
-                .map(|z_i| z_i.to_circuit_val())
-                .collect::<Vec<Fq>>()
+                .map(|z_i| Some(z_i.to_circuit_val()))
+                .collect::<Vec<Option<Fq>>>()
                 .try_into()
                 .unwrap(),
         }
@@ -137,8 +138,8 @@ impl<const N_ROUNDS: usize, const DIMENSION: usize>
         let mut comm_evals = Vec::with_capacity(N_ROUNDS);
         for i in 0..N_ROUNDS {
             dotprod_proofs.push(self.proofs[i].to_circuit_val());
-            comm_polys.push(self.comm_polys[i].to_circuit_val());
-            comm_evals.push(self.comm_evals[i].to_circuit_val());
+            comm_polys.push(Some(self.comm_polys[i].to_circuit_val()));
+            comm_evals.push(Some(self.comm_evals[i].to_circuit_val()));
         }
 
         CVSumCheckProof {
@@ -156,8 +157,8 @@ impl<const DIMENSION: usize> ToCircuitVal<CVBulletReductionProof<DIMENSION>>
         let mut L_vec = Vec::with_capacity(DIMENSION);
         let mut R_vec = Vec::with_capacity(DIMENSION);
         for i in 0..DIMENSION {
-            L_vec.push(self.L_vec[i].to_circuit_val());
-            R_vec.push(self.R_vec[i].to_circuit_val());
+            L_vec.push(Some(self.L_vec[i].to_circuit_val()));
+            R_vec.push(Some(self.R_vec[i].to_circuit_val()));
         }
 
         CVBulletReductionProof {
