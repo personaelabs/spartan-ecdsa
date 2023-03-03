@@ -34,6 +34,9 @@ pub fn eq_eval(t: &[Fq], x: &[Fq]) -> Fq {
     result
 }
 
+/**
+ * Verify a SpartanNIZK proof
+ */
 pub fn verify_nizk(
     inst: &Instance,
     num_cons: usize,
@@ -42,6 +45,7 @@ pub fn verify_nizk(
     proof: &NIZK,
     gens: &NIZKGens,
 ) {
+    // Append the domain parameters to the transcript
     let mut transcript = Transcript::new(b"test_verify");
 
     transcript.append_protocol_name(b"Spartan NIZK proof");
@@ -55,23 +59,26 @@ pub fn verify_nizk(
         .comm_vars
         .append_to_transcript(b"poly_commitment", &mut transcript);
 
-    let num_rounds_x = if num_cons == 0 {
+    // Get the number of rounds for the two sum-checks
+    // TODO: Change this to constants
+    let num_rounds_phase1 = if num_cons == 0 {
         0
     } else {
         max(num_cons.log_2(), 1)
     };
-    let _num_rounds_y = if num_vars == 0 {
+    let num_rounds_phase2 = if num_vars == 0 {
         0
     } else {
         (2 * num_vars).log_2()
     };
 
     let tau: Vec<Fq> = transcript
-        .challenge_vector(b"challenge_tau", num_rounds_x)
+        .challenge_vector(b"challenge_tau", num_rounds_phase1)
         .iter()
         .map(|tau_i| tau_i.to_circuit_val())
         .collect();
 
+    // Convert the generators to circuit value representations
     let gens_1: MultiCommitGens = gens.gens_r1cs_sat.gens_sc.gens_1.clone().into();
     let gens_3: MultiCommitGens = gens.gens_r1cs_sat.gens_sc.gens_3.clone().into();
     let gens_4: MultiCommitGens = gens.gens_r1cs_sat.gens_sc.gens_4.clone().into();
@@ -79,16 +86,14 @@ pub fn verify_nizk(
     let gens_pc_1: MultiCommitGens = gens_pc_gens.gens_1.clone().into();
     let gens_pc_n: MultiCommitGens = gens_pc_gens.gens_n.clone().into();
 
-    // ############################
-    // # Verify Phase 1 SumCheck
-    // ############################
-
     const N_ROUNDS: usize = 1;
     let sc_proof_phase1: sumcheck::ZKSumCheckProof<N_ROUNDS, 4> =
         proof.r1cs_sat_proof.sc_proof_phase1.to_circuit_val();
 
+    // The expected sum of the phase 1 sum-check is zero
     let phase1_expected_sum = Fq::zero().commit(&Fq::zero(), &gens_1);
 
+    // comm_claim_post_phase1: Commitment to the claimed evaluation of the final round polynomial over rx
     let (comm_claim_post_phase1, rx) = sumcheck::verify(
         &phase1_expected_sum,
         &sc_proof_phase1,
@@ -97,12 +102,12 @@ pub fn verify_nizk(
         &mut transcript,
     );
 
-    // ############################
-    // Verify Az * Bz = Claimed Cz
-    // ############################
-
+    // Verify Az * Bz = Cz
     let (comm_Az_claim, comm_Bz_claim, comm_Cz_claim, comm_prod_Az_Bz_claims) =
         &proof.r1cs_sat_proof.claims_phase2;
+
+    // First, we verify that the prover knows the opening to comm_Cz_claim
+
     let (pok_Cz_claim, proof_prod) = &proof.r1cs_sat_proof.pok_claims_phase2;
 
     proof_of_opening::verify(
@@ -113,6 +118,8 @@ pub fn verify_nizk(
         &gens_1,
         &mut transcript,
     );
+
+    // Second, we verify Az * Bz = "Commitment to the claimed prod"
 
     proof_of_prod::verify(
         proof_prod.alpha.to_circuit_val(),
@@ -137,9 +144,15 @@ pub fn verify_nizk(
     comm_Cz_claim.append_to_transcript(b"comm_Cz_claim", &mut transcript);
     comm_prod_Az_Bz_claims.append_to_transcript(b"comm_prod_Az_Bz_claims", &mut transcript);
 
-    // ############################
-    // # Verify the final query to the polynomial
-    // ############################
+    // Verify the final query to the polynomial
+
+    // Now, we verify that
+    // (Az * Bz - Cz) * eq(tau, rx) = Commitment to the claimed evaluation of the final round polynomial over rx
+    // In the first sum-check, we verify that
+
+    // (A(x, y) * Z(y) + B(x, y) * Z(y) - C(x, y) * Z(y)) * eq(tau, rx) = 0
+    // So the final round polynomial's evaluation over rx should equal to the
+    // evaluation of the above poly over rx
 
     let eq_tau_rx = eq_eval(&tau, &rx);
     let expected_claim_post_phase1 = (comm_prod_Az_Bz_claims.decompress().unwrap()
@@ -149,6 +162,8 @@ pub fn verify_nizk(
     .to_affine()
         * eq_tau_rx;
 
+    // Check the equality between the evaluation of the final round poly of the sum-check
+    // and the evaluation of the F(x) poly over rx
     let proof_eq_sc_phase1 = &proof.r1cs_sat_proof.proof_eq_sc_phase1;
     proof_of_eq::verify(
         &expected_claim_post_phase1,
@@ -159,20 +174,22 @@ pub fn verify_nizk(
         &mut transcript,
     );
 
+    // Verify that the commitments to Az, Bz and Cz are correct
+
     let r_A = transcript.challenge_scalar(b"challenege_Az");
     let r_B = transcript.challenge_scalar(b"challenege_Bz");
     let r_C = transcript.challenge_scalar(b"challenege_Cz");
 
-    // TODO: Add comments!
-
-    let sc_proof_phase2: sumcheck::ZKSumCheckProof<3, 3> =
-        proof.r1cs_sat_proof.sc_proof_phase2.to_circuit_val();
-
-    // r_A * comm_Az_claim + r_B * comm_Bz_claim + r_C * comm_Cz_claim;
+    // M(r_y) = r_A * comm_Az_claim + r_B * comm_Bz_claim + r_C * comm_Cz_claim;
     let comm_claim_phase2 = r_A * comm_Az_claim.decompress().unwrap()
         + r_B * comm_Bz_claim.decompress().unwrap()
         + r_C * comm_Cz_claim.decompress().unwrap();
 
+    // Verify the sum-check over M(x)
+
+    let sc_proof_phase2: sumcheck::ZKSumCheckProof<3, 3> =
+        proof.r1cs_sat_proof.sc_proof_phase2.to_circuit_val();
+    // comm_claim_post_phase2: Claimed evaluation of the final round polynomial over ry
     let (comm_claim_post_phase2, ry) = sumcheck::verify(
         &comm_claim_phase2.compress().to_circuit_val(),
         &sc_proof_phase2,
@@ -181,6 +198,13 @@ pub fn verify_nizk(
         &mut transcript,
     );
 
+    // Verify that the final round polynomial's evaluation over ry is equal to the
+    // evaluation of M(x) over ry.
+
+    // In order to do so, we need to get the evaluation of Z(X) over ry.
+    // We use proof_log of dot prod to verify that.
+
+    // comm_vars: Commitment to the evaluations of Z(X) over the boolean hypercube
     let comm_vars = proof
         .r1cs_sat_proof
         .comm_vars
@@ -232,11 +256,15 @@ pub fn verify_nizk(
     let inst_evals = inst.inst.evaluate(&claimed_rx, &claimed_ry);
 
     let (eval_A_r, eval_B_r, eval_C_r) = inst_evals;
+
+    // Z(r_y) * (r_A * A(r_y) + r_B * B(r_y) + r_C * C(r_y))
     let expected_claim_post_phase2 = comm_eval_Z_at_ry
         * (r_A.to_circuit_val() * eval_A_r.to_circuit_val()
             + r_B.to_circuit_val() * eval_B_r.to_circuit_val()
             + r_C.to_circuit_val() * eval_C_r.to_circuit_val());
 
+    // Verify that the commitment to the evaluation of the final round polynomial
+    // is correct
     proof_of_eq::verify(
         &expected_claim_post_phase2,
         &comm_claim_post_phase2,
