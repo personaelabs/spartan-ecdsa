@@ -1,4 +1,4 @@
-use crate::{dotprod::ZKDotProdProof, Fp, Fq};
+use crate::{Fp, Fq};
 use libspartan::{
     group::CompressedGroup,
     nizk::{BulletReductionProof, DotProductProof},
@@ -12,12 +12,21 @@ use secpq_curves::{CurveAffine, Secq256k1, Secq256k1Affine};
 pub struct CVSumCheckProof<const N_ROUNDS: usize, const DIMENSION: usize> {
     pub comm_polys: [Secq256k1; N_ROUNDS],
     pub comm_evals: [Secq256k1; N_ROUNDS],
-    pub proofs: [ZKDotProdProof<DIMENSION>; N_ROUNDS],
+    pub proofs: [CVDotProdProof<DIMENSION>; N_ROUNDS],
 }
 
 pub struct CVBulletReductionProof<const DIMENSION: usize> {
     pub L_vec: [Secq256k1; DIMENSION],
     pub R_vec: [Secq256k1; DIMENSION],
+}
+
+#[derive(Debug, Clone, Copy)]
+pub struct CVDotProdProof<const DIMENSION: usize> {
+    pub delta: Secq256k1,
+    pub beta: Secq256k1,
+    pub z: [Fq; DIMENSION],
+    pub z_delta: Fq,
+    pub z_beta: Fq,
 }
 
 // We define our own trait rather than using the `From` trait because
@@ -99,9 +108,9 @@ impl ToCircuitVal<Secq256k1> for CompressedGroup {
     }
 }
 
-impl<const DIMENSION: usize> ToCircuitVal<ZKDotProdProof<DIMENSION>> for DotProductProof {
-    fn to_circuit_val(&self) -> ZKDotProdProof<DIMENSION> {
-        ZKDotProdProof {
+impl<const DIMENSION: usize> ToCircuitVal<CVDotProdProof<DIMENSION>> for DotProductProof {
+    fn to_circuit_val(&self) -> CVDotProdProof<DIMENSION> {
+        CVDotProdProof {
             delta: self.delta.to_circuit_val(),
             beta: self.beta.to_circuit_val(),
             z_beta: self.z_beta.to_circuit_val(),

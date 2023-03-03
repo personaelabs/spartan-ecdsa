@@ -1,7 +1,6 @@
 use crate::{
-    circuit_vals::{CVSumCheckProof, FromCircuitVal},
+    circuit_vals::{CVDotProdProof, CVSumCheckProof, FromCircuitVal},
     dotprod,
-    dotprod::ZKDotProdProof,
     utils::to_fq,
     Fq, MultiCommitGens,
 };
@@ -13,7 +12,7 @@ use secpq_curves::Secq256k1;
 
 #[derive(Debug, Clone)]
 pub struct RoundProof<const DIMENSION: usize> {
-    pub dotprod_proof: ZKDotProdProof<DIMENSION>,
+    pub dotprod_proof: CVDotProdProof<DIMENSION>,
     pub com_eval: Secq256k1,
 }
 

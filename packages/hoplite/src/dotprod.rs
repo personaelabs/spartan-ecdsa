@@ -1,20 +1,14 @@
 use crate::{
-    circuit_vals::FromCircuitVal, commitments::Commitments, utils::to_fq, Fq, MultiCommitGens,
+    circuit_vals::{CVDotProdProof, FromCircuitVal},
+    commitments::Commitments,
+    utils::to_fq,
+    Fq, MultiCommitGens,
 };
 use libspartan::{
     group::CompressedGroup,
     transcript::{AppendToTranscript, ProofTranscript, Transcript},
 };
 use secpq_curves::Secq256k1;
-
-#[derive(Debug, Clone, Copy)]
-pub struct ZKDotProdProof<const DIMENSION: usize> {
-    pub delta: Secq256k1,
-    pub beta: Secq256k1,
-    pub z: [Fq; DIMENSION],
-    pub z_delta: Fq,
-    pub z_beta: Fq,
-}
 
 // Utilities
 pub fn dot_prod(x: &[Fq], a: &[Fq]) -> Fq {
@@ -31,7 +25,7 @@ pub fn dot_prod(x: &[Fq], a: &[Fq]) -> Fq {
 pub fn verify<const DIMENSION: usize>(
     tau: &Secq256k1,
     a: &[Fq],
-    proof: &ZKDotProdProof<DIMENSION>,
+    proof: &CVDotProdProof<DIMENSION>,
     com_poly: &Secq256k1,
     gens_1: &MultiCommitGens,
     gens_n: &MultiCommitGens,
