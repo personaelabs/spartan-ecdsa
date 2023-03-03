@@ -29,6 +29,24 @@ TBD
 
 TBD
 
+### Closed form evaluation of a multilinear polynomial
+
+$$
+\widetilde{Z}(r_y) = (1 - r_y[0]) ・ \widetilde{w}(r_y[1..]) + r_y[0]・\widetilde{(io, 1)}(r_y[1..]) \\
+
+
+r_y = (2, 3, 4) \\
+\widetilde{w}(x_1, x_2) = x_1 + 2x_2 \\
+\widetilde{io}(x_1, x_2, 1) = x_1 + 2x_2 + 3 * 1 \\
+
+\widetilde{Z}(r_y) = (1 - 2)・(3 + 2 * 4) + 2 * (3 +  2 * 4) \\
+= -1 * 11 + 2 * 11 = 11
+
+
+$$
+
+$z = (io, 1, w)$
+
 ### zk-sum-check
 
 The details of the zk-sum-check protocol isn't provided in the Spartan paper (it only mentions that it uses methods form prior constructions). The following is a description of the zk-sum-check protocol used in the [original Spartan implementation](https://github.com/microsoft/Spartan).
@@ -73,7 +91,7 @@ $$C_{eval} = \mathrm{com}(g_1(r), r_{eval})$$
 $$C_{sum} = \mathrm{com}((g_1(0) + g_1(1), r_{sum}))$$  
 to the verifier.
 
-The prover computes the weighted sum of and $g_1(0) + g_1(1)$  and $g(r_1)$ using weights $w_0, w_1 \in F_p$ sent from the verifier as
+The prover computes the weighted sum of and $g_1(0) + g_1(1)$ and $g(r_1)$ using weights $w_0, w_1 \in F_p$ sent from the verifier as
 $$(g_1(0) + g_1(1)) * w_0 + g_1(r_1) * w_1$$
 $$= p_1w_0 + 2p_0w_0 + p_1w_1r_1 + p_0w_1$$
 $$= p_1(w_0 + r_1w_1) + p_0(2w_0 + w_1)$$
@@ -141,6 +159,8 @@ Define
 - $\bar{B}(x) = \sum_{y \in \{0, 1\}^s} \widetilde{B}(x, y)$
 - $\bar{C}(x) = \sum_{y \in \{0, 1\}^s} \widetilde{C}(x, y)$
 - $M_{r_x}(y) = r_A *  \widetilde{A}(x, y)\widetilde{Z}(y) + r_B *  \widetilde{B}(x, y)\widetilde{Z}(y) + r_C *  \widetilde{C}(x, y)\widetilde{Z}(y)$
+
+Verify that $\bar{A}(x) * \bar{B}(x) - \bar{C}(x) = 0$
 
 Run the sum-check protocol to verify $M_{r_x}(y)$
 

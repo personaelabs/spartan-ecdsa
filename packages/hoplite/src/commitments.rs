@@ -7,7 +7,7 @@ use sha3::{
 };
 use std::io::Read;
 
-use crate::sumcheck::ToCircuitVal;
+use crate::circuit_vals::ToCircuitVal;
 
 pub struct MultiCommitGens {
     pub G: Vec<Secq256k1>,

@@ -9,7 +9,7 @@ use libspartan::{
 };
 use secpq_curves::Secq256k1;
 
-use crate::sumcheck::FromCircuitVal;
+use crate::circuit_vals::FromCircuitVal;
 
 // https://eprint.iacr.org/2017/1132.pdf
 // P.17 Figure 5

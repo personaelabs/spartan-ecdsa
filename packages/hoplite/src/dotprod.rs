@@ -1,5 +1,5 @@
 use crate::{
-    commitments::Commitments, sumcheck::FromCircuitVal, utils::to_fq, Fq, MultiCommitGens,
+    circuit_vals::FromCircuitVal, commitments::Commitments, utils::to_fq, Fq, MultiCommitGens,
 };
 use libspartan::{
     group::CompressedGroup,

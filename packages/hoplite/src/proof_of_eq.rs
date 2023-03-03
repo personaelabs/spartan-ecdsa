@@ -1,4 +1,4 @@
-use crate::{commitments::MultiCommitGens, sumcheck::FromCircuitVal, utils::to_fq, Fq};
+use crate::{circuit_vals::FromCircuitVal, commitments::MultiCommitGens, utils::to_fq, Fq};
 use libspartan::{
     group::CompressedGroup,
     transcript::{AppendToTranscript, ProofTranscript, Transcript},

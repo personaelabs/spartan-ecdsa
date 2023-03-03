@@ -1,5 +1,5 @@
 #![allow(non_snake_case)]
-use crate::sumcheck::{ToCircuitVal, ZKBulletReductionProof};
+use crate::circuit_vals::{CVBulletReductionProof, CVSumCheckProof, ToCircuitVal};
 use commitments::{Commitments, MultiCommitGens};
 pub use libspartan::scalar::Scalar;
 use libspartan::{
@@ -9,6 +9,7 @@ use libspartan::{
     Instance, NIZKGens, NIZK,
 };
 use secpq_curves::{group::Curve, Secq256k1};
+pub mod circuit_vals;
 pub mod commitments;
 pub mod dotprod;
 pub mod poly_evaluation_proof;
@@ -87,7 +88,7 @@ pub fn verify_nizk(
     let gens_pc_n: MultiCommitGens = gens_pc_gens.gens_n.clone().into();
 
     const N_ROUNDS: usize = 1;
-    let sc_proof_phase1: sumcheck::ZKSumCheckProof<N_ROUNDS, 4> =
+    let sc_proof_phase1: CVSumCheckProof<N_ROUNDS, 4> =
         proof.r1cs_sat_proof.sc_proof_phase1.to_circuit_val();
 
     // The expected sum of the phase 1 sum-check is zero
@@ -187,7 +188,7 @@ pub fn verify_nizk(
 
     // Verify the sum-check over M(x)
 
-    let sc_proof_phase2: sumcheck::ZKSumCheckProof<3, 3> =
+    let sc_proof_phase2: CVSumCheckProof<3, 3> =
         proof.r1cs_sat_proof.sc_proof_phase2.to_circuit_val();
     // comm_claim_post_phase2: Claimed evaluation of the final round polynomial over ry
     let (comm_claim_post_phase2, ry) = sumcheck::verify(
@@ -214,7 +215,7 @@ pub fn verify_nizk(
         .collect::<Vec<Secq256k1>>();
 
     let poly_eval_proof = &proof.r1cs_sat_proof.proof_eval_vars_at_ry;
-    let bullet_reduction_proof: ZKBulletReductionProof<1> = poly_eval_proof
+    let bullet_reduction_proof: CVBulletReductionProof<1> = poly_eval_proof
         .proof
         .bullet_reduction_proof
         .to_circuit_val();

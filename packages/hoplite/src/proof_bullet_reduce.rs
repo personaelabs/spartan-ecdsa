@@ -1,5 +1,5 @@
 use crate::{
-    sumcheck::{FromCircuitVal, ToCircuitVal},
+    circuit_vals::{FromCircuitVal, ToCircuitVal},
     Fq,
 };
 use libspartan::{

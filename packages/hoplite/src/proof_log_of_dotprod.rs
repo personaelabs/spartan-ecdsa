@@ -1,7 +1,7 @@
 use crate::{
+    circuit_vals::{CVBulletReductionProof, FromCircuitVal},
     commitments::MultiCommitGens,
     proof_bullet_reduce,
-    sumcheck::{FromCircuitVal, ZKBulletReductionProof},
     utils::to_fq,
     Fq,
 };
@@ -19,7 +19,7 @@ pub fn verify<const DIMENSION: usize>(
     a: &[Fq],
     Cx: &Secq256k1, // commitment to the evaluation (Cy)
     Cy: &Secq256k1, // commitment to the evaluation (Cy)
-    bullet_reduction_proof: &ZKBulletReductionProof<DIMENSION>,
+    bullet_reduction_proof: &CVBulletReductionProof<DIMENSION>,
     delta: &Secq256k1,
     beta: &Secq256k1,
     z1: &Fq,

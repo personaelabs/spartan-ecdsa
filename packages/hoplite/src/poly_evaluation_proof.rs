@@ -1,5 +1,5 @@
 use crate::{
-    commitments::MultiCommitGens, proof_log_of_dotprod, sumcheck::ZKBulletReductionProof, Fq,
+    circuit_vals::CVBulletReductionProof, commitments::MultiCommitGens, proof_log_of_dotprod, Fq,
 };
 use libspartan::math::Math;
 use libspartan::transcript::{ProofTranscript, Transcript};
@@ -29,7 +29,7 @@ pub fn verify<const N: usize, const DIMENSION: usize>(
     r: &[Fq; N],                // point at which the polynomial is evaluated
     C_Zr: &Secq256k1,           // commitment to \widetilde{Z}(r)
     comm_poly: &[Secq256k1; N], // commitment to the evaluations of the polynomial over the boolean hypercube
-    bullet_reduction_proof: &ZKBulletReductionProof<DIMENSION>,
+    bullet_reduction_proof: &CVBulletReductionProof<DIMENSION>,
     delta: &Secq256k1,
     beta: &Secq256k1,
     z1: &Fq,

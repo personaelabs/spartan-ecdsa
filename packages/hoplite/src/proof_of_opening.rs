@@ -1,6 +1,6 @@
 use crate::{
+    circuit_vals::FromCircuitVal,
     commitments::{Commitments, MultiCommitGens},
-    sumcheck::FromCircuitVal,
     utils::to_fq,
     Fq,
 };
