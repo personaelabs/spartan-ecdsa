@@ -19,7 +19,7 @@ use halo2_proofs::{
     plonk,
     plonk::{Circuit, Column, ConstraintSystem, Instance},
 };
-use hoplite::{commitments::MultiCommitGens, dotprod::ZKDotProdProof, sumcheck::ZKSumCheckProof};
+use hoplite::{circuit_vals::CVSumCheckProof, commitments::MultiCommitGens};
 
 use secpq_curves::group::cofactor::CofactorCurveAffine;
 use secpq_curves::{
@@ -61,8 +61,8 @@ pub struct ZKSumCheckCircuitConfig<F: PrimeField> {
     window_bits: usize,
 }
 
-pub struct ZKSumCheckCircuit {
-    proof: Value<ZKSumCheckProof>,
+pub struct ZKSumCheckCircuit<const NUM_CONSTRAINTS: usize, const NUM_VARS_H: usize> {
+    proof: Value<CVSumCheckProof<NUM_CONSTRAINTS, NUM_VARS_H>>,
     gens_n: MultiCommitGens,
     gens_1: MultiCommitGens,
     target_sum: Value<Secq256k1>,
@@ -79,7 +79,9 @@ pub struct CircuitParams {
     num_limbs: usize,
 }
 
-impl<F: PrimeField> Circuit<F> for ZKSumCheckCircuit {
+impl<const NUM_CONSTRAINTS: usize, const NUM_VARS_H: usize, F: PrimeField> Circuit<F>
+    for ZKSumCheckCircuit<NUM_CONSTRAINTS, NUM_VARS_H>
+{
     type Config = ZKSumCheckCircuitConfig<F>;
     type FloorPlanner = SimpleFloorPlanner;
 
@@ -131,8 +133,8 @@ impl<F: PrimeField> Circuit<F> for ZKSumCheckCircuit {
             h: Secq256k1::generator(),
         };
 
-        ZKSumCheckCircuit {
-            proof: Value::unknown(),
+        ZKSumCheckCircuit::<NUM_CONSTRAINTS, NUM_VARS_H> {
+            proof: Value::<CVSumCheckProof<NUM_CONSTRAINTS, NUM_VARS_H>>::unknown(),
             gens_1,
             gens_n: gens_4,
             target_sum: Value::unknown(),
@@ -371,14 +373,11 @@ impl<F: PrimeField> Circuit<F> for ZKSumCheckCircuit {
 mod tests {
 
     use super::*;
-    use halo2_base::utils::decompose_biguint;
     use halo2_proofs::{dev::MockProver, halo2curves::bn256::Fr};
-    use hoplite::{commitments::Commitments, sumcheck::ToCircuitVal, verify_nizk, Scalar};
+    use hoplite::{circuit_vals::ToCircuitVal, verify_nizk};
     use libspartan::{
         transcript::Transcript, InputsAssignment, Instance, NIZKGens, VarsAssignment, NIZK,
     };
-    use num_bigint::BigUint;
-    use secpq_curves::Fp;
 
     #[allow(non_snake_case)]
     #[test]
@@ -440,7 +439,8 @@ mod tests {
         );
 
         // Verify the phase 1 zk-sumcheck  proof
-        let sc_proof_phase1 = proof.r1cs_sat_proof.sc_proof_phase1.to_circuit_val();
+        let sc_proof_phase1: CVSumCheckProof<1, 4> =
+            proof.r1cs_sat_proof.sc_proof_phase1.to_circuit_val();
 
         let phase1_expected_sum = Secq256k1::identity();
 

@@ -1,30 +1,31 @@
 use crate::{
     chips::pedersen_commit::PedersenCommitChip,
-    {FpChip, Fq, FqChip, ZKDotProdProof},
+    {FpChip, Fq, FqChip},
 };
 use halo2_base::{utils::PrimeField, Context};
 use halo2_ecc::bigint::CRTInteger;
 use halo2_ecc::ecc::{EcPoint, EccChip};
 use halo2_ecc::fields::FieldChip;
 use halo2_proofs::circuit::Value;
-use hoplite::{commitments::MultiCommitGens, DEGREE_BOUND};
+use hoplite::commitments::MultiCommitGens;
 
-pub struct AssignedZKDotProdProof<'v, F: PrimeField> {
+// Assigned version of ZKDotProdProof
+pub struct AssignedZKDotProdProof<'v, const DIMENSION: usize, F: PrimeField> {
     pub delta: EcPoint<F, CRTInteger<'v, F>>,
     pub beta: EcPoint<F, CRTInteger<'v, F>>,
-    pub z: [CRTInteger<'v, F>; DEGREE_BOUND + 1],
+    pub z: [CRTInteger<'v, F>; DIMENSION],
     pub z_delta: CRTInteger<'v, F>,
     pub z_beta: CRTInteger<'v, F>,
 }
 
-pub struct ZKDotProdChip<F: PrimeField> {
+pub struct ZKDotProdChip<const DIMENSION: usize, F: PrimeField> {
     pub ecc_chip: EccChip<F, FpChip<F>>,
     pub fq_chip: FqChip<F>,
     pub pedersen_chip: PedersenCommitChip<F>,
     window_bits: usize,
 }
 
-impl<F: PrimeField> ZKDotProdChip<F> {
+impl<const DIMENSION: usize, F: PrimeField> ZKDotProdChip<DIMENSION, F> {
     pub fn construct(
         ecc_chip: EccChip<F, FpChip<F>>,
         fq_chip: FqChip<F>,
@@ -62,9 +63,9 @@ impl<F: PrimeField> ZKDotProdChip<F> {
         &self,
         ctx: &mut Context<'v, F>,
         tau: &EcPoint<F, CRTInteger<'v, F>>,
-        a: [CRTInteger<'v, F>; DEGREE_BOUND + 1],
+        a: [CRTInteger<'v, F>; DIMENSION],
         com_poly: &EcPoint<F, CRTInteger<'v, F>>,
-        proof: AssignedZKDotProdProof<'v, F>,
+        proof: AssignedZKDotProdProof<'v, DIMENSION, F>,
         gens_1: &MultiCommitGens,
         gens_n: &MultiCommitGens,
     ) {
