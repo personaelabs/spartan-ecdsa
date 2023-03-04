@@ -1,4 +1,5 @@
 use crate::{
+    circuit_vals::CVProductProof,
     commitments::{Commitments, MultiCommitGens},
     utils::to_fq,
     Fq,
@@ -14,16 +15,24 @@ use crate::circuit_vals::FromCircuitVal;
 // https://eprint.iacr.org/2017/1132.pdf
 // P.17 Figure 5
 pub fn verify(
-    alpha: Secq256k1,
-    beta: Secq256k1,
-    delta: Secq256k1,
-    z: [Fq; 5],
+    proof: &CVProductProof,
     X: Secq256k1,
     Y: Secq256k1,
     Z: Secq256k1,
     gens_n: &MultiCommitGens,
     transcript: &mut Transcript,
 ) {
+    let alpha = proof.alpha.unwrap();
+    let beta = proof.beta.unwrap();
+    let delta = proof.delta.unwrap();
+    let z: [Fq; 5] = proof
+        .z
+        .iter()
+        .map(|z_i| z_i.unwrap())
+        .collect::<Vec<Fq>>()
+        .try_into()
+        .unwrap();
+
     transcript.append_protocol_name(b"product proof");
 
     CompressedGroup::from_circuit_val(&X).append_to_transcript(b"X", transcript);

@@ -8,7 +8,7 @@ use libspartan::{
     group::CompressedGroup,
     transcript::{AppendToTranscript, ProofTranscript, Transcript},
 };
-use secpq_curves::Secq256k1;
+use secpq_curves::{group::Curve, Secq256k1};
 
 // Utilities
 pub fn dot_prod(x: &[Fq], a: &[Fq]) -> Fq {

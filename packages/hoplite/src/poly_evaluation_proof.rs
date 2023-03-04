@@ -1,6 +1,5 @@
-use crate::{
-    circuit_vals::CVBulletReductionProof, commitments::MultiCommitGens, proof_log_of_dotprod, Fq,
-};
+use crate::circuit_vals::CVPolyEvalProof;
+use crate::{commitments::MultiCommitGens, proof_log_of_dotprod, Fq};
 use libspartan::math::Math;
 use libspartan::transcript::{ProofTranscript, Transcript};
 use secpq_curves::{group::Group, Secq256k1};
@@ -29,11 +28,7 @@ pub fn verify<const N: usize, const DIMENSION: usize>(
     r: &[Fq; N],                // point at which the polynomial is evaluated
     C_Zr: &Secq256k1,           // commitment to \widetilde{Z}(r)
     comm_poly: &[Secq256k1; N], // commitment to the evaluations of the polynomial over the boolean hypercube
-    bullet_reduction_proof: &CVBulletReductionProof<DIMENSION>,
-    delta: &Secq256k1,
-    beta: &Secq256k1,
-    z1: &Fq,
-    z2: &Fq,
+    proof: &CVPolyEvalProof<DIMENSION>,
     transcript: &mut Transcript,
 ) {
     transcript.append_protocol_name(b"polynomial evaluation proof");
@@ -51,17 +46,5 @@ pub fn verify<const N: usize, const DIMENSION: usize>(
         C_LZ += comm_poly[i] * L[i];
     }
 
-    proof_log_of_dotprod::verify(
-        gens_1,
-        gens_n,
-        &R,
-        &C_LZ,
-        C_Zr,
-        bullet_reduction_proof,
-        delta,
-        beta,
-        z1,
-        z2,
-        transcript,
-    );
+    proof_log_of_dotprod::verify(gens_1, gens_n, &R, &C_LZ, C_Zr, &proof.proof, transcript);
 }

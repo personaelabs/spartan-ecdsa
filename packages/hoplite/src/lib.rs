@@ -1,5 +1,5 @@
 #![allow(non_snake_case)]
-use crate::circuit_vals::{CVBulletReductionProof, CVSumCheckProof, ToCircuitVal};
+use crate::circuit_vals::{CVSumCheckProof, ToCircuitVal};
 use commitments::{Commitments, MultiCommitGens};
 pub use libspartan::scalar::Scalar;
 use libspartan::{
@@ -113,9 +113,7 @@ pub fn verify_nizk(
 
     proof_of_opening::verify(
         &comm_Cz_claim.to_circuit_val(),
-        &pok_Cz_claim.alpha.to_circuit_val(),
-        &pok_Cz_claim.z1.to_circuit_val(),
-        &pok_Cz_claim.z2.to_circuit_val(),
+        &pok_Cz_claim.to_circuit_val(),
         &gens_1,
         &mut transcript,
     );
@@ -123,16 +121,7 @@ pub fn verify_nizk(
     // Second, we verify Az * Bz = "Commitment to the claimed prod"
 
     proof_of_prod::verify(
-        proof_prod.alpha.to_circuit_val(),
-        proof_prod.beta.to_circuit_val(),
-        proof_prod.delta.to_circuit_val(),
-        proof_prod
-            .z
-            .iter()
-            .map(|z_i| z_i.to_circuit_val())
-            .collect::<Vec<Fq>>()
-            .try_into()
-            .unwrap(),
+        &proof_prod.to_circuit_val(),
         comm_Az_claim.to_circuit_val(),
         comm_Bz_claim.to_circuit_val(),
         comm_prod_Az_Bz_claims.to_circuit_val(),
@@ -169,8 +158,7 @@ pub fn verify_nizk(
     proof_of_eq::verify(
         &expected_claim_post_phase1,
         &comm_claim_post_phase1,
-        &proof_eq_sc_phase1.alpha.to_circuit_val(),
-        &proof_eq_sc_phase1.z.to_circuit_val(),
+        &proof_eq_sc_phase1.to_circuit_val(),
         &gens_1,
         &mut transcript,
     );
@@ -215,10 +203,6 @@ pub fn verify_nizk(
         .collect::<Vec<Secq256k1>>();
 
     let poly_eval_proof = &proof.r1cs_sat_proof.proof_eval_vars_at_ry;
-    let bullet_reduction_proof: CVBulletReductionProof<1> = poly_eval_proof
-        .proof
-        .bullet_reduction_proof
-        .to_circuit_val();
     let comm_vars_at_ry = proof.r1cs_sat_proof.comm_vars_at_ry.to_circuit_val();
     let log_dot_prod_proof = &poly_eval_proof.proof;
 
@@ -229,11 +213,7 @@ pub fn verify_nizk(
         &ry[1..].try_into().unwrap(),
         &comm_vars_at_ry,
         &comm_vars.try_into().unwrap(),
-        &bullet_reduction_proof,
-        &log_dot_prod_proof.delta.to_circuit_val(),
-        &log_dot_prod_proof.beta.to_circuit_val(),
-        &log_dot_prod_proof.z1.to_circuit_val(),
-        &log_dot_prod_proof.z2.to_circuit_val(),
+        &poly_eval_proof.to_circuit_val(),
         &mut transcript,
     );
 
@@ -269,12 +249,7 @@ pub fn verify_nizk(
     proof_of_eq::verify(
         &expected_claim_post_phase2,
         &comm_claim_post_phase2,
-        &proof
-            .r1cs_sat_proof
-            .proof_eq_sc_phase2
-            .alpha
-            .to_circuit_val(),
-        &proof.r1cs_sat_proof.proof_eq_sc_phase2.z.to_circuit_val(),
+        &proof.r1cs_sat_proof.proof_eq_sc_phase2.to_circuit_val(),
         &gens_1,
         &mut transcript,
     );

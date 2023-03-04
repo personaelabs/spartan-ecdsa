@@ -1,7 +1,8 @@
 use crate::{Fp, Fq};
 use libspartan::{
+    dense_mlpoly::PolyEvalProof,
     group::CompressedGroup,
-    nizk::{BulletReductionProof, DotProductProof},
+    nizk::{BulletReductionProof, DotProductProof, EqualityProof, KnowledgeProof, ProductProof},
     scalar::Scalar,
     sumcheck::ZKSumcheckInstanceProof,
 };
@@ -28,6 +29,36 @@ pub struct CVDotProdProof<const DIMENSION: usize> {
     pub z: [Option<Fq>; DIMENSION],
     pub z_delta: Option<Fq>,
     pub z_beta: Option<Fq>,
+}
+
+pub struct CVEqualityProof {
+    pub alpha: Option<Secq256k1>,
+    pub z: Option<Fq>,
+}
+
+pub struct CVKnowledgeProof {
+    pub alpha: Option<Secq256k1>,
+    pub z1: Option<Fq>,
+    pub z2: Option<Fq>,
+}
+
+pub struct CVProductProof {
+    pub alpha: Option<Secq256k1>,
+    pub beta: Option<Secq256k1>,
+    pub delta: Option<Secq256k1>,
+    pub z: [Option<Fq>; 5],
+}
+
+pub struct CVDotProductProofLog<const N: usize> {
+    pub bullet_reduction_proof: CVBulletReductionProof<N>,
+    pub delta: Option<Secq256k1>,
+    pub beta: Option<Secq256k1>,
+    pub z1: Option<Fq>,
+    pub z2: Option<Fq>,
+}
+
+pub struct CVPolyEvalProof<const N: usize> {
+    pub proof: CVDotProductProofLog<N>,
 }
 
 // We define our own trait rather than using the `From` trait because
@@ -73,6 +104,88 @@ use secq256k1::{
     affine::Group,
     elliptic_curve::{subtle::ConstantTimeEq, PrimeField},
 };
+
+impl ToCircuitVal<CVEqualityProof> for EqualityProof {
+    fn to_circuit_val(&self) -> CVEqualityProof {
+        let alpha = Some(self.alpha.to_circuit_val());
+        let z = Some(self.z.to_circuit_val());
+
+        CVEqualityProof { alpha, z }
+    }
+}
+
+impl ToCircuitVal<CVKnowledgeProof> for KnowledgeProof {
+    fn to_circuit_val(&self) -> CVKnowledgeProof {
+        let alpha = Some(self.alpha.to_circuit_val());
+        let z1 = Some(self.z1.to_circuit_val());
+        let z2 = Some(self.z2.to_circuit_val());
+
+        CVKnowledgeProof { alpha, z1, z2 }
+    }
+}
+
+impl ToCircuitVal<CVProductProof> for ProductProof {
+    fn to_circuit_val(&self) -> CVProductProof {
+        let alpha = Some(self.alpha.to_circuit_val());
+        let beta = Some(self.beta.to_circuit_val());
+        let delta = Some(self.delta.to_circuit_val());
+        let z: [Option<Fq>; 5] = self
+            .z
+            .iter()
+            .map(|z_i| Some(z_i.to_circuit_val()))
+            .collect::<Vec<Option<Fq>>>()
+            .try_into()
+            .unwrap();
+
+        CVProductProof {
+            alpha,
+            beta,
+            delta,
+            z,
+        }
+    }
+}
+
+impl<const N: usize> ToCircuitVal<CVPolyEvalProof<N>> for PolyEvalProof {
+    fn to_circuit_val(&self) -> CVPolyEvalProof<N> {
+        let dotprod_proof_log = &self.proof;
+        let beta = Some(dotprod_proof_log.beta.to_circuit_val());
+        let delta = Some(dotprod_proof_log.delta.to_circuit_val());
+        let z1 = Some(dotprod_proof_log.z1.to_circuit_val());
+        let z2 = Some(dotprod_proof_log.z2.to_circuit_val());
+
+        let cv_bullet_reduction_proof = CVBulletReductionProof {
+            L_vec: dotprod_proof_log
+                .bullet_reduction_proof
+                .L_vec
+                .iter()
+                .map(|val| Some(val.compress().to_circuit_val()))
+                .collect::<Vec<Option<Secq256k1>>>()
+                .try_into()
+                .unwrap(),
+            R_vec: dotprod_proof_log
+                .bullet_reduction_proof
+                .R_vec
+                .iter()
+                .map(|val| Some(val.compress().to_circuit_val()))
+                .collect::<Vec<Option<Secq256k1>>>()
+                .try_into()
+                .unwrap(),
+        };
+
+        let cv_dotprod_proof_log = CVDotProductProofLog {
+            delta,
+            beta,
+            z1,
+            z2,
+            bullet_reduction_proof: cv_bullet_reduction_proof,
+        };
+
+        CVPolyEvalProof {
+            proof: cv_dotprod_proof_log,
+        }
+    }
+}
 
 impl ToCircuitVal<Secq256k1> for CompressedGroup {
     fn to_circuit_val(&self) -> Secq256k1 {

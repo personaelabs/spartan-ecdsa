@@ -7,6 +7,7 @@ edition = "2021"
 
 [dependencies]
 secq256k1 = { path = "../secq256k1" }
-spartan = { git = "https://github.com/DanTehrani/Spartan-secq", branch = "hoplite" }
+#spartan = { git = "https://github.com/DanTehrani/Spartan-secq", branch = "hoplite" }
+spartan = { path = "../../../spartan-dan" }
 sha3 = { version = "0.8.2" }
 secpq_curves = { git = "https://github.com/DanTehrani/secpq_curves.git" }
