@@ -5,13 +5,22 @@ use sha3::{
     digest::{ExtendableOutput, Input},
     Shake256,
 };
-use std::io::Read;
+use std::{io::Read, ops::Mul};
 
 use crate::circuit_vals::ToCircuitVal;
 
 pub struct MultiCommitGens {
     pub G: Vec<Secq256k1>,
     pub h: Secq256k1,
+}
+
+impl Default for MultiCommitGens {
+    fn default() -> Self {
+        MultiCommitGens {
+            G: vec![],
+            h: Secq256k1::default(),
+        }
+    }
 }
 
 impl From<libspartan::commitments::MultiCommitGens> for MultiCommitGens {

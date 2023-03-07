@@ -1,6 +1,6 @@
 use crate::{Fp, Fq};
 use libspartan::{
-    dense_mlpoly::PolyEvalProof,
+    dense_mlpoly::{PolyCommitment, PolyEvalProof},
     group::CompressedGroup,
     nizk::{BulletReductionProof, DotProductProof, EqualityProof, KnowledgeProof, ProductProof},
     scalar::Scalar,
@@ -17,9 +17,30 @@ pub struct CVSumCheckProof<const N_ROUNDS: usize, const DIMENSION: usize> {
     pub proofs: [CVDotProdProof<DIMENSION>; N_ROUNDS],
 }
 
+impl<const N_ROUNDS: usize, const DIMENSION: usize> Default
+    for CVSumCheckProof<N_ROUNDS, DIMENSION>
+{
+    fn default() -> Self {
+        Self {
+            comm_polys: [None; N_ROUNDS],
+            comm_evals: [None; N_ROUNDS],
+            proofs: [CVDotProdProof::default(); N_ROUNDS],
+        }
+    }
+}
+
 pub struct CVBulletReductionProof<const DIMENSION: usize> {
     pub L_vec: [Option<Secq256k1>; DIMENSION],
     pub R_vec: [Option<Secq256k1>; DIMENSION],
+}
+
+impl<const DIMENSION: usize> Default for CVBulletReductionProof<DIMENSION> {
+    fn default() -> Self {
+        Self {
+            L_vec: [None; DIMENSION],
+            R_vec: [None; DIMENSION],
+        }
+    }
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -31,9 +52,30 @@ pub struct CVDotProdProof<const DIMENSION: usize> {
     pub z_beta: Option<Fq>,
 }
 
+impl<const DIMENSION: usize> Default for CVDotProdProof<DIMENSION> {
+    fn default() -> Self {
+        Self {
+            delta: None,
+            beta: None,
+            z: [None; DIMENSION],
+            z_delta: None,
+            z_beta: None,
+        }
+    }
+}
+
 pub struct CVEqualityProof {
     pub alpha: Option<Secq256k1>,
     pub z: Option<Fq>,
+}
+
+impl Default for CVEqualityProof {
+    fn default() -> Self {
+        Self {
+            alpha: None,
+            z: None,
+        }
+    }
 }
 
 pub struct CVKnowledgeProof {
@@ -42,11 +84,32 @@ pub struct CVKnowledgeProof {
     pub z2: Option<Fq>,
 }
 
+impl Default for CVKnowledgeProof {
+    fn default() -> Self {
+        Self {
+            alpha: None,
+            z1: None,
+            z2: None,
+        }
+    }
+}
+
 pub struct CVProductProof {
     pub alpha: Option<Secq256k1>,
     pub beta: Option<Secq256k1>,
     pub delta: Option<Secq256k1>,
     pub z: [Option<Fq>; 5],
+}
+
+impl Default for CVProductProof {
+    fn default() -> Self {
+        Self {
+            alpha: None,
+            beta: None,
+            delta: None,
+            z: [None; 5],
+        }
+    }
 }
 
 pub struct CVDotProductProofLog<const N: usize> {
@@ -57,8 +120,38 @@ pub struct CVDotProductProofLog<const N: usize> {
     pub z2: Option<Fq>,
 }
 
+impl<const N: usize> Default for CVDotProductProofLog<N> {
+    fn default() -> Self {
+        Self {
+            bullet_reduction_proof: CVBulletReductionProof::default(),
+            delta: None,
+            beta: None,
+            z1: None,
+            z2: None,
+        }
+    }
+}
+
 pub struct CVPolyEvalProof<const N: usize> {
     pub proof: CVDotProductProofLog<N>,
+}
+
+impl<const N: usize> Default for CVPolyEvalProof<N> {
+    fn default() -> Self {
+        Self {
+            proof: CVDotProductProofLog::default(),
+        }
+    }
+}
+
+pub struct CVPolyCommitment<const N: usize> {
+    pub C: [Option<Secq256k1>; N],
+}
+
+impl<const N: usize> Default for CVPolyCommitment<N> {
+    fn default() -> Self {
+        Self { C: [None; N] }
+    }
 }
 
 // We define our own trait rather than using the `From` trait because
@@ -184,6 +277,20 @@ impl<const N: usize> ToCircuitVal<CVPolyEvalProof<N>> for PolyEvalProof {
         CVPolyEvalProof {
             proof: cv_dotprod_proof_log,
         }
+    }
+}
+
+impl<const N: usize> ToCircuitVal<CVPolyCommitment<N>> for PolyCommitment {
+    fn to_circuit_val(&self) -> CVPolyCommitment<N> {
+        let C = self
+            .C
+            .iter()
+            .map(|c| Some(c.to_circuit_val()))
+            .collect::<Vec<Option<Secq256k1>>>()
+            .try_into()
+            .unwrap();
+
+        CVPolyCommitment { C }
     }
 }
 

@@ -1,8 +1,10 @@
 mod chips;
+mod transcript;
 
 use chips::{
-    dotprod::{AssignedZKDotProdProof, ZKDotProdChip},
+    dotprod::ZKDotProdChip,
     pedersen_commit::PedersenCommitChip,
+    sumcheck::{AssignZKSumCheckProof, ZKSumCheckChip},
 };
 use halo2_base::{
     utils::{modulus, PrimeField},
@@ -10,7 +12,7 @@ use halo2_base::{
 };
 use halo2_ecc::{
     bigint::CRTInteger,
-    ecc::{fixed_base, EccChip},
+    ecc::{fixed_base::FixedEcPoint, EccChip},
     fields::fp::{FpConfig, FpStrategy},
 };
 use halo2_ecc::{ecc::EcPoint, fields::FieldChip};
@@ -19,13 +21,20 @@ use halo2_proofs::{
     plonk,
     plonk::{Circuit, Column, ConstraintSystem, Instance},
 };
-use hoplite::{circuit_vals::CVSumCheckProof, commitments::MultiCommitGens};
-
-use secpq_curves::group::cofactor::CofactorCurveAffine;
-use secpq_curves::{
-    group::{Curve, Group},
-    CurveAffine, Secq256k1, Secq256k1Affine,
+use hoplite::circuit_vals::{FromCircuitVal, ToCircuitVal};
+use hoplite::{
+    circuit_vals::{
+        CVEqualityProof, CVKnowledgeProof, CVPolyCommitment, CVPolyEvalProof, CVProductProof,
+        CVSumCheckProof,
+    },
+    commitments::{Commitments, MultiCommitGens},
 };
+use libspartan::{
+    group::CompressedGroup,
+    transcript::{ProofTranscript, Transcript},
+};
+
+use secpq_curves::{group::Curve, CurveAffine, Secq256k1};
 
 pub type Fp = secpq_curves::Fq;
 pub type Fq = secpq_curves::Fp;
@@ -54,18 +63,41 @@ impl<'v, F: PrimeField> AssignPoint<'v, F> for Value<Secq256k1> {
 }
 
 #[derive(Clone, Debug)]
-pub struct ZKSumCheckCircuitConfig<F: PrimeField> {
+pub struct HopliteCircuitConfig<F: PrimeField> {
     field_config: FpChip<F>,
     /// Public inputs
     instance: Column<Instance>,
     window_bits: usize,
 }
 
-pub struct ZKSumCheckCircuit<const NUM_CONSTRAINTS: usize, const NUM_VARS_H: usize> {
-    proof: Value<CVSumCheckProof<NUM_CONSTRAINTS, NUM_VARS_H>>,
-    gens_n: MultiCommitGens,
-    gens_1: MultiCommitGens,
-    target_sum: Value<Secq256k1>,
+// SpartanNIZK verification circuit
+pub struct HopliteCircuit<
+    const NUM_INPUTS: usize,
+    const NUM_CONSTRAINTS: usize,
+    const NUM_VARS: usize,
+    const NUM_VARS_H: usize,
+> {
+    pub inst: Vec<u8>,
+    pub input: Vec<Fq>,
+    pub comm_vars: CVPolyCommitment<NUM_VARS>,
+    pub sc_proof_phase1: CVSumCheckProof<NUM_CONSTRAINTS, 4>,
+    pub claims_phase2: (
+        Option<Secq256k1>,
+        Option<Secq256k1>,
+        Option<Secq256k1>,
+        Option<Secq256k1>,
+    ),
+    pub pok_claims_phase2: (CVKnowledgeProof, CVProductProof),
+    pub proof_eq_sc_phase1: CVEqualityProof,
+    pub sc_proof_phase2: CVSumCheckProof<3, 3>,
+    pub comm_vars_at_ry: Option<Secq256k1>,
+    pub proof_eval_vars_at_ry: CVPolyEvalProof<NUM_VARS_H>,
+    pub proof_eq_sc_phase2: CVEqualityProof,
+    pub gens_sc_1: MultiCommitGens,
+    pub gens_sc_3: MultiCommitGens,
+    pub gens_sc_4: MultiCommitGens,
+    pub gens_pc_1: MultiCommitGens,
+    pub gens_pc_n: MultiCommitGens,
 }
 
 pub struct CircuitParams {
@@ -79,10 +111,15 @@ pub struct CircuitParams {
     num_limbs: usize,
 }
 
-impl<const NUM_CONSTRAINTS: usize, const NUM_VARS_H: usize, F: PrimeField> Circuit<F>
-    for ZKSumCheckCircuit<NUM_CONSTRAINTS, NUM_VARS_H>
+impl<
+        const NUM_INPUTS: usize,
+        const NUM_CONSTRAINTS: usize,
+        const NUM_VARS: usize,
+        const NUM_VARS_H: usize,
+        F: PrimeField,
+    > Circuit<F> for HopliteCircuit<NUM_INPUTS, NUM_CONSTRAINTS, NUM_VARS, NUM_VARS_H>
 {
-    type Config = ZKSumCheckCircuitConfig<F>;
+    type Config = HopliteCircuitConfig<F>;
     type FloorPlanner = SimpleFloorPlanner;
 
     fn configure(meta: &mut ConstraintSystem<F>) -> Self::Config {
@@ -115,7 +152,7 @@ impl<const NUM_CONSTRAINTS: usize, const NUM_VARS_H: usize, F: PrimeField> Circu
 
         meta.enable_equality(instance);
 
-        ZKSumCheckCircuitConfig {
+        HopliteCircuitConfig {
             instance,
             field_config,
             window_bits: 4,
@@ -123,21 +160,23 @@ impl<const NUM_CONSTRAINTS: usize, const NUM_VARS_H: usize, F: PrimeField> Circu
     }
 
     fn without_witnesses(&self) -> Self {
-        // TODO: This is temporary!
-        let gens_1 = MultiCommitGens {
-            G: vec![Secq256k1::generator(); 1],
-            h: Secq256k1::generator(),
-        };
-        let gens_4 = MultiCommitGens {
-            G: vec![Secq256k1::generator(); 4],
-            h: Secq256k1::generator(),
-        };
-
-        ZKSumCheckCircuit::<NUM_CONSTRAINTS, NUM_VARS_H> {
-            proof: Value::<CVSumCheckProof<NUM_CONSTRAINTS, NUM_VARS_H>>::unknown(),
-            gens_1,
-            gens_n: gens_4,
-            target_sum: Value::unknown(),
+        HopliteCircuit::<NUM_INPUTS, NUM_CONSTRAINTS, NUM_VARS, NUM_VARS_H> {
+            comm_vars: CVPolyCommitment::<NUM_VARS>::default(),
+            inst: vec![],
+            input: vec![Fq::zero(); NUM_INPUTS],
+            sc_proof_phase1: CVSumCheckProof::<NUM_CONSTRAINTS, 4>::default(),
+            claims_phase2: (None, None, None, None),
+            pok_claims_phase2: (CVKnowledgeProof::default(), CVProductProof::default()),
+            proof_eq_sc_phase1: CVEqualityProof::default(),
+            sc_proof_phase2: CVSumCheckProof::<3, 3>::default(),
+            comm_vars_at_ry: None,
+            proof_eval_vars_at_ry: CVPolyEvalProof::<NUM_VARS_H>::default(),
+            proof_eq_sc_phase2: CVEqualityProof::default(),
+            gens_sc_1: MultiCommitGens::default(),
+            gens_sc_3: MultiCommitGens::default(),
+            gens_sc_4: MultiCommitGens::default(),
+            gens_pc_1: MultiCommitGens::default(),
+            gens_pc_n: MultiCommitGens::default(),
         }
     }
 
@@ -160,206 +199,83 @@ impl<const NUM_CONSTRAINTS: usize, const NUM_VARS_H: usize, F: PrimeField> Circu
         let _lookup_bits = fp_chip.range.lookup_bits;
         let _num_advice = fp_chip.range.gate.num_advice;
 
-        //        let mut results = Vec::new();
+        // We can construct the fp_chip from the config of the fp_chip
+        // (fp_chip can use the same columns as the fp_chip)
+        let fq_chip =
+            FqChip::<F>::construct(fp_chip.range.clone(), limb_bits, num_limbs, modulus::<Fq>());
+
+        let ecc_chip = EccChip::construct(fp_chip.clone());
+        let pedersen_chip = PedersenCommitChip::construct(ecc_chip.clone(), fp_chip.clone());
+        let phase_1_zkdotprod_chip: ZKDotProdChip<4, F> =
+            ZKDotProdChip::construct(ecc_chip.clone(), fq_chip.clone(), pedersen_chip.clone());
+
+        let phase_1_zksumcheck_chip = ZKSumCheckChip::construct(
+            ecc_chip.clone(),
+            fp_chip.clone(),
+            fq_chip.clone(),
+            pedersen_chip.clone(),
+            phase_1_zkdotprod_chip.clone(),
+        );
+
+        //  let mut results = Vec::new();
 
         layouter.assign_region(
             || "",
             |region| {
                 let mut ctx = fp_chip.new_context(region);
 
-                // We can construct the fp_chip from the config of the fp_chip
-                // (fp_chip can use the same columns as the fp_chip)
-                let fq_chip = FqChip::<F>::construct(
-                    fp_chip.range.clone(),
-                    limb_bits,
-                    num_limbs,
-                    modulus::<Fq>(),
-                );
+                let mut transcript = Transcript::new(b"test_verify");
 
-                let ecc_chip = EccChip::construct(fp_chip.clone());
-                let pedersen_chip =
-                    PedersenCommitChip::construct(ecc_chip.clone(), fp_chip.clone());
+                transcript.append_protocol_name(b"Spartan NIZK proof");
+                transcript.append_message(b"R1CSInstanceDigest", &self.inst);
 
-                for i in 0..n_rounds {
-                    // Load claimed_sum
-                    let com_eval = self
-                        .proof
-                        .and_then(|proof| Value::known(proof.comm_evals[i]))
-                        .assign(&mut ctx, &ecc_chip);
+                transcript.append_protocol_name(b"R1CS proof");
 
-                    let com_round_sum = if i == 0 {
-                        self.target_sum
-                            .and_then(|target_sum| Value::known(target_sum))
-                            .assign(&mut ctx, &ecc_chip)
-                    } else {
-                        let com_eval = self
-                            .proof
-                            .and_then(|proof| Value::known(proof.comm_evals[i - 1]))
-                            .assign(&mut ctx, &ecc_chip);
+                // Append input to the transcript
+                transcript.append_message(b"input", b"begin_append_vector");
+                for item in &self.input {
+                    transcript.append_message(b"input", &item.to_bytes());
+                }
+                transcript.append_message(b"input", b"end_append_vector");
 
-                        com_eval
-                    };
-
-                    let w_0: CRTInteger<F> = fq_chip.load_private(
-                        &mut ctx,
-                        FqChip::<F>::fe_to_witness(&Value::known(Fq::one())),
-                    );
-
-                    let w_1: CRTInteger<F> = fq_chip.load_private(
-                        &mut ctx,
-                        FqChip::<F>::fe_to_witness(&Value::known(Fq::one())),
-                    );
-
-                    let tau_0 = fixed_base::scalar_multiply(
-                        &fp_chip,
-                        &mut ctx,
-                        &Secq256k1Affine::generator(),
-                        &w_0.truncation.limbs,
-                        limb_bits,
-                        config.window_bits,
-                    );
-                    /*
-                    let tau_0 = ecc_chip.scalar_mult(
-                        &mut ctx,
-                        &com_round_sum,
-                        &w_0.truncation.limbs,
-                        limb_bits,
-                        config.window_bits,
-                    );
-                         */
-
-                    let tau_1 = ecc_chip.scalar_mult(
-                        &mut ctx,
-                        &com_eval,
-                        &w_1.truncation.limbs,
-                        limb_bits,
-                        config.window_bits,
-                    );
-
-                    let tau = ecc_chip.add_unequal(&mut ctx, &tau_0, &tau_1, true);
-
-                    let degree_bound = 3;
-
-                    // TODO: Compute "a"
-                    let a = [
-                        fq_chip.load_private(
-                            &mut ctx,
-                            FqChip::<F>::fe_to_witness(&Value::known(Fq::from(3))),
-                        ),
-                        fq_chip.load_private(
-                            &mut ctx,
-                            FqChip::<F>::fe_to_witness(&Value::known(Fq::from(2))),
-                        ),
-                        fq_chip.load_private(
-                            &mut ctx,
-                            FqChip::<F>::fe_to_witness(&Value::known(Fq::from(2))),
-                        ),
-                        fq_chip.load_private(
-                            &mut ctx,
-                            FqChip::<F>::fe_to_witness(&Value::known(Fq::from(2))),
-                        ),
-                    ];
-                    /*
-                    let a = vec![
-                        fq_chip.load_private(
-                            &mut ctx,
-                            FqChip::<F>::fe_to_witness(&Value::known(Fq::one()))
-                        );
-                        degree_bound + 1
-                    ];
-                    let a = {
-                        // the vector to use to decommit for sum-check test
-                        let a_sc = {
-                            let mut a = vec![Fp::one(); degree_bound + 1];
-                            a[0] += Fp::one();
-                            a
-                        };
-
-                        // the vector to use to decommit for evaluation
-                        let a_eval = {
-                            let mut a = vec![Fp::one(); degree_bound + 1];
-                            for j in 1..a.len() {
-                                a[j] = a[j - 1] * r_i;
-                            }
-                            a
-                        };
-
-                        // take weighted sum of the two vectors using w
-                        assert_eq!(a_sc.len(), a_eval.len());
-                        (0..a_sc.len())
-                            .map(|i| w_0 * a_sc[i] + w_1 * a_eval[i])
-                            .collect::<Vec<Fp>>()
-                    };
-                     */
-
-                    let zk_dot_prod_chip = ZKDotProdChip::construct(
-                        ecc_chip.clone(),
-                        fq_chip.clone(),
-                        pedersen_chip.clone(),
-                    );
-
-                    let com_poly_assigned = ecc_chip.load_private(
-                        &mut ctx,
-                        (
-                            self.proof
-                                .and_then(|proof| Value::known(proof.comm_polys[i].x)),
-                            self.proof
-                                .and_then(|proof| Value::known(proof.comm_polys[i].y)),
-                        ),
-                    );
-
-                    let z_delta = self
-                        .proof
-                        .and_then(|proof| Value::known(proof.proofs[i].z_delta));
-
-                    let z_beta = self
-                        .proof
-                        .and_then(|proof| Value::known(proof.proofs[i].z_beta));
-
-                    let delta_assinged = self
-                        .proof
-                        .and_then(|proof| Value::known(proof.proofs[i].delta))
-                        .assign(&mut ctx, &ecc_chip);
-
-                    let beta_assigned = self
-                        .proof
-                        .and_then(|proof| Value::known(proof.proofs[i].beta))
-                        .assign(&mut ctx, &ecc_chip);
-
-                    let mut z_assigned = vec![];
-
-                    for j in 0..(degree_bound + 1) {
-                        let z_j = self
-                            .proof
-                            .and_then(|proof| Value::known(proof.proofs[i].z[j]));
-
-                        z_assigned
-                            .push(fq_chip.load_private(&mut ctx, FqChip::<F>::fe_to_witness(&z_j)));
-                    }
-
-                    assert!(z_assigned.len() == (degree_bound + 1));
-
-                    let assigned_dot_prod_prood = AssignedZKDotProdProof {
-                        delta: delta_assinged,
-                        beta: beta_assigned,
-                        z_delta: fq_chip
-                            .load_private(&mut ctx, FqChip::<F>::fe_to_witness(&z_delta)),
-                        z_beta: fq_chip.load_private(&mut ctx, FqChip::<F>::fe_to_witness(&z_beta)),
-                        z: z_assigned.try_into().unwrap(),
-                    };
-
-                    zk_dot_prod_chip.verify(
-                        &mut ctx,
-                        &tau,
-                        a.try_into().unwrap(),
-                        &com_poly_assigned,
-                        assigned_dot_prod_prood,
-                        &self.gens_1,
-                        &self.gens_n,
+                // Append poly commitment to the transcript
+                transcript.append_message(b"poly_commitment", b"poly_commitment_begin");
+                for comm_var in self.comm_vars.C {
+                    transcript.append_point(
+                        b"poly_commitment_share",
+                        &CompressedGroup::from_circuit_val(&comm_var.unwrap()),
                     );
                 }
+                transcript.append_message(b"poly_commitment", b"poly_commitment_end");
 
-                fp_chip.finalize(&mut ctx);
+                let phase1_expected_sum = Fq::zero().commit(&Fq::zero(), &self.gens_sc_1);
+
+                let phase1_expected_sum =
+                    FixedEcPoint::from_curve(phase1_expected_sum.to_affine(), num_limbs, limb_bits);
+
+                let phase1_expected_sum = FixedEcPoint::assign(
+                    phase1_expected_sum,
+                    &fp_chip,
+                    &mut ctx,
+                    fp_chip.native_modulus(),
+                );
+
+                let _tau: Vec<Fq> = transcript
+                    .challenge_vector(b"challenge_tau", n_rounds)
+                    .iter()
+                    .map(|tau_i| tau_i.to_circuit_val())
+                    .collect();
+
+                let phase1_sc_proof = self.sc_proof_phase1.assign(&mut ctx, &fq_chip, &ecc_chip);
+                phase_1_zksumcheck_chip.verify(
+                    &mut ctx,
+                    phase1_sc_proof,
+                    &self.gens_sc_4,
+                    &self.gens_sc_1,
+                    phase1_expected_sum,
+                    true,
+                    &mut transcript,
+                );
 
                 Ok(())
             },
@@ -381,7 +297,7 @@ mod tests {
 
     #[allow(non_snake_case)]
     #[test]
-    fn test_zk_sumcheck_circuit() {
+    fn test_hoplite_circuit() {
         // parameters of the R1CS instance
         let num_cons = 1;
         let num_vars = 0;
@@ -442,16 +358,43 @@ mod tests {
         let sc_proof_phase1: CVSumCheckProof<1, 4> =
             proof.r1cs_sat_proof.sc_proof_phase1.to_circuit_val();
 
-        let phase1_expected_sum = Secq256k1::identity();
+        let r1cs_sat_proof = &proof.r1cs_sat_proof;
+        let claims_phase2 = &r1cs_sat_proof.claims_phase2;
 
-        let circuit = ZKSumCheckCircuit {
-            proof: Value::known(sc_proof_phase1),
-            target_sum: Value::known(phase1_expected_sum),
-            gens_1: gens.gens_r1cs_sat.gens_sc.gens_1.into(),
-            gens_n: gens.gens_r1cs_sat.gens_sc.gens_4.into(),
+        let input = assignment_inputs
+            .assignment
+            .iter()
+            .map(|x| x.to_circuit_val())
+            .collect();
+
+        let circuit = HopliteCircuit::<4, 1, 2, 1> {
+            inst: inst.digest,
+            input,
+            comm_vars: r1cs_sat_proof.comm_vars.to_circuit_val(),
+            sc_proof_phase1: sc_proof_phase1,
+            sc_proof_phase2: r1cs_sat_proof.sc_proof_phase2.to_circuit_val(),
+            claims_phase2: (
+                Some(claims_phase2.0.to_circuit_val()),
+                Some(claims_phase2.1.to_circuit_val()),
+                Some(claims_phase2.2.to_circuit_val()),
+                Some(claims_phase2.3.to_circuit_val()),
+            ),
+            pok_claims_phase2: (
+                r1cs_sat_proof.pok_claims_phase2.0.to_circuit_val(),
+                r1cs_sat_proof.pok_claims_phase2.1.to_circuit_val(),
+            ),
+            proof_eq_sc_phase1: r1cs_sat_proof.proof_eq_sc_phase1.to_circuit_val(),
+            proof_eq_sc_phase2: r1cs_sat_proof.proof_eq_sc_phase2.to_circuit_val(),
+            comm_vars_at_ry: Some(r1cs_sat_proof.comm_vars_at_ry.to_circuit_val()),
+            proof_eval_vars_at_ry: r1cs_sat_proof.proof_eval_vars_at_ry.to_circuit_val(),
+            gens_pc_1: gens.gens_r1cs_sat.gens_pc.gens.gens_1.into(),
+            gens_pc_n: gens.gens_r1cs_sat.gens_pc.gens.gens_n.into(),
+            gens_sc_1: gens.gens_r1cs_sat.gens_sc.gens_1.into(),
+            gens_sc_3: gens.gens_r1cs_sat.gens_sc.gens_3.into(),
+            gens_sc_4: gens.gens_r1cs_sat.gens_sc.gens_4.into(),
         };
 
-        // Convert ZkSumCheckProof into a ZKSumCheckCircuit
+        // Convert ZkSumCheckProof into a HopliteCircuit
 
         /*
         let claimed_sum_0_limbs: Vec<Fr> = decompose_biguint(
@@ -480,7 +423,7 @@ mod tests {
             x: Value::unknown(),
             y: Value::unknown(),
         };
-        let dotprod_proof = ZKDotProdProof {
+        let dotprod_proof = CVDotProdProof {
             delta: unknown_point.clone(),
             beta: unknown_point.clone(),
             epsilon: unknown_point.clone(),
@@ -504,7 +447,7 @@ mod tests {
             y: Value::unknown(),
         };
 
-        let circuit = ZKSumCheckCircuit {
+        let circuit = HopliteCircuit {
             claimed_sum: unknown_point.clone(),
             round_proofs: vec![empty_round_proof(); 2],
         };

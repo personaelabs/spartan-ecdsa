@@ -34,7 +34,6 @@ pub fn verify<const DIMENSION: usize>(
     transcript.append_protocol_name(b"dot product proof");
 
     CompressedGroup::from_circuit_val(com_poly).append_to_transcript(b"Cx", transcript);
-
     CompressedGroup::from_circuit_val(tau).append_to_transcript(b"Cy", transcript);
 
     transcript.append_message(b"a", b"begin_append_vector");

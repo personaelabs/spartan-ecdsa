@@ -1,5 +1,6 @@
 use crate::{
     chips::pedersen_commit::PedersenCommitChip,
+    transcript::HopliteTranscript,
     {FpChip, Fq, FqChip},
 };
 use halo2_base::{utils::PrimeField, Context};
@@ -7,9 +8,14 @@ use halo2_ecc::bigint::CRTInteger;
 use halo2_ecc::ecc::{EcPoint, EccChip};
 use halo2_ecc::fields::FieldChip;
 use halo2_proofs::circuit::Value;
-use hoplite::commitments::MultiCommitGens;
+use hoplite::{
+    circuit_vals::{CVDotProdProof, ToCircuitVal},
+    commitments::MultiCommitGens,
+};
+use libspartan::transcript::{ProofTranscript, Transcript};
 
-// Assigned version of ZKDotProdProof
+// Assigned version of CVDotProdProof
+#[derive(Debug)]
 pub struct AssignedZKDotProdProof<'v, const DIMENSION: usize, F: PrimeField> {
     pub delta: EcPoint<F, CRTInteger<'v, F>>,
     pub beta: EcPoint<F, CRTInteger<'v, F>>,
@@ -18,6 +24,79 @@ pub struct AssignedZKDotProdProof<'v, const DIMENSION: usize, F: PrimeField> {
     pub z_beta: CRTInteger<'v, F>,
 }
 
+pub trait AssignDotProdProof<'v, const DIMENSION: usize, F: PrimeField> {
+    fn assign(
+        &self,
+        ctx: &mut Context<'v, F>,
+        fq_chip: &FqChip<F>,
+        ecc_chip: &EccChip<F, FpChip<F>>,
+    ) -> AssignedZKDotProdProof<'v, DIMENSION, F>;
+}
+
+impl<'v, const DIMENSION: usize, F: PrimeField> AssignDotProdProof<'v, DIMENSION, F>
+    for CVDotProdProof<DIMENSION>
+{
+    fn assign(
+        &self,
+        ctx: &mut Context<'v, F>,
+        fq_chip: &FqChip<F>,
+        ecc_chip: &EccChip<F, FpChip<F>>,
+    ) -> AssignedZKDotProdProof<'v, DIMENSION, F> {
+        let beta = ecc_chip.load_private(
+            ctx,
+            (
+                self.beta.map_or(Value::unknown(), |p| Value::known(p.x)),
+                self.beta.map_or(Value::unknown(), |p| Value::known(p.y)),
+            ),
+        );
+
+        let delta = ecc_chip.load_private(
+            ctx,
+            (
+                self.delta.map_or(Value::unknown(), |p| Value::known(p.x)),
+                self.delta.map_or(Value::unknown(), |p| Value::known(p.y)),
+            ),
+        );
+        let z: [CRTInteger<'v, F>; DIMENSION] = self
+            .z
+            .iter()
+            .map(|z_i| {
+                fq_chip.load_private(
+                    ctx,
+                    z_i.map_or(Value::unknown(), |val| {
+                        FqChip::<F>::fe_to_witness(&Value::known(val))
+                    }),
+                )
+            })
+            .collect::<Vec<CRTInteger<'v, F>>>()
+            .try_into()
+            .unwrap();
+
+        let z_beta = fq_chip.load_private(
+            ctx,
+            self.z_beta.map_or(Value::unknown(), |val| {
+                FqChip::<F>::fe_to_witness(&Value::known(val))
+            }),
+        );
+
+        let z_delta = fq_chip.load_private(
+            ctx,
+            self.z_delta.map_or(Value::unknown(), |val| {
+                FqChip::<F>::fe_to_witness(&Value::known(val))
+            }),
+        );
+
+        AssignedZKDotProdProof {
+            beta,
+            delta,
+            z,
+            z_beta,
+            z_delta,
+        }
+    }
+}
+
+#[derive(Clone)]
 pub struct ZKDotProdChip<const DIMENSION: usize, F: PrimeField> {
     pub ecc_chip: EccChip<F, FpChip<F>>,
     pub fq_chip: FqChip<F>,
@@ -65,16 +144,41 @@ impl<const DIMENSION: usize, F: PrimeField> ZKDotProdChip<DIMENSION, F> {
         tau: &EcPoint<F, CRTInteger<'v, F>>,
         a: [CRTInteger<'v, F>; DIMENSION],
         com_poly: &EcPoint<F, CRTInteger<'v, F>>,
-        proof: AssignedZKDotProdProof<'v, DIMENSION, F>,
+        proof: &AssignedZKDotProdProof<'v, DIMENSION, F>,
         gens_1: &MultiCommitGens,
         gens_n: &MultiCommitGens,
+        transcript: &mut Transcript,
     ) {
+        transcript.append_protocol_name(b"dot product proof");
+
+        transcript.append_circuit_point(b"Cx", com_poly.clone());
+        transcript.append_circuit_point(b"Cy", tau.clone());
+
+        transcript.append_message(b"a", b"begin_append_vector");
+        // TODO: Implement this in a trait
+        for a_i_val in &a {
+            let mut a_i = [0u8; 32];
+            a_i_val.clone().value.and_then(|val| {
+                let mut a_i_bytes = val.to_bytes_be().1;
+                a_i_bytes.resize(32, 0);
+                a_i_bytes.reverse();
+                a_i = a_i_bytes.try_into().unwrap();
+                Value::known(val)
+            });
+            transcript.append_message(b"a", &a_i);
+        }
+        transcript.append_message(b"a", b"end_append_vector");
+
+        transcript.append_circuit_point(b"delta", (&proof.delta).clone());
+        transcript.append_circuit_point(b"beta", (&proof.beta).clone());
+
         let max_bits = self.fq_chip.limb_bits;
 
-        // TODO: Actually compute the challenge!
-        let c = self
-            .fq_chip
-            .load_private(ctx, FqChip::<F>::fe_to_witness(&Value::known(Fq::one())));
+        let c = transcript.challenge_scalar(b"c");
+        let c = self.fq_chip.load_private(
+            ctx,
+            FqChip::<F>::fe_to_witness(&Value::known(c.to_circuit_val())),
+        );
 
         // (13)
         let epsilon_c = self.ecc_chip.scalar_mult(
