@@ -1,0 +1,17 @@
+{
+  "name": "node",
+  "version": "1.0.0",
+  "main": "node.bench.ts",
+  "license": "MIT",
+  "scripts": {
+    "prove": "ts-node ./src/prover.ts"
+  },
+  "dependencies": {
+    "@ethereumjs/util": "^8.0.3",
+    "@personaelabs/spartan-ecdsa": "*"
+  },
+  "devDependencies": {
+    "ts-node": "^10.9.1",
+    "typescript": "^4.9.4"
+  }
+}
