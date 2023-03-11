@@ -109,7 +109,7 @@ export class PublicInput {
 
 /**
  * Compute the group elements T and U for efficient ecdsa
- * http://localhost:1313/posts/efficient-ecdsa-1/
+ * https://personaelabs.org/posts/efficient-ecdsa-1/
  */
 export const computeEffEcdsaPubInput = (
   r: bigint,
