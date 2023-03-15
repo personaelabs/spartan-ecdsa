@@ -3,4 +3,5 @@ members = [
     "packages/spartan_wasm",
     "packages/secq256k1",
     "packages/poseidon",
+    "packages/Spartan-secq",
 ]
