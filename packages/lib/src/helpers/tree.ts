@@ -20,6 +20,14 @@ export class Tree {
     this.treeInner.insert(leaf);
   }
 
+  delete(index: number) {
+    this.treeInner.delete(index);
+  }
+
+  leaves(): bigint[] {
+    return this.treeInner.leaves;
+  }
+
   root(): bigint {
     return this.treeInner.root;
   }
