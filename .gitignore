@@ -41,3 +41,7 @@ wasm_bytes.ts
 packages/lib/src/circuits/
 
 packages/lib/example/
+
+packages/hoplite_circuit/params/
+packages/hoplite_circuit/prover/proof.bin
+packages/hoplite_circuit/prover/input.bin
