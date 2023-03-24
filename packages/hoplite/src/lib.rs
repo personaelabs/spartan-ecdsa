@@ -4,7 +4,6 @@ use commitments::{Commitments, MultiCommitGens};
 pub use libspartan::scalar::Scalar;
 use libspartan::{
     group::DecompressEncodedPoint,
-    math::Math,
     transcript::{AppendToTranscript, ProofTranscript, Transcript},
     Instance, NIZKGens, NIZK,
 };
@@ -19,7 +18,6 @@ pub mod proof_of_eq;
 pub mod proof_of_opening;
 pub mod proof_of_prod;
 pub mod sumcheck;
-use std::cmp::max;
 
 pub mod utils;
 use utils::eval_ml_poly;
@@ -38,10 +36,8 @@ pub fn eq_eval(t: &[Fq], x: &[Fq]) -> Fq {
 /**
  * Verify a SpartanNIZK proof
  */
-pub fn verify_nizk(
+pub fn verify_nizk<const N_ROUNDS_SC1: usize, const N_ROUNDS_SC2: usize>(
     inst: &Instance,
-    num_cons: usize,
-    num_vars: usize,
     input: &[libspartan::scalar::Scalar],
     proof: &NIZK,
     gens: &NIZKGens,
@@ -60,21 +56,8 @@ pub fn verify_nizk(
         .comm_vars
         .append_to_transcript(b"poly_commitment", &mut transcript);
 
-    // Get the number of rounds for the two sum-checks
-    // TODO: Change this to constants
-    let num_rounds_phase1 = if num_cons == 0 {
-        0
-    } else {
-        max(num_cons.log_2(), 1)
-    };
-    let num_rounds_phase2 = if num_vars == 0 {
-        0
-    } else {
-        (2 * num_vars).log_2()
-    };
-
     let tau: Vec<Fq> = transcript
-        .challenge_vector(b"challenge_tau", num_rounds_phase1)
+        .challenge_vector(b"challenge_tau", N_ROUNDS_SC1)
         .iter()
         .map(|tau_i| tau_i.to_circuit_val())
         .collect();
@@ -87,8 +70,7 @@ pub fn verify_nizk(
     let gens_pc_1: MultiCommitGens = gens_pc_gens.gens_1.clone().into();
     let gens_pc_n: MultiCommitGens = gens_pc_gens.gens_n.clone().into();
 
-    const N_ROUNDS: usize = 1;
-    let sc_proof_phase1: CVSumCheckProof<N_ROUNDS, 4> =
+    let sc_proof_phase1: CVSumCheckProof<N_ROUNDS_SC1, 4> =
         proof.r1cs_sat_proof.sc_proof_phase1.to_circuit_val();
 
     // The expected sum of the phase 1 sum-check is zero
@@ -176,7 +158,7 @@ pub fn verify_nizk(
 
     // Verify the sum-check over M(x)
 
-    let sc_proof_phase2: CVSumCheckProof<3, 3> =
+    let sc_proof_phase2: CVSumCheckProof<N_ROUNDS_SC2, 3> =
         proof.r1cs_sat_proof.sc_proof_phase2.to_circuit_val();
     // comm_claim_post_phase2: Claimed evaluation of the final round polynomial over ry
     let (comm_claim_post_phase2, ry) = sumcheck::verify(
@@ -204,7 +186,6 @@ pub fn verify_nizk(
 
     let poly_eval_proof = &proof.r1cs_sat_proof.proof_eval_vars_at_ry;
     let comm_vars_at_ry = proof.r1cs_sat_proof.comm_vars_at_ry.to_circuit_val();
-    let log_dot_prod_proof = &poly_eval_proof.proof;
 
     // TODO: Make the constants <2, 1> generics
     poly_evaluation_proof::verify::<2, 1>(
@@ -262,6 +243,8 @@ mod tests {
 
     #[test]
     fn test_verify_nizk() {
+        // Tiny circuit
+
         // parameters of the R1CS instance
         let num_cons = 1;
         let num_vars = 0;
@@ -316,10 +299,10 @@ mod tests {
 
         // In the phase 1 sum check com_eval uses gens_1 and dot product uses gens_4
         // com_eval uses gens_1, and dot product uses gen_3
-        verify_nizk(
+        const N_ROUNDS_SC1: usize = 1;
+        const N_ROUNDS_SC2: usize = 3;
+        verify_nizk::<N_ROUNDS_SC1, N_ROUNDS_SC2>(
             &inst,
-            num_cons,
-            num_vars,
             &assignment_inputs.assignment,
             &proof,
             &gens,

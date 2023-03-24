@@ -6,9 +6,23 @@ use libspartan::{
     scalar::Scalar,
     sumcheck::ZKSumcheckInstanceProof,
 };
-use secpq_curves::group::{prime::PrimeCurveAffine, Curve};
-use secpq_curves::{CurveAffine, Secq256k1, Secq256k1Affine};
+use secpq_curves::{
+    group::{prime::PrimeCurveAffine, Curve},
+    CurveAffine, Secq256k1, Secq256k1Affine,
+};
+use secq256k1::{
+    affine::Group,
+    elliptic_curve::{
+        subtle::{Choice, ConditionallySelectable, ConstantTimeEq},
+        Field, PrimeField,
+    },
+};
+
 use std::option::Option;
+
+// ############################
+// `CV` stands for `Circuit Value`.
+// ############################
 
 #[derive(Debug, Clone, Copy)]
 pub struct CVSumCheckProof<const N_ROUNDS: usize, const DIMENSION: usize> {
@@ -154,8 +168,15 @@ impl<const N: usize> Default for CVPolyCommitment<N> {
     }
 }
 
-// We define our own trait rather than using the `From` trait because
-// we need to "convert to" some types that are defined outside of this crate.
+// Convert the types defined in the `secq256k1` crate
+// to the types defined in the `secpq_curves` crate.
+// This conversion is necessary because,
+// `libspartan` uses `secq256k1` for curve/field operations
+// whereas halo2 uses `secpq_curves`
+
+// In general, we need to do the following two conversions
+// `CompressedGroup` -> `Secq256k1`
+// `Scalar` -> `Fq`
 pub trait ToCircuitVal<V> {
     fn to_circuit_val(&self) -> V;
 }
@@ -189,14 +210,6 @@ impl ToCircuitVal<Fq> for Scalar {
         Fq::from_bytes(&bytes).unwrap()
     }
 }
-use secq256k1::elliptic_curve::{
-    subtle::{Choice, ConditionallySelectable},
-    Field,
-};
-use secq256k1::{
-    affine::Group,
-    elliptic_curve::{subtle::ConstantTimeEq, PrimeField},
-};
 
 impl ToCircuitVal<CVEqualityProof> for EqualityProof {
     fn to_circuit_val(&self) -> CVEqualityProof {

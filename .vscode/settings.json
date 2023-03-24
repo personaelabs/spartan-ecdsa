@@ -2,6 +2,7 @@
     "editor.formatOnSave": true,
     "cSpell.words": [
         "merkle",
-        "NIZK"
+        "NIZK",
+        "Secq"
     ]
 }
