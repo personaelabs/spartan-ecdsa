@@ -7,8 +7,10 @@ use libspartan::{
     transcript::{ProofTranscript, Transcript},
 };
 
+// TODO: Turn this into a transcript chip
 pub trait HopliteTranscript<'v, F: PrimeField> {
     fn append_circuit_point(&mut self, label: &'static [u8], point: EcPoint<F, CRTInteger<'v, F>>);
+    fn append_circuit_fq(&mut self, label: &'static [u8], fe: CRTInteger<'v, F>);
 }
 
 impl<'v, F: PrimeField> HopliteTranscript<'v, F> for Transcript {
@@ -40,5 +42,18 @@ impl<'v, F: PrimeField> HopliteTranscript<'v, F> for Transcript {
         };
 
         self.append_point(label, &point);
+    }
+
+    fn append_circuit_fq(&mut self, label: &'static [u8], fe: CRTInteger<'v, F>) {
+        // TODO: Not sure if this works!
+        let mut bytes = [0u8; 32];
+        let _ = fe.value.and_then(|val| {
+            let mut bytes_be = val.to_bytes_be().1;
+            bytes_be.resize(32, 0);
+            bytes = bytes_be.try_into().unwrap();
+            Value::known(val)
+        });
+
+        self.append_message(label, &bytes);
     }
 }

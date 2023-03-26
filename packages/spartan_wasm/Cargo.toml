@@ -11,7 +11,7 @@ crate-type = ["cdylib", "rlib"]
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-spartan = { git = "https://github.com/DanTehrani/Spartan-secq.git", branch="master" }
+spartan = { git = "https://github.com/DanTehrani/Spartan-secq.git", branch="hoplite" }
 wasm-bindgen = { version = "0.2.81", features = ["serde-serialize"]}
 console_error_panic_hook = "0.1.7"
 merlin = "3.0.0"

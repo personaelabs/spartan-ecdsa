@@ -1,5 +1,9 @@
 use crate::{
-    chips::dotprod::{AssignDotProdProof, AssignedZKDotProdProof, ZKDotProdChip},
+    chips::{
+        dotprod::{AssignedZKDotProdProof, ZKDotProdChip},
+        pedersen_commit::PedersenCommitChip,
+        secq256k1::Secq256k1Chip,
+    },
     transcript::HopliteTranscript,
     {FpChip, Fq, FqChip},
 };
@@ -16,8 +20,9 @@ use libspartan::transcript::{ProofTranscript, Transcript};
 use secpq_curves::group::Group;
 use secpq_curves::{group::Curve, Secq256k1};
 
-use super::pedersen_commit::PedersenCommitChip;
+use super::utils::{Assign, AssignArray};
 
+#[derive(Clone)]
 pub struct AssignedZKSumCheck<'v, const N_ROUNDS: usize, const DIMENSION: usize, F: PrimeField> {
     pub comm_polys: [EcPoint<F, CRTInteger<'v, F>>; N_ROUNDS],
     pub comm_evals: [EcPoint<F, CRTInteger<'v, F>>; N_ROUNDS],
@@ -28,8 +33,7 @@ pub trait AssignZKSumCheckProof<'v, const N_ROUNDS: usize, const DIMENSION: usiz
     fn assign(
         &self,
         ctx: &mut Context<'v, F>,
-        fq_chip: &FqChip<F>,
-        ecc_chip: &EccChip<F, FpChip<F>>,
+        secq_chip: &Secq256k1Chip<F>,
     ) -> AssignedZKSumCheck<'v, N_ROUNDS, DIMENSION, F>;
 }
 
@@ -39,45 +43,16 @@ impl<'v, const N_ROUNDS: usize, const DIMENSION: usize, F: PrimeField>
     fn assign(
         &self,
         ctx: &mut Context<'v, F>,
-        fq_chip: &FqChip<F>,
-        ecc_chip: &EccChip<F, FpChip<F>>,
+        secq_chip: &Secq256k1Chip<F>,
     ) -> AssignedZKSumCheck<'v, N_ROUNDS, DIMENSION, F> {
-        let comm_evals: [EcPoint<F, CRTInteger<'v, F>>; N_ROUNDS] = self
-            .comm_evals
-            .iter()
-            .map(|p| {
-                ecc_chip.load_private(
-                    ctx,
-                    (
-                        p.map_or(Value::unknown(), |p| Value::known(p.x)),
-                        p.map_or(Value::unknown(), |p| Value::known(p.y)),
-                    ),
-                )
-            })
-            .collect::<Vec<EcPoint<F, CRTInteger<'v, F>>>>()
-            .try_into()
-            .unwrap();
+        let comm_evals = self.comm_evals.assign(ctx, secq_chip);
 
-        let comm_polys: [EcPoint<F, CRTInteger<'v, F>>; N_ROUNDS] = self
-            .comm_polys
-            .iter()
-            .map(|p| {
-                ecc_chip.load_private(
-                    ctx,
-                    (
-                        p.map_or(Value::unknown(), |p| Value::known(p.x)),
-                        p.map_or(Value::unknown(), |p| Value::known(p.y)),
-                    ),
-                )
-            })
-            .collect::<Vec<EcPoint<F, CRTInteger<'v, F>>>>()
-            .try_into()
-            .unwrap();
+        let comm_polys = self.comm_polys.assign(ctx, secq_chip);
 
-        let proofs: [AssignedZKDotProdProof<'v, DIMENSION, F>; N_ROUNDS] = self
+        let proofs = self
             .proofs
             .iter()
-            .map(|proof| proof.assign(ctx, fq_chip, ecc_chip))
+            .map(|proof| proof.assign(ctx, secq_chip))
             .collect::<Vec<AssignedZKDotProdProof<'v, DIMENSION, F>>>()
             .try_into()
             .unwrap();
@@ -122,15 +97,16 @@ impl<const N_ROUNDS: usize, const DIMENSION: usize, F: PrimeField>
     pub fn verify<'v>(
         &self,
         ctx: &mut Context<'v, F>,
-        proof: AssignedZKSumCheck<'v, N_ROUNDS, DIMENSION, F>,
+        proof: &AssignedZKSumCheck<'v, N_ROUNDS, DIMENSION, F>,
         gens_n: &MultiCommitGens,
         gens_1: &MultiCommitGens,
         target_sum: EcPoint<F, CRTInteger<'v, F>>,
         target_sum_identity: bool,
         transcript: &mut Transcript,
-    ) {
+    ) -> (EcPoint<F, CRTInteger<'v, F>>, [CRTInteger<'v, F>; N_ROUNDS]) {
         let limb_bits = self.fp_chip.limb_bits;
         let num_limbs = self.fp_chip.num_limbs;
+        let mut r = vec![];
 
         for i in 0..N_ROUNDS {
             // Load claimed_sum
@@ -144,6 +120,7 @@ impl<const N_ROUNDS: usize, const DIMENSION: usize, F: PrimeField>
                 ctx,
                 FqChip::<F>::fe_to_witness(&Value::known(r_i.to_circuit_val())),
             );
+            r.push(r_i.clone());
 
             let com_round_sum = if i == 0 {
                 &target_sum
@@ -285,5 +262,9 @@ impl<const N_ROUNDS: usize, const DIMENSION: usize, F: PrimeField>
         }
 
         self.fp_chip.finalize(ctx);
+        (
+            proof.comm_evals[proof.comm_evals.len() - 1].clone(),
+            r.try_into().unwrap(),
+        )
     }
 }

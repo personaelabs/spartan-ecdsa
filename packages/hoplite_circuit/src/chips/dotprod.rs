@@ -14,8 +14,12 @@ use hoplite::{
 };
 use libspartan::transcript::{ProofTranscript, Transcript};
 
-// Assigned version of CVDotProdProof
-#[derive(Debug)]
+use super::{
+    secq256k1::Secq256k1Chip,
+    utils::{Assign, AssignArray},
+};
+
+#[derive(Clone, Debug)]
 pub struct AssignedZKDotProdProof<'v, const DIMENSION: usize, F: PrimeField> {
     pub delta: EcPoint<F, CRTInteger<'v, F>>,
     pub beta: EcPoint<F, CRTInteger<'v, F>>,
@@ -24,67 +28,27 @@ pub struct AssignedZKDotProdProof<'v, const DIMENSION: usize, F: PrimeField> {
     pub z_beta: CRTInteger<'v, F>,
 }
 
-pub trait AssignDotProdProof<'v, const DIMENSION: usize, F: PrimeField> {
-    fn assign(
-        &self,
-        ctx: &mut Context<'v, F>,
-        fq_chip: &FqChip<F>,
-        ecc_chip: &EccChip<F, FpChip<F>>,
-    ) -> AssignedZKDotProdProof<'v, DIMENSION, F>;
-}
-
-impl<'v, const DIMENSION: usize, F: PrimeField> AssignDotProdProof<'v, DIMENSION, F>
-    for CVDotProdProof<DIMENSION>
+impl<'v, const DIMENSION: usize, F: PrimeField>
+    Assign<'v, F, AssignedZKDotProdProof<'v, DIMENSION, F>> for CVDotProdProof<DIMENSION>
 {
     fn assign(
         &self,
         ctx: &mut Context<'v, F>,
-        fq_chip: &FqChip<F>,
-        ecc_chip: &EccChip<F, FpChip<F>>,
+        secq_chip: &Secq256k1Chip<F>,
     ) -> AssignedZKDotProdProof<'v, DIMENSION, F> {
-        let beta = ecc_chip.load_private(
-            ctx,
-            (
-                self.beta.map_or(Value::unknown(), |p| Value::known(p.x)),
-                self.beta.map_or(Value::unknown(), |p| Value::known(p.y)),
-            ),
-        );
+        let beta = self.beta.assign(ctx, secq_chip);
+        let delta = self.delta.assign(ctx, secq_chip);
 
-        let delta = ecc_chip.load_private(
-            ctx,
-            (
-                self.delta.map_or(Value::unknown(), |p| Value::known(p.x)),
-                self.delta.map_or(Value::unknown(), |p| Value::known(p.y)),
-            ),
-        );
         let z: [CRTInteger<'v, F>; DIMENSION] = self
             .z
             .iter()
-            .map(|z_i| {
-                fq_chip.load_private(
-                    ctx,
-                    z_i.map_or(Value::unknown(), |val| {
-                        FqChip::<F>::fe_to_witness(&Value::known(val))
-                    }),
-                )
-            })
+            .map(|z_i| z_i.assign(ctx, secq_chip))
             .collect::<Vec<CRTInteger<'v, F>>>()
             .try_into()
             .unwrap();
 
-        let z_beta = fq_chip.load_private(
-            ctx,
-            self.z_beta.map_or(Value::unknown(), |val| {
-                FqChip::<F>::fe_to_witness(&Value::known(val))
-            }),
-        );
-
-        let z_delta = fq_chip.load_private(
-            ctx,
-            self.z_delta.map_or(Value::unknown(), |val| {
-                FqChip::<F>::fe_to_witness(&Value::known(val))
-            }),
-        );
+        let z_beta = self.z_beta.assign(ctx, secq_chip);
+        let z_delta = self.z_delta.assign(ctx, secq_chip);
 
         AssignedZKDotProdProof {
             beta,

@@ -1,3 +1,12 @@
 pub mod dotprod;
+pub mod eval_poly;
 pub mod pedersen_commit;
+pub mod poly_eval_proof;
+pub mod proof_bullet_reduce;
+pub mod proof_log_of_dotprod;
+pub mod proof_of_eq;
+pub mod proof_of_opening;
+pub mod proof_of_prod;
+pub mod secq256k1;
 pub mod sumcheck;
+pub mod utils;
