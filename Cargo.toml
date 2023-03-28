@@ -5,4 +5,7 @@ members = [
 #    "packages/poseidon",
     "packages/hoplite",
     "packages/hoplite_circuit",
+    "packages/poseidon",
+    "packages/Spartan-secq",
+    "packages/circuit_reader",
 ]

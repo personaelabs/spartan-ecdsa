@@ -32,14 +32,3 @@ poseidon = { path = "../poseidon" }
 itertools = "0.9.0"
 group = "0.12.0"
 
-# Do not compile these dependencies when targeting wasm
-#[target.'cfg(not(target_family = "wasm"))'.dependencies]
-#nova-scotia = { git = "https://github.com/DanTehrani/Nova-Scotia.git" }
-#nova-snark = "0.9.0"
-#ff = "0.12.1"
-#ark-std = { version = "0.3.0", features = ["print-trace"] }
-
-
-[[bin]]
-name = "gen_spartan_inst"
-path = "src/bin/gen_spartan_inst.rs"

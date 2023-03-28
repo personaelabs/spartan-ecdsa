@@ -1,6 +1,6 @@
 {
-  "name": "circuits",
-  "version": "1.0.0",
+  "name": "@personaelabs/spartan-ecdsa-circuits",
+  "version": "0.1.0",
   "main": "index.js",
   "license": "MIT",
   "dependencies": {
