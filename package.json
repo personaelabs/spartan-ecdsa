@@ -6,7 +6,8 @@
   "repository": "https://github.com/DanTehrani/spartan-wasm.git",
   "author": "Daniel Tehrani <contact@dantehrani.com>",
   "scripts": {
-    "build": "sh ./scripts/build.sh && lerna run build"
+    "build": "sh ./scripts/build.sh && lerna run build",
+    "test": "sh ./scripts/test.sh"
   },
   "devDependencies": {
     "@types/jest": "^29.2.4",

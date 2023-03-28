@@ -1,0 +1,40 @@
+name: Publish Package to npmjs
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          ref: ${{ github.ref_name }}
+      # Setup Node.js
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18
+          registry-url: "https://registry.npmjs.org"
+      # Setup Rust
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+      # Install circom-secq
+      - uses: GuillaumeFalourd/clone-github-repo-action@v2
+        with:
+          owner: "DanTehrani"
+          repository: "circom-secq"
+      - run: cd circom-secq && cargo build --release && cargo install --path circom
+      # Install wasm-pack
+      - uses: jetli/wasm-pack-action@v0.4.0
+        with:
+          version: "0.10.3"
+      - run: cargo test
+      - run: yarn
+      - run: yarn build
+      - run: yarn test
+      - run: yarn publish
+        working-directory: ./packages/lib
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
