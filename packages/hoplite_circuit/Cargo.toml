@@ -21,7 +21,7 @@ spartan = { git = "https://github.com/DanTehrani/Spartan-secq", branch = "hoplit
 secq256k1 = { git = "https://github.com/personaelabs/spartan-ecdsa", branch = "main" }
 hoplite = { path = "../hoplite" }
 rand_core = { version = "0.6", default-features = false, features = ["getrandom"] }
-spartan_wasm = { path = "../spartan_wasm" }
+circuit_reader = { path = "../circuit_reader" }
 bincode = "1.2.1"
 num-traits = "0.2.15"
 

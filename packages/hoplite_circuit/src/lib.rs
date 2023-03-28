@@ -470,6 +470,7 @@ mod tests {
     use super::*;
     use ark_std::{end_timer, start_timer};
     use bincode;
+    use circuit_reader::load_as_spartan_inst;
     use halo2_base::utils::{decompose_biguint, fs::gen_srs};
     use halo2_proofs::{dev::MockProver, halo2curves::bn256::Fr};
     use halo2_proofs::{
@@ -494,7 +495,6 @@ mod tests {
     use rand_core::OsRng;
     use secpq_curves::group::cofactor::CofactorCurveAffine;
     use secpq_curves::Secq256k1Affine;
-    use spartan_wasm::load_as_spartan_inst;
     use std::fs::File;
     use std::io::Read;
 
