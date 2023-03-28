@@ -1,41 +1,15 @@
-#![allow(non_snake_case)]
-use bincode;
+mod circom_reader;
+
+use circom_reader::{load_r1cs_from_bin_file, R1CS};
 use ff::PrimeField;
 use libspartan::Instance;
 use secq256k1::AffinePoint;
 use secq256k1::FieldBytes;
-use spartan_wasm::circom_reader::{load_r1cs_from_bin_file, R1CS};
-use std::env::{args, current_dir};
-use std::fs::File;
-use std::io::Write;
 use std::path::PathBuf;
 
-fn main() {
-    let circuit_path = args().nth(1).unwrap();
-    let output_path = args().nth(2).unwrap();
-    let num_pub_inputs = args().nth(3).unwrap().parse::<usize>().unwrap();
-
-    let root = current_dir().unwrap();
-    let circuit_path = root.join(circuit_path);
-    let spartan_inst = load_as_spartan_inst(circuit_path, num_pub_inputs);
-    let sparta_inst_bytes = bincode::serialize(&spartan_inst).unwrap();
-
-    File::create(root.join(output_path.clone()))
-        .unwrap()
-        .write_all(sparta_inst_bytes.as_slice())
-        .unwrap();
-
-    println!("Written Spartan circuit to {}", output_path);
-}
-
 pub fn load_as_spartan_inst(circuit_file: PathBuf, num_pub_inputs: usize) -> Instance {
-    let root = current_dir().unwrap();
-
-    let circuit_file = root.join(circuit_file);
     let (r1cs, _) = load_r1cs_from_bin_file::<AffinePoint>(&circuit_file);
-
     let spartan_inst = convert_to_spartan_r1cs(&r1cs, num_pub_inputs);
-
     spartan_inst
 }
 
