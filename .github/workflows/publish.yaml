@@ -21,6 +21,7 @@ jobs:
         with:
           toolchain: nightly-2022-10-31
       - run: rustup component add rust-src --toolchain nightly-2022-10-31-x86_64-unknown-linux-gnu
+      - run: rustup target add x86_64-apple-darwin
       # Install circom-secq
       - uses: GuillaumeFalourd/clone-github-repo-action@v2
         with:
