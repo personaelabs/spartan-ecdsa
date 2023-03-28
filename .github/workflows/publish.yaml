@@ -19,7 +19,7 @@ jobs:
       # Setup Rust
       - uses: actions-rs/toolchain@v1
         with:
-          toolchain: stable
+          toolchain: nightly-2022-10-31
       # Install circom-secq
       - uses: GuillaumeFalourd/clone-github-repo-action@v2
         with:
@@ -30,11 +30,11 @@ jobs:
       - uses: jetli/wasm-pack-action@v0.4.0
         with:
           version: "0.10.3"
-      - run: cargo test
+      - run: cargo test --release
       - run: yarn
       - run: yarn build
       - run: yarn test
-      - run: yarn publish
+      - run: npm publish
         working-directory: ./packages/lib
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
