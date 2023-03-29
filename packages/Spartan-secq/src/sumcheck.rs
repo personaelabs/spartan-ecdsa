@@ -64,9 +64,9 @@ impl SumcheckInstanceProof {
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct ZKSumcheckInstanceProof {
-  comm_polys: Vec<CompressedGroup>,
-  comm_evals: Vec<CompressedGroup>,
-  proofs: Vec<DotProductProof>,
+  pub comm_polys: Vec<CompressedGroup>,
+  pub comm_evals: Vec<CompressedGroup>,
+  pub proofs: Vec<DotProductProof>,
 }
 
 impl ZKSumcheckInstanceProof {

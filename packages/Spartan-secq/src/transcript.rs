@@ -1,6 +1,6 @@
 use super::group::CompressedGroup;
 use super::scalar::Scalar;
-use merlin::Transcript;
+pub use merlin::Transcript;
 
 pub trait ProofTranscript {
   fn append_protocol_name(&mut self, protocol_name: &'static [u8]);

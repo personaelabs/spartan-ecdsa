@@ -11,13 +11,13 @@ use merlin::Transcript;
 use serde::{Deserialize, Serialize};
 
 mod bullet;
-use bullet::BulletReductionProof;
+pub use bullet::BulletReductionProof;
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct KnowledgeProof {
-  alpha: CompressedGroup,
-  z1: Scalar,
-  z2: Scalar,
+  pub alpha: CompressedGroup,
+  pub z1: Scalar,
+  pub z2: Scalar,
 }
 
 impl KnowledgeProof {
@@ -77,8 +77,8 @@ impl KnowledgeProof {
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct EqualityProof {
-  alpha: CompressedGroup,
-  z: Scalar,
+  pub alpha: CompressedGroup,
+  pub z: Scalar,
 }
 
 impl EqualityProof {
@@ -146,10 +146,10 @@ impl EqualityProof {
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct ProductProof {
-  alpha: CompressedGroup,
-  beta: CompressedGroup,
-  delta: CompressedGroup,
-  z: [Scalar; 5],
+  pub alpha: CompressedGroup,
+  pub beta: CompressedGroup,
+  pub delta: CompressedGroup,
+  pub z: [Scalar; 5],
 }
 
 impl ProductProof {
@@ -292,11 +292,11 @@ impl ProductProof {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct DotProductProof {
-  delta: CompressedGroup,
-  beta: CompressedGroup,
-  z: Vec<Scalar>,
-  z_delta: Scalar,
-  z_beta: Scalar,
+  pub delta: CompressedGroup,
+  pub beta: CompressedGroup,
+  pub z: Vec<Scalar>,
+  pub z_delta: Scalar,
+  pub z_beta: Scalar,
 }
 
 impl DotProductProof {
@@ -420,11 +420,11 @@ impl DotProductProofGens {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct DotProductProofLog {
-  bullet_reduction_proof: BulletReductionProof,
-  delta: CompressedGroup,
-  beta: CompressedGroup,
-  z1: Scalar,
-  z2: Scalar,
+  pub bullet_reduction_proof: BulletReductionProof,
+  pub delta: CompressedGroup,
+  pub beta: CompressedGroup,
+  pub z1: Scalar,
+  pub z2: Scalar,
 }
 
 impl DotProductProofLog {

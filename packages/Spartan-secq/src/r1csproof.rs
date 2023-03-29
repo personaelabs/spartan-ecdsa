@@ -21,26 +21,26 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct R1CSProof {
-  comm_vars: PolyCommitment,
-  sc_proof_phase1: ZKSumcheckInstanceProof,
-  claims_phase2: (
+  pub comm_vars: PolyCommitment,
+  pub sc_proof_phase1: ZKSumcheckInstanceProof,
+  pub claims_phase2: (
     CompressedGroup,
     CompressedGroup,
     CompressedGroup,
     CompressedGroup,
   ),
-  pok_claims_phase2: (KnowledgeProof, ProductProof),
-  proof_eq_sc_phase1: EqualityProof,
-  sc_proof_phase2: ZKSumcheckInstanceProof,
-  comm_vars_at_ry: CompressedGroup,
-  proof_eval_vars_at_ry: PolyEvalProof,
-  proof_eq_sc_phase2: EqualityProof,
+  pub pok_claims_phase2: (KnowledgeProof, ProductProof),
+  pub proof_eq_sc_phase1: EqualityProof,
+  pub sc_proof_phase2: ZKSumcheckInstanceProof,
+  pub comm_vars_at_ry: CompressedGroup,
+  pub proof_eval_vars_at_ry: PolyEvalProof,
+  pub proof_eq_sc_phase2: EqualityProof,
 }
 
 pub struct R1CSSumcheckGens {
-  gens_1: MultiCommitGens,
-  gens_3: MultiCommitGens,
-  gens_4: MultiCommitGens,
+  pub gens_1: MultiCommitGens,
+  pub gens_3: MultiCommitGens,
+  pub gens_4: MultiCommitGens,
 }
 
 // TODO: fix passing gens_1_ref
@@ -59,8 +59,8 @@ impl R1CSSumcheckGens {
 }
 
 pub struct R1CSGens {
-  gens_sc: R1CSSumcheckGens,
-  gens_pc: PolyCommitmentGens,
+  pub gens_sc: R1CSSumcheckGens,
+  pub gens_pc: PolyCommitmentGens,
 }
 
 impl R1CSGens {

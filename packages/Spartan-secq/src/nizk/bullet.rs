@@ -15,8 +15,8 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct BulletReductionProof {
-  L_vec: Vec<CompressedGroup>,
-  R_vec: Vec<CompressedGroup>,
+  pub L_vec: Vec<CompressedGroup>,
+  pub R_vec: Vec<CompressedGroup>,
 }
 
 impl BulletReductionProof {

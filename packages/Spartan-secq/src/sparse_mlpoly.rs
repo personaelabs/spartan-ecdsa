@@ -1559,6 +1559,7 @@ impl SparseMatPolyEvalProof {
   }
 }
 
+#[derive(Debug)]
 pub struct SparsePolyEntry {
   idx: usize,
   val: Scalar,
@@ -1609,7 +1610,7 @@ impl SparsePolynomial {
 #[cfg(test)]
 mod tests {
   use super::*;
-  use rand_core::{RngCore, OsRng};
+  use rand_core::{OsRng, RngCore};
   #[test]
   fn check_sparse_polyeval_proof() {
     let mut csprng: OsRng = OsRng;
