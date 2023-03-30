@@ -36,7 +36,7 @@ pub fn eq_eval(t: &[Fq], x: &[Fq]) -> Fq {
 /**
  * Verify a SpartanNIZK proof
  */
-pub fn verify_nizk<const N_ROUNDS_SC1: usize, const N_ROUNDS_SC2: usize>(
+pub fn verify_nizk(
     inst: &Instance,
     input: &[libspartan::scalar::Scalar],
     proof: &NIZK,
@@ -57,7 +57,10 @@ pub fn verify_nizk<const N_ROUNDS_SC1: usize, const N_ROUNDS_SC2: usize>(
         .append_to_transcript(b"poly_commitment", &mut transcript);
 
     let tau: Vec<Fq> = transcript
-        .challenge_vector(b"challenge_tau", N_ROUNDS_SC1)
+        .challenge_vector(
+            b"challenge_tau",
+            proof.r1cs_sat_proof.sc_proof_phase1.proofs.len(),
+        )
         .iter()
         .map(|tau_i| tau_i.to_circuit_val())
         .collect();
@@ -70,14 +73,14 @@ pub fn verify_nizk<const N_ROUNDS_SC1: usize, const N_ROUNDS_SC2: usize>(
     let gens_pc_1: MultiCommitGens = gens_pc_gens.gens_1.clone().into();
     let gens_pc_n: MultiCommitGens = gens_pc_gens.gens_n.clone().into();
 
-    let sc_proof_phase1: CVSumCheckProof<N_ROUNDS_SC1, 4> =
-        proof.r1cs_sat_proof.sc_proof_phase1.to_circuit_val();
+    let sc_proof_phase1: CVSumCheckProof = proof.r1cs_sat_proof.sc_proof_phase1.to_circuit_val();
 
     // The expected sum of the phase 1 sum-check is zero
     let phase1_expected_sum = Fq::zero().commit(&Fq::zero(), &gens_1);
 
     // comm_claim_post_phase1: Commitment to the claimed evaluation of the final round polynomial over rx
     let (comm_claim_post_phase1, rx) = sumcheck::verify(
+        3,
         &phase1_expected_sum,
         &sc_proof_phase1,
         &gens_1,
@@ -158,10 +161,10 @@ pub fn verify_nizk<const N_ROUNDS_SC1: usize, const N_ROUNDS_SC2: usize>(
 
     // Verify the sum-check over M(x)
 
-    let sc_proof_phase2: CVSumCheckProof<N_ROUNDS_SC2, 3> =
-        proof.r1cs_sat_proof.sc_proof_phase2.to_circuit_val();
+    let sc_proof_phase2: CVSumCheckProof = proof.r1cs_sat_proof.sc_proof_phase2.to_circuit_val();
     // comm_claim_post_phase2: Claimed evaluation of the final round polynomial over ry
     let (comm_claim_post_phase2, ry) = sumcheck::verify(
+        2,
         &comm_claim_phase2.compress().to_circuit_val(),
         &sc_proof_phase2,
         &gens_1,
@@ -187,13 +190,12 @@ pub fn verify_nizk<const N_ROUNDS_SC1: usize, const N_ROUNDS_SC2: usize>(
     let poly_eval_proof = &proof.r1cs_sat_proof.proof_eval_vars_at_ry;
     let comm_vars_at_ry = proof.r1cs_sat_proof.comm_vars_at_ry.to_circuit_val();
 
-    // TODO: Make the constants <2, 1> generics
-    poly_evaluation_proof::verify::<2, 1>(
+    poly_evaluation_proof::verify(
         &gens_pc_1,
         &gens_pc_n,
-        &ry[1..].try_into().unwrap(),
+        &ry[1..],
         &comm_vars_at_ry,
-        &comm_vars.try_into().unwrap(),
+        &comm_vars,
         &poly_eval_proof.to_circuit_val(),
         &mut transcript,
     );
@@ -299,13 +301,6 @@ mod tests {
 
         // In the phase 1 sum check com_eval uses gens_1 and dot product uses gens_4
         // com_eval uses gens_1, and dot product uses gen_3
-        const N_ROUNDS_SC1: usize = 1;
-        const N_ROUNDS_SC2: usize = 3;
-        verify_nizk::<N_ROUNDS_SC1, N_ROUNDS_SC2>(
-            &inst,
-            &assignment_inputs.assignment,
-            &proof,
-            &gens,
-        );
+        verify_nizk(&inst, &assignment_inputs.assignment, &proof, &gens);
     }
 }

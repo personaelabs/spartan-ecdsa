@@ -9,14 +9,14 @@ use libspartan::{
 };
 use secpq_curves::{group::Group, Secq256k1};
 
-pub fn verify<const N: usize>(
+pub fn verify(
     upsilon: &Secq256k1, // The upsilon calculated in this func should equal this
-    a_L: &[Fq; N],
-    a_R: &[Fq; N],
-    upsilon_L: &[Secq256k1; N],
-    upsilon_R: &[Secq256k1; N],
-    G_L: &[Secq256k1; N],
-    G_R: &[Secq256k1; N],
+    a_L: &[Fq],
+    a_R: &[Fq],
+    upsilon_L: &[Secq256k1],
+    upsilon_R: &[Secq256k1],
+    G_L: &[Secq256k1],
+    G_R: &[Secq256k1],
     transcript: &mut Transcript,
 ) -> (Secq256k1, Fq, Secq256k1) {
     // #####
@@ -24,7 +24,7 @@ pub fn verify<const N: usize>(
     // #####
 
     // Compute challenges
-    let mut challenges = Vec::with_capacity(N);
+    let mut challenges = vec![];
     for (L, R) in upsilon_L.iter().zip(upsilon_R.iter()) {
         transcript.append_point(b"L", &CompressedGroup::from_circuit_val(L));
         transcript.append_point(b"R", &CompressedGroup::from_circuit_val(R));
@@ -50,19 +50,20 @@ pub fn verify<const N: usize>(
     let mut upsilon_hat = Secq256k1::identity();
     upsilon_hat += upsilon;
 
-    for i in 0..N {
+    let n = upsilon_L.len();
+    for i in 0..n {
         upsilon_hat += upsilon_L[i] * challenges_sq[i].to_circuit_val()
             + upsilon_R[i] * challenges_inv_sq[i].to_circuit_val();
     }
 
     let mut a_hat = Fq::zero();
-    for i in 0..N {
+    for i in 0..n {
         a_hat +=
             a_L[i] * challenges_inv[i].to_circuit_val() + a_R[i] * challenges[i].to_circuit_val();
     }
 
     let mut g_hat = Secq256k1::identity();
-    for i in 0..N {
+    for i in 0..n {
         g_hat +=
             G_L[i] * challenges_inv[i].to_circuit_val() + G_R[i] * challenges[i].to_circuit_val();
     }

@@ -22,10 +22,10 @@ pub fn dot_prod(x: &[Fq], a: &[Fq]) -> Fq {
 
 // https://eprint.iacr.org/2017/1132.pdf
 // P.18, Figure 6, steps 4
-pub fn verify<const DIMENSION: usize>(
+pub fn verify(
     tau: &Secq256k1,
     a: &[Fq],
-    proof: &CVDotProdProof<DIMENSION>,
+    proof: &CVDotProdProof,
     com_poly: &Secq256k1,
     gens_1: &MultiCommitGens,
     gens_n: &MultiCommitGens,
@@ -54,14 +54,20 @@ pub fn verify<const DIMENSION: usize>(
     let lhs = (com_poly * c) + proof.delta.unwrap();
     let rhs = proof
         .z
+        .iter()
         .map(|z_i| z_i.unwrap())
+        .collect::<Vec<Fq>>()
         .commit(&proof.z_delta.unwrap(), gens_n);
 
     assert!(lhs == rhs, "dot prod verification failed (13)");
 
     // (14)
     let lhs = (tau * c) + proof.beta.unwrap();
-    let rhs = dot_prod(&proof.z.map(|z_i| z_i.unwrap()), a).commit(&proof.z_beta.unwrap(), gens_1);
+    let rhs = dot_prod(
+        &proof.z.iter().map(|z_i| z_i.unwrap()).collect::<Vec<Fq>>(),
+        a,
+    )
+    .commit(&proof.z_beta.unwrap(), gens_1);
 
     assert!(lhs == rhs, "dot prod verification failed (14)");
 }

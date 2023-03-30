@@ -22,19 +22,19 @@ fn evals(r: &[Fq]) -> Vec<Fq> {
     evals
 }
 
-pub fn verify<const N: usize, const DIMENSION: usize>(
+pub fn verify(
     gens_1: &MultiCommitGens,
     gens_n: &MultiCommitGens,
-    r: &[Fq; N],                // point at which the polynomial is evaluated
-    C_Zr: &Secq256k1,           // commitment to \widetilde{Z}(r)
-    comm_poly: &[Secq256k1; N], // commitment to the evaluations of the polynomial over the boolean hypercube
-    proof: &CVPolyEvalProof<DIMENSION>,
+    r: &[Fq],                // point at which the polynomial is evaluated
+    C_Zr: &Secq256k1,        // commitment to \widetilde{Z}(r)
+    comm_poly: &[Secq256k1], // commitment to the evaluations of the polynomial over the boolean hypercube
+    proof: &CVPolyEvalProof,
     transcript: &mut Transcript,
 ) {
     transcript.append_protocol_name(b"polynomial evaluation proof");
     // Evaluate the eq poly over the boolean hypercube bounded to r
-    let r_left = &r[0..N / 2];
-    let r_right = &r[N / 2..];
+    let r_left = &r[0..(r.len() / 2)];
+    let r_right = &r[(r.len() / 2)..];
 
     let L = evals(r_left);
     let R = evals(r_right);

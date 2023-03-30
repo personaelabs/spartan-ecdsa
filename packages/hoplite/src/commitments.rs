@@ -56,6 +56,13 @@ impl MultiCommitGens {
             h: gens[n],
         }
     }
+
+    pub fn scale(&self, s: &Fq) -> MultiCommitGens {
+        MultiCommitGens {
+            h: self.h,
+            G: (0..self.G.len()).map(|i| self.G[i] * s).collect(),
+        }
+    }
 }
 
 pub trait Commitments {
