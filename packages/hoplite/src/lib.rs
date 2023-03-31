@@ -245,34 +245,47 @@ mod tests {
 
     #[test]
     fn test_verify_nizk() {
-        // Tiny circuit
-
         // parameters of the R1CS instance
-        let num_cons = 1;
-        let num_vars = 0;
-        let num_inputs = 3;
+        let num_cons = 2;
+        let num_vars = 5;
+        let num_inputs = 0;
 
-        // We will encode the above constraints into three matrices, where
-        // the coefficients in the matrix are in the little-endian byte order
+        // The constraint
+        // x ** 2 + y = ~out
+
+        // Constraints in R1CS format
+        // sym_1 = x * x
+        // ~out = sym_1 + y
+
+        // Variables
+        // 'y', 'x', 'sym_1', '~out', '~one'
+
         let mut A: Vec<(usize, usize, [u8; 32])> = Vec::new(); // <row, column, value>
         let mut B: Vec<(usize, usize, [u8; 32])> = Vec::new();
         let mut C: Vec<(usize, usize, [u8; 32])> = Vec::new();
 
-        // Create a^2 + b + 13
-        A.push((0, num_vars + 2, Fq::one().to_bytes())); // 1*a
-        B.push((0, num_vars + 2, Fq::one().to_bytes())); // 1*a
-        C.push((0, num_vars + 1, Fq::one().to_bytes())); // 1*z
-        C.push((0, num_vars, (-Fq::from(13u64)).to_bytes())); // -13*1
-        C.push((0, num_vars + 3, (-Fq::one()).to_bytes())); // -1*b
+        let one = Fq::one().to_bytes();
 
-        // Var Assignments (Z_0 = 16 is the only output)
-        let vars = vec![Fq::zero().to_bytes(); num_vars];
+        // sym_1 = x * x
+        A.push((0, 1, one));
+        B.push((0, 1, one));
+        C.push((0, 2, one));
 
-        // create an InputsAssignment (a = 1, b = 2)
-        let mut inputs = vec![Fq::zero().to_bytes(); num_inputs];
-        inputs[0] = Fq::from(16u64).to_bytes();
-        inputs[1] = Fq::from(1u64).to_bytes();
-        inputs[2] = Fq::from(2u64).to_bytes();
+        // ~out = sym_1 + y
+        A.push((1, 0, one));
+        A.push((1, 2, one));
+        B.push((1, 4, one));
+        C.push((1, 3, one));
+
+        let vars = [
+            Fq::from(2).to_bytes(),
+            Fq::from(2).to_bytes(),
+            Fq::from(4).to_bytes(),
+            Fq::from(6).to_bytes(),
+            Fq::from(1).to_bytes(),
+        ];
+
+        let inputs = vec![];
 
         let assignment_inputs = InputsAssignment::new(&inputs).unwrap();
         let assignment_vars = VarsAssignment::new(&vars).unwrap();
