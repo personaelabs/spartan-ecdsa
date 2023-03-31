@@ -10,7 +10,7 @@ use libspartan::{
     nizk::DotProductProofLog,
     transcript::{AppendToTranscript, ProofTranscript, Transcript},
 };
-use secpq_curves::Secq256k1;
+use secpq_curves::{group::Curve, Secq256k1};
 
 // https://eprint.iacr.org/2017/1132.pdf
 // P.19 proof_log-of-dot-prod
@@ -41,13 +41,6 @@ pub fn verify(
     // Upsilon
     let Gamma = Cx + Cy * r;
 
-    let nn = a.len() / 2;
-    let a_L = &a[0..nn];
-    let a_R = &a[nn..];
-
-    let G_L = &gens_n.G[0..nn];
-    let G_R = &gens_n.G[nn..];
-
     let L_vec = proof
         .bullet_reduction_proof
         .L_vec
@@ -61,13 +54,13 @@ pub fn verify(
         .bullet_reduction_proof
         .R_vec
         .iter()
-        .map(|L_i| L_i.unwrap())
+        .map(|R_i| R_i.unwrap())
         .collect::<Vec<Secq256k1>>();
 
     let upsilon_R = R_vec.as_slice();
 
     let (Gamma_hat, a_hat, g_hat) =
-        proof_bullet_reduce::verify(&Gamma, a_L, a_R, upsilon_L, upsilon_R, G_L, G_R, transcript);
+        proof_bullet_reduce::verify(&Gamma, &a, &gens_n.G, upsilon_L, upsilon_R, transcript);
 
     CompressedGroup::from_circuit_val(&proof.delta.unwrap())
         .append_to_transcript(b"delta", transcript);

@@ -7,16 +7,17 @@ use libspartan::{
     scalar::Scalar,
     transcript::{ProofTranscript, Transcript},
 };
-use secpq_curves::{group::Group, Secq256k1};
+use secpq_curves::{
+    group::{Curve, Group},
+    Secq256k1,
+};
 
 pub fn verify(
     upsilon: &Secq256k1, // The upsilon calculated in this func should equal this
-    a_L: &[Fq],
-    a_R: &[Fq],
+    a: &[Fq],
+    G: &[Secq256k1],
     upsilon_L: &[Secq256k1],
     upsilon_R: &[Secq256k1],
-    G_L: &[Secq256k1],
-    G_R: &[Secq256k1],
     transcript: &mut Transcript,
 ) -> (Secq256k1, Fq, Secq256k1) {
     // #####
@@ -56,17 +57,29 @@ pub fn verify(
             + upsilon_R[i] * challenges_inv_sq[i].to_circuit_val();
     }
 
-    let mut a_hat = Fq::zero();
-    for i in 0..n {
-        a_hat +=
-            a_L[i] * challenges_inv[i].to_circuit_val() + a_R[i] * challenges[i].to_circuit_val();
+    let mut a = &mut a.to_owned()[..];
+    let mut G = &mut G.to_owned()[..];
+
+    let mut n = G.len();
+    while n != 1 {
+        n /= 2;
+        let (a_L, a_R) = a.split_at_mut(n);
+        let (G_L, G_R) = G.split_at_mut(n);
+
+        for i in 0..n {
+            let u = challenges[challenges.len() - n / 2 - 1];
+            let u_inv = challenges_inv[challenges.len() - n / 2 - 1];
+            a_L[i] = a_L[i] * u_inv.to_circuit_val() + a_R[i] * u.to_circuit_val();
+
+            G_L[i] = G_L[i] * u_inv.to_circuit_val() + G_R[i] * u.to_circuit_val();
+        }
+
+        a = a_L;
+        G = G_L;
     }
 
-    let mut g_hat = Secq256k1::identity();
-    for i in 0..n {
-        g_hat +=
-            G_L[i] * challenges_inv[i].to_circuit_val() + G_R[i] * challenges[i].to_circuit_val();
-    }
+    let a_hat = a[0];
+    let g_hat = G[0];
 
     (upsilon_hat, a_hat, g_hat)
 }
