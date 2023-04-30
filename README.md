@@ -53,7 +53,15 @@ yarn add @personaelabs/spartan-ecdsa
 
 v18 or later
 
-### Install dependencies & Build all packages
+### Build
+1. Install Circom with secq256k1 support
+
+```
+git clone https://github.com/DanTehrani/circom-secq
+cd circom-secq && cargo build --release && cargo install --path circom
+```
+
+2. Install dependencies & Build all packages
 
 ```jsx
 yarn && yarn build
