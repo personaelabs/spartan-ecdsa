@@ -84,14 +84,14 @@ pub fn verify(circuit: &[u8], proof: &[u8], public_input: &[u8]) -> Result<bool,
 
 #[wasm_bindgen]
 pub fn poseidon(input_bytes: &[u8]) -> Result<Vec<u8>, JsValue> {
-    let mut input = Vec::new();
-    for i in 0..(input_bytes.len() / 32) {
-        let f: [u8; 32] = input_bytes[(i * 32)..(i + 1) * 32].try_into().unwrap();
-        let val = FieldElement::from_bytes(&f).unwrap();
-        input.push(FieldElement::from(val));
-    }
+    assert_eq!(input_bytes.len(), 64);
 
-    let result = hash(input);
+    let input = [
+        FieldElement::from_bytes(&input_bytes[0..32].try_into().unwrap()).unwrap(),
+        FieldElement::from_bytes(&input_bytes[32..64].try_into().unwrap()).unwrap(),
+    ];
+
+    let result = hash(&input);
 
     Ok(result.to_bytes().to_vec())
 }

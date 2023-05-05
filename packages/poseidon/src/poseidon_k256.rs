@@ -3,7 +3,7 @@ use ff::PrimeField;
 pub use secq256k1::field::field_secp::FieldElement;
 
 #[allow(dead_code)]
-pub fn hash(input: Vec<FieldElement>) -> FieldElement {
+pub fn hash(input: &[FieldElement; 2]) -> FieldElement {
     let round_constants: Vec<FieldElement> = k256_consts::ROUND_CONSTANTS
         .iter()
         .map(|x| FieldElement::from_str_vartime(x).unwrap())
