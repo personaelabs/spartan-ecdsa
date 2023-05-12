@@ -2057,6 +2057,14 @@
     node-addon-api "^3.2.1"
     node-gyp-build "^4.3.0"
 
+"@personaelabs/spartan-ecdsa@file:./packages/lib":
+  version "2.1.2"
+  dependencies:
+    "@ethereumjs/util" "^8.0.3"
+    "@zk-kit/incremental-merkle-tree" "^1.0.0"
+    elliptic "^6.5.4"
+    snarkjs "^0.5.0"
+
 "@phenomnomnominal/tsquery@4.1.1":
   version "4.1.1"
   resolved "https://registry.npmjs.org/@phenomnomnominal/tsquery/-/tsquery-4.1.1.tgz"

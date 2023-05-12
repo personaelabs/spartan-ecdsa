@@ -399,18 +399,23 @@ function finalizeInit(instance, module) {
     return wasm;
 }
 
-function initSync(module, maybe_memory) {
-    const imports = getImports();
+async function initSync(module, maybe_memory) {
+    if (!wasm) {
+        const imports = getImports();
 
-    initMemory(imports, maybe_memory);
-
-    if (!(module instanceof WebAssembly.Module)) {
-        module = new WebAssembly.Module(module);
+        initMemory(imports, maybe_memory);
+    
+        /*
+        if (!(module instanceof WebAssembly.Module)) {
+            module = new WebAssembly.Module(module);
+        }
+        */
+       const compiled = WebAssembly.compile(module);
+    
+        const instance = await WebAssembly.instantiate(await compiled, imports);
+    
+        return finalizeInit(instance, module);
     }
-
-    const instance = new WebAssembly.Instance(module, imports);
-
-    return finalizeInit(instance, module);
 }
 
 async function init(input, maybe_memory) {

@@ -8,7 +8,7 @@
   },
   "dependencies": {
     "@ethereumjs/util": "^8.0.3",
-    "@personaelabs/spartan-ecdsa": "*"
+    "@personaelabs/spartan-ecdsa": "file:./../../lib"
   },
   "devDependencies": {
     "ts-node": "^10.9.1",
