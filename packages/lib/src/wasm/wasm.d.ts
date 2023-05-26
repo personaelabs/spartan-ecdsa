@@ -26,18 +26,16 @@ export function poseidon(input_bytes: Uint8Array): Uint8Array;
 export type InitInput = RequestInfo | URL | Response | BufferSource | WebAssembly.Module;
 
 export interface InitOutput {
+  readonly memory: WebAssembly.Memory;
   readonly prove: (a: number, b: number, c: number, d: number, e: number, f: number, g: number) => void;
   readonly verify: (a: number, b: number, c: number, d: number, e: number, f: number, g: number) => void;
   readonly poseidon: (a: number, b: number, c: number) => void;
   readonly init_panic_hook: () => void;
-  readonly memory: WebAssembly.Memory;
   readonly __wbindgen_add_to_stack_pointer: (a: number) => number;
   readonly __wbindgen_malloc: (a: number) => number;
   readonly __wbindgen_free: (a: number, b: number) => void;
   readonly __wbindgen_exn_store: (a: number) => void;
   readonly __wbindgen_realloc: (a: number, b: number, c: number) => number;
-  readonly __wbindgen_thread_destroy: (a: number, b: number) => void;
-  readonly __wbindgen_start: () => void;
 }
 
 export type SyncInitInput = BufferSource | WebAssembly.Module;
@@ -46,12 +44,10 @@ export type SyncInitInput = BufferSource | WebAssembly.Module;
 * a precompiled `WebAssembly.Module`.
 *
 * @param {SyncInitInput} module
-* @param {WebAssembly.Memory} maybe_memory
 *
 * @returns {InitOutput}
 */
-export function initSync(module: SyncInitInput, maybe_memory?: WebAssembly.Memory): InitOutput;
-
+export function initSync(module: SyncInitInput): InitOutput;
 /**
 * If `module_or_path` is {RequestInfo} or {URL}, makes a request and
 * for everything else, calls `WebAssembly.instantiate` directly.
