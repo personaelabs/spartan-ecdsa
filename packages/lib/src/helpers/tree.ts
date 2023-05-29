@@ -1,7 +1,6 @@
 import { IncrementalMerkleTree } from "@zk-kit/incremental-merkle-tree";
 import { Poseidon } from "./poseidon";
 import { MerkleProof } from "../types";
-import { bytesToBigInt } from "./utils";
 
 export class Tree {
   depth: number;
@@ -38,17 +37,14 @@ export class Tree {
 
   createProof(index: number): MerkleProof {
     const proof = this.treeInner.createProof(index);
-
-    const siblings = proof.siblings.map(s =>
-      typeof s[0] === "bigint" ? s : bytesToBigInt(s[0])
-    );
-
     return {
-      siblings,
+      siblings: proof.siblings,
       pathIndices: proof.pathIndices,
       root: proof.root
     };
   }
 
-  // TODO: Add more functions that expose the IncrementalMerkleTree API
+  verifyProof(proof: MerkleProof, leaf: bigint): boolean {
+    return this.treeInner.verifyProof({ ...proof, leaf });
+  }
 }

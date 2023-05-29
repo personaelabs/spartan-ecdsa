@@ -5,7 +5,7 @@ import { PublicInput } from "./helpers/public_input";
 // library users can choose whatever merkle tree management method they want.
 export interface MerkleProof {
   root: bigint;
-  siblings: bigint[];
+  siblings: [bigint][];
   pathIndices: number[];
 }
 export interface EffECDSAPubInput {
