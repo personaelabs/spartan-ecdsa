@@ -61,7 +61,9 @@ git clone https://github.com/DanTehrani/circom-secq
 cd circom-secq && cargo build --release && cargo install --path circom
 ```
 
-2. Install dependencies & Build all packages
+2. Install [wasm-pack](https://rustwasm.github.io/wasm-pack/installer/)
+
+4. Install dependencies & Build all packages
 
 ```jsx
 yarn && yarn build
