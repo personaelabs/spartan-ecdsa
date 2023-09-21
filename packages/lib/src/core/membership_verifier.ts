@@ -13,6 +13,7 @@ import { PublicInput, verifyEffEcdsaPubInput } from "../helpers/public_input";
  */
 export class MembershipVerifier extends Profiler implements IVerifier {
   circuit: string;
+  useRemoteCircuit: boolean;
 
   constructor(options: VerifyConfig) {
     super({ enabled: options?.enableProfiler });
@@ -30,6 +31,8 @@ export class MembershipVerifier extends Profiler implements IVerifier {
     }
 
     this.circuit = options.circuit;
+    this.useRemoteCircuit =
+      options.useRemoteCircuit ?? typeof window !== "undefined";
   }
 
   async initWasm() {
@@ -41,7 +44,7 @@ export class MembershipVerifier extends Profiler implements IVerifier {
     publicInputSer: Uint8Array
   ): Promise<boolean> {
     this.time("Load circuit");
-    const circuitBin = await loadCircuit(this.circuit);
+    const circuitBin = await loadCircuit(this.circuit, this.useRemoteCircuit);
     this.timeEnd("Load circuit");
 
     this.time("Verify public input");

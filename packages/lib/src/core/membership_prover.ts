@@ -90,7 +90,8 @@ export class MembershipProver extends Profiler implements IProver {
     this.timeEnd("Generate witness");
 
     this.time("Load circuit");
-    const circuitBin = await loadCircuit(this.circuit);
+    const useRemoteCircuit = typeof window !== "undefined";
+    const circuitBin = await loadCircuit(this.circuit, useRemoteCircuit);
     this.timeEnd("Load circuit");
 
     // Get the public input in bytes

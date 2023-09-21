@@ -29,6 +29,7 @@ export interface ProverConfig {
 export interface VerifyConfig {
   circuit: string; // Path to circuit file compiled by Nova-Scotia
   enableProfiler?: boolean;
+  useRemoteCircuit?: boolean;
 }
 
 export interface IProver {
