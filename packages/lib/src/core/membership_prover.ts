@@ -18,6 +18,7 @@ import {
 export class MembershipProver extends Profiler implements IProver {
   circuit: string;
   witnessGenWasm: string;
+  useRemoteCircuit: boolean;
 
   constructor(options: ProverConfig) {
     super({ enabled: options?.enableProfiler });
@@ -37,21 +38,9 @@ export class MembershipProver extends Profiler implements IProver {
       `);
     }
 
-    const isNode = typeof window === "undefined";
-    if (isNode) {
-      if (
-        options.circuit.includes("http") ||
-        options.witnessGenWasm.includes("http")
-      ) {
-        throw new Error(
-          `An URL was given for circuit/witnessGenWasm in Node.js environment. Please specify a local path.
-          `
-        );
-      }
-    }
-
     this.circuit = options.circuit;
     this.witnessGenWasm = options.witnessGenWasm;
+    this.useRemoteCircuit = options.useRemoteCircuit ?? false;
   }
 
   async initWasm() {
@@ -90,7 +79,8 @@ export class MembershipProver extends Profiler implements IProver {
     this.timeEnd("Generate witness");
 
     this.time("Load circuit");
-    const useRemoteCircuit = typeof window !== "undefined";
+    const useRemoteCircuit =
+      this.useRemoteCircuit ?? typeof window !== "undefined";
     const circuitBin = await loadCircuit(this.circuit, useRemoteCircuit);
     this.timeEnd("Load circuit");
 

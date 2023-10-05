@@ -24,6 +24,7 @@ export interface ProverConfig {
   witnessGenWasm: string;
   circuit: string;
   enableProfiler?: boolean;
+  useRemoteCircuit?: boolean;
 }
 
 export interface VerifyConfig {
