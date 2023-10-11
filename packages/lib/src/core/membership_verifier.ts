@@ -32,7 +32,7 @@ export class MembershipVerifier extends Profiler implements IVerifier {
 
     this.circuit = options.circuit;
     this.useRemoteCircuit =
-      options.useRemoteCircuit ?? typeof window !== "undefined";
+      options.useRemoteCircuit || typeof window !== "undefined";
   }
 
   async initWasm() {

@@ -80,7 +80,7 @@ export class MembershipProver extends Profiler implements IProver {
 
     this.time("Load circuit");
     const useRemoteCircuit =
-      this.useRemoteCircuit ?? typeof window !== "undefined";
+      this.useRemoteCircuit || typeof window !== "undefined";
     const circuitBin = await loadCircuit(this.circuit, useRemoteCircuit);
     this.timeEnd("Load circuit");
 
