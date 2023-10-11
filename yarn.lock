@@ -2058,12 +2058,12 @@
     node-gyp-build "^4.3.0"
 
 "@personaelabs/spartan-ecdsa@file:./packages/lib":
-  version "2.1.2"
+  version "2.3.0"
   dependencies:
     "@ethereumjs/util" "^8.0.3"
     "@zk-kit/incremental-merkle-tree" "^1.0.0"
     elliptic "^6.5.4"
-    snarkjs "^0.5.0"
+    snarkjs "^0.7.1"
 
 "@phenomnomnominal/tsquery@4.1.1":
   version "4.1.1"
@@ -3143,6 +3143,13 @@ circom_runtime@0.1.21:
   integrity sha512-qTkud630B/GK8y76hnOaaS1aNuF6prfV0dTrkeRsiJKnlP1ryQbP2FWLgDOPqn6aKyaPlam+Z+DTbBhkEzh8dA==
   dependencies:
     ffjavascript "0.2.56"
+
+circom_runtime@0.1.24:
+  version "0.1.24"
+  resolved "https://registry.yarnpkg.com/circom_runtime/-/circom_runtime-0.1.24.tgz#60ca8a31c3675802fbab5a0bcdeb02556e510733"
+  integrity sha512-H7/7I2J/cBmRnZm9docOCGhfxzS61BEm4TMCWcrZGsWNBQhePNfQq88Oj2XpUfzmBTCd8pRvRb3Mvazt3TMrJw==
+  dependencies:
+    ffjavascript "0.2.60"
 
 circom_tester@^0.0.19:
   version "0.0.19"
@@ -4306,6 +4313,15 @@ ffjavascript@0.2.56:
   dependencies:
     wasmbuilder "0.0.16"
     wasmcurves "0.2.0"
+    web-worker "^1.2.0"
+
+ffjavascript@0.2.60:
+  version "0.2.60"
+  resolved "https://registry.yarnpkg.com/ffjavascript/-/ffjavascript-0.2.60.tgz#4d8ae613d6bf4e98b3cc29ba10c626f5853854cf"
+  integrity sha512-T/9bnEL5xAZRDbQoEMf+pM9nrhK+C3JyZNmqiWub26EQorW7Jt+jR54gpqDhceA4Nj0YctPQwYnl8xa52/A26A==
+  dependencies:
+    wasmbuilder "0.0.16"
+    wasmcurves "0.2.2"
     web-worker "^1.2.0"
 
 ffjavascript@^0.2.45, ffjavascript@^0.2.48, ffjavascript@^0.2.56, ffjavascript@^0.2.57:
@@ -7078,6 +7094,16 @@ r1csfile@0.0.41, r1csfile@^0.0.41:
     fastfile "0.0.20"
     ffjavascript "0.2.56"
 
+r1csfile@0.0.47:
+  version "0.0.47"
+  resolved "https://registry.yarnpkg.com/r1csfile/-/r1csfile-0.0.47.tgz#ed95a0dc8e910e9c070253906f7a31bd8c5333c8"
+  integrity sha512-oI4mAwuh1WwuFg95eJDNDDL8hCaZkwnPuNZrQdLBWvDoRU7EG+L/MOHL7SwPW2Y+ZuYcTLpj3rBkgllBQZN/JA==
+  dependencies:
+    "@iden3/bigarray" "0.0.2"
+    "@iden3/binfileutils" "0.0.11"
+    fastfile "0.0.20"
+    ffjavascript "0.2.60"
+
 react-dom@18.2.0:
   version "18.2.0"
   resolved "https://registry.npmjs.org/react-dom/-/react-dom-18.2.0.tgz"
@@ -7454,7 +7480,7 @@ smart-buffer@^4.2.0:
   resolved "https://registry.npmjs.org/smart-buffer/-/smart-buffer-4.2.0.tgz"
   integrity sha512-94hK0Hh8rPqQl2xXc3HsaBoOXKV20MToPkcXvwbISWLEs+64sBq5kFgn2kJDHb1Pry9yrP0dxrCI9RRci7RXKg==
 
-snarkjs@0.5.0, snarkjs@^0.5.0:
+snarkjs@0.5.0:
   version "0.5.0"
   resolved "https://registry.npmjs.org/snarkjs/-/snarkjs-0.5.0.tgz"
   integrity sha512-KWz8mZ2Y+6wvn6GGkQo6/ZlKwETdAGohd40Lzpwp5TUZCn6N6O4Az1SuX1rw/qREGL6Im+ycb19suCFE8/xaKA==
@@ -7469,6 +7495,22 @@ snarkjs@0.5.0, snarkjs@^0.5.0:
     js-sha3 "^0.8.0"
     logplease "^1.2.15"
     r1csfile "0.0.41"
+
+snarkjs@^0.7.1:
+  version "0.7.1"
+  resolved "https://registry.yarnpkg.com/snarkjs/-/snarkjs-0.7.1.tgz#c96ecaf4db8c2eb44d60b17ee02f37ed39c821bb"
+  integrity sha512-Qs1oxssa135WZkzfARgEp5SuKHKvKNtcspeJbE5je6MurUpBylD1rzcAzQSTGWA/EH/BV/TmUyTaTD64xScvbA==
+  dependencies:
+    "@iden3/binfileutils" "0.0.11"
+    bfj "^7.0.2"
+    blake2b-wasm "^2.4.0"
+    circom_runtime "0.1.24"
+    ejs "^3.1.6"
+    fastfile "0.0.20"
+    ffjavascript "0.2.60"
+    js-sha3 "^0.8.0"
+    logplease "^1.2.15"
+    r1csfile "0.0.47"
 
 socks-proxy-agent@^7.0.0:
   version "7.0.0"
@@ -8138,6 +8180,13 @@ wasmcurves@0.2.0:
   version "0.2.0"
   resolved "https://registry.npmjs.org/wasmcurves/-/wasmcurves-0.2.0.tgz"
   integrity sha512-3e2rbxdujOwaod657gxgmdhZNn+i1qKdHO3Y/bK+8E7bV8ttV/fu5FO4/WLBACF375cK0QDLOP+65Na63qYuWA==
+  dependencies:
+    wasmbuilder "0.0.16"
+
+wasmcurves@0.2.2:
+  version "0.2.2"
+  resolved "https://registry.yarnpkg.com/wasmcurves/-/wasmcurves-0.2.2.tgz#ca444f6a6f6e2a5cbe6629d98ff478a62b4ccb2b"
+  integrity sha512-JRY908NkmKjFl4ytnTu5ED6AwPD+8VJ9oc94kdq7h5bIwbj0L4TDJ69mG+2aLs2SoCmGfqIesMWTEJjtYsoQXQ==
   dependencies:
     wasmbuilder "0.0.16"
 
