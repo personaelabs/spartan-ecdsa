@@ -5,7 +5,7 @@ import {
 import { Profiler } from "../helpers/profiler";
 import { loadCircuit } from "../helpers/utils";
 import { IVerifier, VerifyConfig } from "../types";
-import wasm, { init } from "../wasm";
+import { init, wasm } from "../wasm";
 import { PublicInput, verifyEffEcdsaPubInput } from "../helpers/public_input";
 
 /**

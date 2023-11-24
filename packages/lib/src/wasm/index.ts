@@ -7,4 +7,4 @@ export const init = async () => {
   wasm.init_panic_hook();
 };
 
-export default wasm;
+export { wasm };

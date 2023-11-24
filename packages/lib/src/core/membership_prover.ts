@@ -6,7 +6,7 @@ import {
   computeEffEcdsaPubInput,
   CircuitPubInput
 } from "../helpers/public_input";
-import wasm, { init } from "../wasm";
+import { init, wasm } from "../wasm";
 import {
   defaultPubkeyMembershipPConfig,
   defaultAddressMembershipPConfig
