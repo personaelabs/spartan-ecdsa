@@ -23,6 +23,7 @@ circom_witness.wtns
 *.ptau
 
 build/
+dist/
 
 *.r1cs
 *.sym
@@ -33,7 +34,7 @@ packages/prover/test_circuit/test_circuit_js/
 packages/prover/test_circuit/*.json 
 
 
-wasm_bytes.ts
+wasmBytes.ts
 **/sage/*.sage.py
 packages/lib/src/circuits/
 

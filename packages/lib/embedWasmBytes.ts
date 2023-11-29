@@ -12,7 +12,7 @@ const embedWasmBytes = async () => {
     export const wasmBytes = new Uint8Array([${bytes.toString()}]);
   `;
 
-  fs.writeFileSync("./src/wasm/wasm_bytes.ts", file);
+  fs.writeFileSync("./src/wasm/wasmBytes.ts", file);
 };
 
 embedWasmBytes();

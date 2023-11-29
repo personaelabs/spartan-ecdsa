@@ -1,17 +1,32 @@
 {
   "name": "@personaelabs/spartan-ecdsa",
   "version": "2.3.1",
-  "main": "./build/lib.js",
-  "types": "./build/lib.d.ts",
+  "description": "Spartan-ecdsa (which to our knowledge) is the fastest open-source method to verify ECDSA (secp256k1) signatures in zero-knowledge.",
+  "keywords": [
+    "spartan",
+    "spartan-ecdsa",
+    "zk",
+    "efficient-ecdsa"
+  ],
+  "author": "Personae Labs",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/personaelabs/spartan-ecdsa/issues/new"
+  },
+  "homepage": "https://github.com/personaelabs/spartan-ecdsa",
+  "publishConfig": {
+    "access": "public"
+  },
   "files": [
-    "build/**/*"
+    "dist/**/*"
   ],
   "scripts": {
-    "build": "rm -rf ./build && yarn embedWasmBytes && tsc",
+    "build": "rm -rf ./dist && yarn embedWasmBytes && tsc",
     "prepublishOnly": "yarn build",
     "prepare": "yarn embedWasmBytes",
-    "embedWasmBytes": "ts-node ./embed_wasm_bytes.ts",
+    "embedWasmBytes": "ts-node ./embedWasmBytes.ts",
     "test": "jest"
   },
   "devDependencies": {

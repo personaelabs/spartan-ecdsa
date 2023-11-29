@@ -1,18 +1,19 @@
 import {
-  MembershipProver,
-  MembershipVerifier,
-  Tree,
-  Poseidon,
-  NIZK
-} from "../src/lib";
-import {
   hashPersonalMessage,
   ecsign,
   privateToAddress,
   privateToPublic
 } from "@ethereumjs/util";
-var EC = require("elliptic").ec;
+
 import * as path from "path";
+
+import {
+  MembershipProver,
+  MembershipVerifier,
+  Tree,
+  Poseidon,
+  NIZK
+} from "../src";
 
 describe("membership prove and verify", () => {
   // Init prover
@@ -25,7 +26,6 @@ describe("membership prove and verify", () => {
   // Sign (Use privKeys[0] for proving)
   const proverIndex = 0;
   const proverPrivKey = privKeys[proverIndex];
-  let proverAddress: bigint;
 
   let msg = Buffer.from("harry potter");
   const msgHash = hashPersonalMessage(msg);
@@ -84,7 +84,7 @@ describe("membership prove and verify", () => {
       const index = pubKeyTree.indexOf(proverPubKeyHash as bigint);
       const merkleProof = pubKeyTree.createProof(index);
 
-      nizk = await pubKeyMembershipProver.prove(sig, msgHash, merkleProof);
+      nizk = await pubKeyMembershipProver.prove({ sig, msgHash, merkleProof });
 
       const { proof, publicInput } = nizk;
       expect(
@@ -154,7 +154,7 @@ describe("membership prove and verify", () => {
 
       await addressMembershipProver.initWasm();
 
-      nizk = await addressMembershipProver.prove(sig, msgHash, merkleProof);
+      nizk = await addressMembershipProver.prove({ sig, msgHash, merkleProof });
       await addressMembershipVerifier.initWasm();
 
       expect(

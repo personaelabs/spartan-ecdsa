@@ -1,16 +1,16 @@
-import { Profiler } from "../helpers/profiler";
-import { IProver, MerkleProof, NIZK, ProverConfig } from "../types";
-import { loadCircuit, fromSig, snarkJsWitnessGen } from "../helpers/utils";
+import { Profiler } from "@src/helpers/profiler";
+import { IProver, MerkleProof, NIZK, ProveArgs, ProverConfig } from "@src/types";
+import { loadCircuit, fromSig, snarkJsWitnessGen } from "@src/helpers/utils";
 import {
   PublicInput,
   computeEffEcdsaPubInput,
   CircuitPubInput
-} from "../helpers/public_input";
-import { init, wasm } from "../wasm";
+} from "@src/helpers/publicInputs";
+import { init, wasm } from "@src/wasm";
 import {
-  defaultPubkeyMembershipPConfig,
-  defaultAddressMembershipPConfig
-} from "../config";
+  defaultPubkeyProverConfig,
+  defaultAddressProverConfig
+} from "@src/config";
 
 /**
  * ECDSA Membership Prover
@@ -20,15 +20,20 @@ export class MembershipProver extends Profiler implements IProver {
   witnessGenWasm: string;
   useRemoteCircuit: boolean;
 
-  constructor(options: ProverConfig) {
-    super({ enabled: options?.enableProfiler });
+  constructor({
+    enableProfiler,
+    circuit,
+    witnessGenWasm,
+    useRemoteCircuit
+  }: ProverConfig) {
+    super({ enabled: enableProfiler });
 
     if (
-      options.circuit === defaultPubkeyMembershipPConfig.circuit ||
-      options.witnessGenWasm ===
-        defaultPubkeyMembershipPConfig.witnessGenWasm ||
-      options.circuit === defaultAddressMembershipPConfig.circuit ||
-      options.witnessGenWasm === defaultAddressMembershipPConfig.witnessGenWasm
+      circuit === defaultPubkeyProverConfig.circuit ||
+      witnessGenWasm ===
+      defaultPubkeyProverConfig.witnessGenWasm ||
+      circuit === defaultAddressProverConfig.circuit ||
+      witnessGenWasm === defaultAddressProverConfig.witnessGenWasm
     ) {
       console.warn(`
       Spartan-ecdsa default config warning:
@@ -38,21 +43,16 @@ export class MembershipProver extends Profiler implements IProver {
       `);
     }
 
-    this.circuit = options.circuit;
-    this.witnessGenWasm = options.witnessGenWasm;
-    this.useRemoteCircuit = options.useRemoteCircuit ?? false;
+    this.circuit = circuit;
+    this.witnessGenWasm = witnessGenWasm;
+    this.useRemoteCircuit = useRemoteCircuit ?? false;
   }
 
   async initWasm() {
     await init();
   }
 
-  // @ts-ignore
-  async prove(
-    sig: string,
-    msgHash: Buffer,
-    merkleProof: MerkleProof
-  ): Promise<NIZK> {
+  async prove({ sig, msgHash, merkleProof }: ProveArgs): Promise<NIZK> {
     const { r, s, v } = fromSig(sig);
 
     const effEcdsaPubInput = computeEffEcdsaPubInput(r, v, msgHash);
