@@ -3,7 +3,7 @@ module.exports = {
   preset: 'ts-jest',
   testEnvironment: 'node',
   transform: {
-    "^.+\\.(ts|js)$$": ["ts-jest", { tsconfig: "<rootDir>/tsconfig.tests.json" }]
+    "^.+\\.(ts|js)?$": "ts-jest"
   },
   moduleNameMapper: {
     "@src/(.*)$": "<rootDir>/src/$1",

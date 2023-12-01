@@ -21,11 +21,11 @@
   "include": [
     "./src/**/*",
     "./src/**/*.wasm",
+    "./tests/**/*"
   ],
   "exclude": [
     "./jest.config.js",
     "./node_modules",
-    "./tests",
     "./dist"
   ],
 }

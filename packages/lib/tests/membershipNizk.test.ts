@@ -88,7 +88,10 @@ describe("membership prove and verify", () => {
 
       const { proof, publicInput } = nizk;
       expect(
-        await pubKeyMembershipVerifier.verify(proof, publicInput.serialize())
+        await pubKeyMembershipVerifier.verify({
+          proof,
+          publicInputSer: publicInput.serialize()
+        })
       ).toBe(true);
     });
 
@@ -97,17 +100,23 @@ describe("membership prove and verify", () => {
       let proof = nizk.proof;
       proof[0] = proof[0] += 1;
       expect(
-        await pubKeyMembershipVerifier.verify(proof, publicInput.serialize())
+        await pubKeyMembershipVerifier.verify({
+          proof,
+          publicInputSer: publicInput.serialize()
+        })
       ).toBe(false);
     });
 
     it("should assert invalid public input", async () => {
       const { proof } = nizk;
-      let publicInput = nizk.publicInput.serialize();
-      publicInput[0] = publicInput[0] += 1;
-      expect(await pubKeyMembershipVerifier.verify(proof, publicInput)).toBe(
-        false
-      );
+      let publicInputSer = nizk.publicInput.serialize();
+      publicInputSer[0] = publicInputSer[0] += 1;
+      expect(
+        await pubKeyMembershipVerifier.verify({
+          proof,
+          publicInputSer
+        })
+      ).toBe(false);
     });
   });
 
@@ -158,10 +167,10 @@ describe("membership prove and verify", () => {
       await addressMembershipVerifier.initWasm();
 
       expect(
-        await addressMembershipVerifier.verify(
-          nizk.proof,
-          nizk.publicInput.serialize()
-        )
+        await addressMembershipVerifier.verify({
+          proof: nizk.proof,
+          publicInputSer: nizk.publicInput.serialize()
+        })
       ).toBe(true);
     });
 
@@ -170,17 +179,23 @@ describe("membership prove and verify", () => {
       let proof = nizk.proof;
       proof[0] = proof[0] += 1;
       expect(
-        await addressMembershipVerifier.verify(proof, publicInput.serialize())
+        await addressMembershipVerifier.verify({
+          proof,
+          publicInputSer: publicInput.serialize()
+        })
       ).toBe(false);
     });
 
     it("should assert invalid public input", async () => {
       const { proof } = nizk;
-      let publicInput = nizk.publicInput.serialize();
-      publicInput[0] = publicInput[0] += 1;
-      expect(await addressMembershipVerifier.verify(proof, publicInput)).toBe(
-        false
-      );
+      let publicInputSer = nizk.publicInput.serialize();
+      publicInputSer[0] = publicInputSer[0] += 1;
+      expect(
+        await addressMembershipVerifier.verify({
+          proof,
+          publicInputSer
+        })
+      ).toBe(false);
     });
   });
 });
