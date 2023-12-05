@@ -1,25 +1,31 @@
 {
+  "compilerOptions": {
+    "baseUrl": ".",
+    "rootDir": ".",
+    "outDir": "./dist",
+    "declaration": true,
+    "target": "ES6",
+    "module": "CommonJS",
+    "moduleResolution": "node",
+    "allowJs": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "strict": true,
+    "skipLibCheck": true,
+    "paths": {
+      "@src/*": [
+        "src/*"
+      ]
+    },
+  },
   "include": [
     "./src/**/*",
     "./src/**/*.wasm",
+    "./tests/**/*"
   ],
   "exclude": [
     "./jest.config.js",
     "./node_modules",
-    "./tests",
-      "./build"
+    "./dist"
   ],
-  "compilerOptions": {
-    "declaration": true,
-    "target": "ES6",                           
-    "module": "CommonJS",                               
-    "rootDir": "./src",                                
-    "moduleResolution": "node",                     
-    "allowJs": true,                                 
-    "outDir": "./build",                
-    "esModuleInterop": true,                            
-    "forceConsistentCasingInFileNames": true,      
-    "strict": true,                                  
-    "skipLibCheck": true         
-  }
 }

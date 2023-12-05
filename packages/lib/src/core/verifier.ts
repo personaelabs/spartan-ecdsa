@@ -1,12 +1,12 @@
 import {
-  defaultAddressMembershipVConfig,
-  defaultPubkeyMembershipVConfig
-} from "../config";
-import { Profiler } from "../helpers/profiler";
-import { loadCircuit } from "../helpers/utils";
-import { IVerifier, VerifyConfig } from "../types";
-import { init, wasm } from "../wasm";
-import { PublicInput, verifyEffEcdsaPubInput } from "../helpers/public_input";
+  defaultAddressVerifierConfig,
+  defaultPubkeyVerifierConfig
+} from "@src/config";
+import { Profiler } from "@src/helpers/profiler";
+import { loadCircuit } from "@src/helpers/utils";
+import { IVerifier, VerifyArgs, VerifyConfig } from "@src/types";
+import { init, wasm } from "@src/wasm";
+import { PublicInput, verifyEffEcdsaPubInput } from "@src/helpers/publicInputs";
 
 /**
  * ECDSA Membership Verifier
@@ -15,12 +15,16 @@ export class MembershipVerifier extends Profiler implements IVerifier {
   circuit: string;
   useRemoteCircuit: boolean;
 
-  constructor(options: VerifyConfig) {
-    super({ enabled: options?.enableProfiler });
+  constructor({
+    circuit,
+    enableProfiler,
+    useRemoteCircuit
+  }: VerifyConfig) {
+    super({ enabled: enableProfiler });
 
     if (
-      options.circuit === defaultAddressMembershipVConfig.circuit ||
-      options.circuit === defaultPubkeyMembershipVConfig.circuit
+      circuit === defaultAddressVerifierConfig.circuit ||
+      circuit === defaultPubkeyVerifierConfig.circuit
     ) {
       console.warn(`
       Spartan-ecdsa default config warning:
@@ -30,19 +34,16 @@ export class MembershipVerifier extends Profiler implements IVerifier {
       `);
     }
 
-    this.circuit = options.circuit;
+    this.circuit = circuit;
     this.useRemoteCircuit =
-      options.useRemoteCircuit || typeof window !== "undefined";
+      useRemoteCircuit || typeof window !== "undefined";
   }
 
   async initWasm() {
     await init();
   }
 
-  async verify(
-    proof: Uint8Array,
-    publicInputSer: Uint8Array
-  ): Promise<boolean> {
+  async verify({ proof, publicInputSer }: VerifyArgs): Promise<boolean> {
     this.time("Load circuit");
     const circuitBin = await loadCircuit(this.circuit, this.useRemoteCircuit);
     this.timeEnd("Load circuit");

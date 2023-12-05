@@ -1,8 +1,8 @@
 var EC = require("elliptic").ec;
 const BN = require("bn.js");
 
+import { EffECDSAPubInput } from "@src/types";
 import { bytesToBigInt, bigIntToBytes } from "./utils";
-import { EffECDSAPubInput } from "../types";
 
 const ec = new EC("secp256k1");
 
@@ -144,14 +144,17 @@ export const computeEffEcdsaPubInput = (
 /**
  * Verify the public values of the efficient ECDSA circuit
  */
-export const verifyEffEcdsaPubInput = (pubInput: PublicInput): boolean => {
+export const verifyEffEcdsaPubInput = ({
+  r,
+  rV,
+  msgHash,
+  circuitPubInput
+}: PublicInput): boolean => {
   const expectedCircuitInput = computeEffEcdsaPubInput(
-    pubInput.r,
-    pubInput.rV,
-    pubInput.msgHash
+    r,
+    rV,
+    msgHash
   );
-
-  const circuitPubInput = pubInput.circuitPubInput;
 
   const isValid =
     expectedCircuitInput.Tx === circuitPubInput.Tx &&

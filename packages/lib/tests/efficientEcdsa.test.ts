@@ -1,9 +1,10 @@
+import { hashPersonalMessage } from "@ethereumjs/util";
+
 import {
   CircuitPubInput,
   PublicInput,
   verifyEffEcdsaPubInput
-} from "../src/helpers/public_input";
-import { hashPersonalMessage } from "@ethereumjs/util";
+} from "../src/helpers/publicInputs";
 
 describe("public_input", () => {
   /**

@@ -1,5 +1,5 @@
+import { init, wasm } from "@src/wasm";
 import { bigIntToLeBytes, bytesLeToBigInt } from "./utils";
-import { init, wasm } from "../wasm";
 
 export class Poseidon {
   hash(inputs: bigint[]): bigint {

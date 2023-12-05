@@ -3,7 +3,10 @@ module.exports = {
   preset: 'ts-jest',
   testEnvironment: 'node',
   transform: {
-    "^.+\\.js?$": "ts-jest"
+    "^.+\\.(ts|js)?$": "ts-jest"
+  },
+  moduleNameMapper: {
+    "@src/(.*)$": "<rootDir>/src/$1",
   },
   testTimeout: 600000,
 };
