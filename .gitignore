@@ -39,3 +39,5 @@ wasmBytes.ts
 packages/lib/src/circuits/
 
 packages/lib/example/
+
+circom-secq/

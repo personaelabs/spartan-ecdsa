@@ -23,7 +23,7 @@
     "dist/**/*"
   ],
   "scripts": {
-    "build": "rm -rf ./dist && yarn embedWasmBytes && tsc --project tsconfig.build.json",
+    "build": "rm -rf ./dist && yarn embedWasmBytes && tsc --project tsconfig.build.json --noEmitOnError false",
     "prepublishOnly": "yarn build",
     "prepare": "yarn embedWasmBytes",
     "embedWasmBytes": "ts-node ./embedWasmBytes.ts",

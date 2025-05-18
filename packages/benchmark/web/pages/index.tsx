@@ -59,11 +59,11 @@ export default function Home() {
 
     await prover.initWasm();
 
-    const { proof, publicInput } = await prover.prove(
+    const { proof, publicInput } = await prover.prove({
       sig,
       msgHash,
       merkleProof
-    );
+    });
 
     console.timeEnd("Full proving time");
     console.log(
@@ -80,7 +80,10 @@ export default function Home() {
     await verifier.initWasm();
 
     console.time("Verification time");
-    const result = await verifier.verify(proof, publicInput.serialize());
+    const result = await verifier.verify({
+      proof,
+      publicInputSer: publicInput.serialize()
+    });
     console.timeEnd("Verification time");
 
     if (result) {
@@ -131,11 +134,11 @@ export default function Home() {
 
     await prover.initWasm();
 
-    const { proof, publicInput } = await prover.prove(
+    const { proof, publicInput } = await prover.prove({
       sig,
       msgHash,
       merkleProof
-    );
+    });
 
     console.timeEnd("Full proving time");
     console.log(
@@ -152,7 +155,10 @@ export default function Home() {
     await verifier.initWasm();
 
     console.time("Verification time");
-    const result = await verifier.verify(proof, publicInput.serialize());
+    const result = await verifier.verify({
+      proof,
+      publicInputSer: publicInput.serialize()
+    });
     console.timeEnd("Verification time");
 
     if (result) {

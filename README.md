@@ -1,3 +1,33 @@
+# This is a fork of the original spartan-ecdsa repo developed by personaelabs
+
+The build was not working off of the main branch code, so we made the following changes:
+
+1. Before running yarn build, have to manually add packages in the root directory
+
+```
+yarn add circomlib -W
+yarn add @typescript-eslint/parser -W
+yarn add @personaelabs/spartan-ecdsa -W
+```
+
+2. Inside of packages/lib, we made the following changes
+
+- Moved test folder inside of src (with path updates)
+- Changed `tsconfig.json` to include `"rootDir": "src"` (to flatten the builds in dist/) so that paths to type files in package.json were correct:
+  `"main": "./dist/index.js",
+"types": "./dist/index.d.ts"`
+- Changed all "@src/" in non-config files in packages/lib/src to the right paths (relative to the actual files) — “./” manually (would not be recognized/path would not be resolved in resulting js compilations)
+
+3. In packages/benchmark/web/pages/index.tsx, we made the following changes to fix static type errors:
+
+- Wrapped arguments of prover.prove() and verifier.verify with `{}` so that number of arguments is correct
+- Added `publicInputSer` argument to all instances of `verifier.verify()`, to become
+  ````verifier.verify({
+    proof,
+    publicInputSer: publicInput.serialize()
+  });```
+  ````
+
 # Spartan-ecdsa
 
 Spartan-ecdsa (which to our knowledge) is the fastest open-source method to verify ECDSA (secp256k1) signatures in zero-knowledge. It can prove ECDSA group membership 10 times faster than [efficient-zk-ecdsa](https://github.com/personaelabs/efficient-zk-ecdsa), our previous implementation of fast ECDSA signature proving. Please refer to [this blog post](https://personaelabs.org/posts/spartan-ecdsa/) for further information.
@@ -54,6 +84,7 @@ yarn add @personaelabs/spartan-ecdsa
 v18 or later
 
 ### Build
+
 1. Install Circom with secq256k1 support
 
 ```
@@ -63,7 +94,7 @@ cd circom-secq && cargo build --release && cargo install --path circom
 
 2. Install [wasm-pack](https://rustwasm.github.io/wasm-pack/installer/)
 
-4. Install dependencies & Build all packages
+3. Install dependencies & Build all packages
 
 ```jsx
 yarn && yarn build

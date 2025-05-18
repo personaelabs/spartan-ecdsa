@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "baseUrl": ".",
-    "rootDir": ".",
+    "rootDir": "src",
     "outDir": "./dist",
     "declaration": true,
     "target": "ES6",
@@ -13,19 +13,9 @@
     "strict": true,
     "skipLibCheck": true,
     "paths": {
-      "@src/*": [
-        "src/*"
-      ]
-    },
+      "@src/*": ["src/*"]
+    }
   },
-  "include": [
-    "./src/**/*",
-    "./src/**/*.wasm",
-    "./tests/**/*"
-  ],
-  "exclude": [
-    "./jest.config.js",
-    "./node_modules",
-    "./dist"
-  ],
+  "include": ["./src/**/*", "./src/**/*.wasm"],
+  "exclude": ["./jest.config.js", "./node_modules", "./dist"]
 }

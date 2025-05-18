@@ -1,4 +1,4 @@
-import { Tree, Poseidon } from "../src";
+import { Tree, Poseidon } from "../";
 
 describe("Merkle tree prove and verify", () => {
   let poseidon: Poseidon;

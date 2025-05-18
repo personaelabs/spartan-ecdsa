@@ -12,6 +12,7 @@
   "devDependencies": {
     "@types/jest": "^29.2.4",
     "@typescript-eslint/eslint-plugin": "5.49.0",
+    "@typescript-eslint/parser": "^8.32.1",
     "eslint": "8.32.0",
     "eslint-plugin-react": "7.32.1",
     "eslint-plugin-react-hooks": "4.6.0",
@@ -23,5 +24,6 @@
     "packages/benchmark/web",
     "packages/benchmark/node",
     "packages/circuits"
-  ]
+  ],
+  "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e"
 }

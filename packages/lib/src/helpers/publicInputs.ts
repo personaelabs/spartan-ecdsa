@@ -1,7 +1,7 @@
 var EC = require("elliptic").ec;
 const BN = require("bn.js");
 
-import { EffECDSAPubInput } from "@src/types";
+import { EffECDSAPubInput } from "../types";
 import { bytesToBigInt, bigIntToBytes } from "./utils";
 
 const ec = new EC("secp256k1");
@@ -150,11 +150,7 @@ export const verifyEffEcdsaPubInput = ({
   msgHash,
   circuitPubInput
 }: PublicInput): boolean => {
-  const expectedCircuitInput = computeEffEcdsaPubInput(
-    r,
-    rV,
-    msgHash
-  );
+  const expectedCircuitInput = computeEffEcdsaPubInput(r, rV, msgHash);
 
   const isValid =
     expectedCircuitInput.Tx === circuitPubInput.Tx &&

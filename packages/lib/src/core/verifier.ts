@@ -1,12 +1,12 @@
 import {
   defaultAddressVerifierConfig,
   defaultPubkeyVerifierConfig
-} from "@src/config";
-import { Profiler } from "@src/helpers/profiler";
-import { loadCircuit } from "@src/helpers/utils";
-import { IVerifier, VerifyArgs, VerifyConfig } from "@src/types";
-import { init, wasm } from "@src/wasm";
-import { PublicInput, verifyEffEcdsaPubInput } from "@src/helpers/publicInputs";
+} from "../config";
+import { Profiler } from "../helpers/profiler";
+import { loadCircuit } from "../helpers/utils";
+import { IVerifier, VerifyArgs, VerifyConfig } from "../types";
+import { init, wasm } from "../wasm";
+import { PublicInput, verifyEffEcdsaPubInput } from "../helpers/publicInputs";
 
 /**
  * ECDSA Membership Verifier
@@ -15,11 +15,7 @@ export class MembershipVerifier extends Profiler implements IVerifier {
   circuit: string;
   useRemoteCircuit: boolean;
 
-  constructor({
-    circuit,
-    enableProfiler,
-    useRemoteCircuit
-  }: VerifyConfig) {
+  constructor({ circuit, enableProfiler, useRemoteCircuit }: VerifyConfig) {
     super({ enabled: enableProfiler });
 
     if (
@@ -35,8 +31,7 @@ export class MembershipVerifier extends Profiler implements IVerifier {
     }
 
     this.circuit = circuit;
-    this.useRemoteCircuit =
-      useRemoteCircuit || typeof window !== "undefined";
+    this.useRemoteCircuit = useRemoteCircuit || typeof window !== "undefined";
   }
 
   async initWasm() {

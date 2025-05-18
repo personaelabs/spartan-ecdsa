@@ -1,16 +1,16 @@
-import { Profiler } from "@src/helpers/profiler";
-import { IProver, MerkleProof, NIZK, ProveArgs, ProverConfig } from "@src/types";
-import { loadCircuit, fromSig, snarkJsWitnessGen } from "@src/helpers/utils";
+import { Profiler } from "../helpers/profiler";
+import { IProver, MerkleProof, NIZK, ProveArgs, ProverConfig } from "../types";
+import { loadCircuit, fromSig, snarkJsWitnessGen } from "../helpers/utils";
 import {
   PublicInput,
   computeEffEcdsaPubInput,
   CircuitPubInput
-} from "@src/helpers/publicInputs";
-import { init, wasm } from "@src/wasm";
+} from "../helpers/publicInputs";
+import { init, wasm } from "../wasm";
 import {
   defaultPubkeyProverConfig,
   defaultAddressProverConfig
-} from "@src/config";
+} from "../config";
 
 /**
  * ECDSA Membership Prover
@@ -30,8 +30,7 @@ export class MembershipProver extends Profiler implements IProver {
 
     if (
       circuit === defaultPubkeyProverConfig.circuit ||
-      witnessGenWasm ===
-      defaultPubkeyProverConfig.witnessGenWasm ||
+      witnessGenWasm === defaultPubkeyProverConfig.witnessGenWasm ||
       circuit === defaultAddressProverConfig.circuit ||
       witnessGenWasm === defaultAddressProverConfig.witnessGenWasm
     ) {

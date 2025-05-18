@@ -4,7 +4,7 @@ import {
   CircuitPubInput,
   PublicInput,
   verifyEffEcdsaPubInput
-} from "../src/helpers/publicInputs";
+} from "../helpers/publicInputs";
 
 describe("public_input", () => {
   /**

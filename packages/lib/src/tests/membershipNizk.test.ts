@@ -13,7 +13,7 @@ import {
   Tree,
   Poseidon,
   NIZK
-} from "../src";
+} from "../";
 
 describe("membership prove and verify", () => {
   // Init prover
